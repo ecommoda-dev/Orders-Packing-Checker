@@ -1236,17 +1236,23 @@ function handleBarcodeScan() {
 }
 
 function processScan(barcode) {
-  // Find matching item by SKU
-  const idx = currentItems.findIndex(
-    item => item.sku && item.sku.toLowerCase() === barcode.toLowerCase()
-            && item.scanned < item.quantity
-  );
+  const input = barcode.toLowerCase().trim();
+
+  // Find matching item by barcode first, then SKU fallback
+  const idx = currentItems.findIndex(item => {
+    if (item.scanned >= item.quantity) return false;
+    if (item.barcode && item.barcode.toLowerCase() === input) return true;
+    if (item.sku    && item.sku.toLowerCase()     === input) return true;
+    return false;
+  });
 
   if (idx === -1) {
     // Check if it exists but is already fully scanned
-    const alreadyFull = currentItems.findIndex(
-      item => item.sku && item.sku.toLowerCase() === barcode.toLowerCase()
-    );
+    const alreadyFull = currentItems.findIndex(item => {
+      if (item.barcode && item.barcode.toLowerCase() === input) return true;
+      if (item.sku    && item.sku.toLowerCase()     === input) return true;
+      return false;
+    });
     if (alreadyFull !== -1) {
       showScanBanner('error', `⚠️ تم سكان هذا المنتج بالكامل بالفعل`);
       playSound('error');
