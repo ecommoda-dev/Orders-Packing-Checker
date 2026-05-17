@@ -1,0 +1,1516 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pack Checker — EcomModa</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+
+<style>
+/* ═══════════════════════════════════════════════
+   CSS VARIABLES — Design System
+═══════════════════════════════════════════════ */
+:root {
+  --bg:             #f3f4f6;
+  --surface:        #ffffff;
+  --surface-2:      #f9fafb;
+  --border:         #e5e7eb;
+  --border-strong:  #d1d5db;
+  --text-primary:   #111827;
+  --text-secondary: #6b7280;
+  --text-muted:     #6b7280;
+  --accent:         #2563eb;
+  --accent-light:   #eff6ff;
+  --accent-dark:    #1d4ed8;
+  --green:          #16a34a;
+  --green-light:    #f0fdf4;
+  --green-border:   #86efac;
+  --red:            #dc2626;
+  --red-light:      #fef2f2;
+  --red-border:     #fca5a5;
+  --amber:          #d97706;
+  --amber-light:    #fffbeb;
+  --amber-border:   #fcd34d;
+  --purple:         #7c3aed;
+  --purple-light:   #f5f3ff;
+  --purple-border:  #c4b5fd;
+  --radius:         12px;
+  --radius-sm:      8px;
+  --shadow:         0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+  --font:           'Noto Sans Arabic', -apple-system, sans-serif;
+  --mono:           'IBM Plex Mono', monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text-primary);
+  min-height: 100vh;
+  direction: rtl;
+}
+
+/* ═══════════════════════════════════════════════
+   APP HEADER
+═══════════════════════════════════════════════ */
+.app-header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 20px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow);
+}
+.header-left { display: flex; align-items: center; gap: 10px; }
+.header-icon { font-size: 22px; }
+.header-title { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+.header-desc  { font-size: 12px; color: var(--text-muted); }
+.header-right { display: flex; align-items: center; gap: 8px; }
+
+.hbtn {
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--text-primary);
+  transition: background .15s, border-color .15s;
+  display: flex; align-items: center; gap: 5px;
+}
+.hbtn:hover { background: var(--bg); }
+.hbtn-version { font-family: var(--mono); color: var(--text-muted); font-size: 11px; }
+
+/* ═══════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════ */
+.toast-container {
+  position: fixed; bottom: 20px; right: 20px;
+  z-index: 9999; display: flex; flex-direction: column; gap: 8px;
+}
+.toast {
+  padding: 10px 16px; border-radius: var(--radius-sm);
+  font-size: 13px; font-weight: 600; color: #fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,.2);
+  animation: toastIn .3s ease; max-width: 320px;
+}
+.toast-success  { background: var(--green); }
+.toast-error    { background: var(--red); }
+.toast-neutral  { background: #1a1d27; }
+@keyframes toastIn { from { transform: translateX(100%); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* ═══════════════════════════════════════════════
+   MODALS
+═══════════════════════════════════════════════ */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.45);
+  z-index: 500; display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.hidden { display: none; }
+.modal-box {
+  background: var(--surface); border-radius: var(--radius);
+  box-shadow: 0 20px 60px rgba(0,0,0,.2);
+  width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto;
+}
+.modal-header {
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.modal-title { font-size: 15px; font-weight: 700; }
+.modal-close {
+  background: none; border: none; font-size: 20px;
+  cursor: pointer; color: var(--text-muted); line-height: 1;
+}
+.modal-body { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+.modal-footer {
+  padding: 14px 20px; border-top: 1px solid var(--border);
+  display: flex; gap: 8px; justify-content: flex-start;
+}
+
+.settings-field label {
+  display: block; font-size: 12px; font-weight: 600;
+  color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: .5px;
+}
+.settings-field input {
+  width: 100%; padding: 9px 11px;
+  border: 1.5px solid var(--border-strong); border-radius: var(--radius-sm);
+  font-family: var(--mono); font-size: 12px; color: var(--text-primary);
+  background: var(--surface); outline: none; direction: ltr;
+  transition: border-color .15s;
+}
+.settings-field input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(37,99,235,.08);
+}
+
+.btn-primary {
+  padding: 9px 18px; border-radius: var(--radius-sm); border: none;
+  background: var(--accent); color: #fff; font-family: var(--font);
+  font-size: 13px; font-weight: 700; cursor: pointer; transition: background .15s;
+}
+.btn-primary:hover { background: var(--accent-dark); }
+.btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+
+.btn-ghost {
+  padding: 9px 18px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); background: var(--surface);
+  color: var(--text-primary); font-family: var(--font);
+  font-size: 13px; font-weight: 600; cursor: pointer; transition: background .15s;
+}
+.btn-ghost:hover { background: var(--bg); }
+
+/* Changelog */
+.cl-entry { padding: 10px 0; border-bottom: 1px solid var(--border); }
+.cl-entry:last-child { border-bottom: none; }
+.cl-version { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--accent); margin-bottom: 2px; }
+.cl-date    { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; }
+.cl-items   { display: flex; flex-direction: column; gap: 4px; }
+.cl-item    { display: flex; align-items: flex-start; gap: 6px; font-size: 13px; }
+.cl-tag     { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; flex-shrink: 0; margin-top: 1px; }
+.cl-tag.new    { background: #dcfce7; color: #15803d; }
+.cl-tag.fix    { background: #fef9c3; color: #854d0e; }
+.cl-tag.change { background: #e0e7ff; color: #3730a3; }
+
+/* ═══════════════════════════════════════════════
+   LOGIN SCREEN
+═══════════════════════════════════════════════ */
+.login-overlay {
+  position: fixed; inset: 0;
+  background: linear-gradient(135deg, #1e3a5f 0%, #1a1d27 100%);
+  z-index: 400; display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.login-overlay.hidden { display: none; }
+
+.login-card {
+  background: var(--surface); border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.3);
+  width: 100%; max-width: 360px;
+  padding: 32px 28px;
+  position: relative;
+}
+
+.login-settings-btn {
+  position: absolute; top: 14px; left: 14px;
+  background: none; border: 1px solid var(--border);
+  color: var(--text-muted); font-size: 12px; font-weight: 600;
+  padding: 5px 10px; border-radius: 7px; cursor: pointer;
+  font-family: var(--font);
+}
+.login-settings-btn:hover { background: var(--bg); color: var(--text-primary); }
+
+.login-icon  { font-size: 40px; text-align: center; margin-bottom: 8px; }
+.login-title { font-size: 20px; font-weight: 800; text-align: center; color: var(--text-primary); margin-bottom: 4px; }
+.login-sub   { font-size: 13px; color: var(--text-muted); text-align: center; margin-bottom: 24px; }
+
+.login-field { margin-bottom: 14px; }
+.login-field label {
+  display: block; font-size: 12px; font-weight: 600;
+  color: var(--text-muted); margin-bottom: 5px;
+}
+.login-field select, .login-field input {
+  width: 100%; padding: 10px 12px;
+  border: 1.5px solid var(--border-strong); border-radius: var(--radius-sm);
+  font-family: var(--font); font-size: 14px; color: var(--text-primary);
+  background: var(--surface); outline: none; transition: border-color .15s;
+}
+.login-field select:focus,
+.login-field input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,.08); }
+
+/* PIN keypad */
+.pin-dots {
+  display: flex; justify-content: center; gap: 12px; margin: 16px 0 10px;
+}
+.pin-dot {
+  width: 14px; height: 14px; border-radius: 50%;
+  border: 2px solid var(--border-strong); background: transparent;
+  transition: background .15s, border-color .15s;
+}
+.pin-dot.filled { background: var(--accent); border-color: var(--accent); }
+
+.pin-keypad {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 8px; margin-bottom: 14px;
+}
+.pin-key {
+  aspect-ratio: 1; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); background: var(--surface);
+  font-family: var(--mono); font-size: 18px; font-weight: 600;
+  cursor: pointer; transition: background .1s; display: flex;
+  align-items: center; justify-content: center;
+}
+.pin-key:hover { background: var(--accent-light); border-color: var(--accent); }
+.pin-key.del   { font-size: 14px; color: var(--text-muted); }
+
+/* ═══════════════════════════════════════════════
+   MAIN CONTENT
+═══════════════════════════════════════════════ */
+.main-content { padding: 20px; max-width: 700px; margin: 0 auto; }
+
+/* Tabs */
+.tab-bar {
+  display: flex; gap: 4px; background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 4px; margin-bottom: 20px; box-shadow: var(--shadow);
+}
+.tab-btn {
+  flex: 1; padding: 8px 12px; border: none; border-radius: var(--radius-sm);
+  background: none; font-family: var(--font); font-size: 13px; font-weight: 600;
+  color: var(--text-muted); cursor: pointer; transition: all .15s;
+}
+.tab-btn.active { background: var(--accent); color: #fff; }
+
+/* ── Screen: Order Entry ── */
+.screen { display: none; }
+.screen.active { display: block; }
+
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px;
+  margin-bottom: 16px;
+}
+.card-title {
+  font-size: 13px; font-weight: 700; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: .5px; margin-bottom: 14px;
+}
+
+.scan-input-wrap { position: relative; display: flex; gap: 8px; }
+.scan-input {
+  flex: 1; padding: 12px 14px;
+  border: 2px solid var(--accent); border-radius: var(--radius-sm);
+  font-family: var(--mono); font-size: 16px; color: var(--text-primary);
+  background: var(--surface); outline: none;
+  transition: box-shadow .15s;
+}
+.scan-input:focus { box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
+
+.scan-hint {
+  font-size: 12px; color: var(--text-muted); margin-top: 6px; text-align: center;
+}
+
+/* Stage Badge */
+.stage-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 20px;
+  font-size: 12px; font-weight: 700; font-family: var(--mono);
+}
+.stage-s1 { background: var(--accent-light); color: var(--accent); }
+.stage-s2 { background: var(--purple-light); color: var(--purple); border: 1px solid var(--purple-border); }
+
+/* Order info bar */
+.order-info-bar {
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 12px 14px;
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.order-info-name {
+  font-family: var(--mono); font-size: 18px; font-weight: 700; color: var(--text-primary);
+}
+.order-info-note {
+  font-size: 13px; color: var(--text-secondary); flex: 1;
+  background: var(--amber-light); border: 1px solid var(--amber-border);
+  border-radius: var(--radius-sm); padding: 6px 10px;
+  margin-top: 8px; width: 100%;
+  display: none; /* shown only when note exists */
+}
+
+/* ── Item List ── */
+.items-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+
+.item-card {
+  background: var(--surface); border: 2px solid var(--border);
+  border-radius: var(--radius); padding: 14px;
+  display: flex; align-items: center; gap: 14px;
+  transition: border-color .2s, background .2s;
+}
+.item-card.done    { background: var(--green-light);  border-color: var(--green-border); }
+.item-card.partial { background: var(--amber-light);  border-color: var(--amber-border); }
+.item-card.pending { background: var(--surface);       border-color: var(--border); }
+
+.item-img {
+  width: 60px; height: 60px; object-fit: cover;
+  border-radius: var(--radius-sm); border: 1px solid var(--border);
+  flex-shrink: 0; background: var(--bg);
+}
+.item-img-placeholder {
+  width: 60px; height: 60px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); background: var(--bg);
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 24px;
+}
+
+.item-info { flex: 1; min-width: 0; }
+.item-title {
+  font-size: 14px; font-weight: 600; color: var(--text-primary);
+  margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.item-sku {
+  font-family: var(--mono); font-size: 12px; color: var(--text-muted); margin-bottom: 4px;
+}
+.item-options {
+  font-size: 12px; color: var(--text-secondary);
+}
+
+.item-counter {
+  flex-shrink: 0; text-align: center;
+}
+.item-count-display {
+  font-family: var(--mono); font-size: 22px; font-weight: 700;
+  line-height: 1;
+}
+.item-count-display.done    { color: var(--green); }
+.item-count-display.partial { color: var(--amber); }
+.item-count-display.pending { color: var(--text-muted); }
+.item-count-total { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+/* Summary bar */
+.summary-bar {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 12px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px; box-shadow: var(--shadow);
+}
+.summary-label { font-size: 13px; color: var(--text-muted); }
+.summary-val   { font-family: var(--mono); font-size: 15px; font-weight: 700; color: var(--text-primary); }
+
+/* Scan input in check screen */
+.barcode-scan-wrap {
+  display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px;
+}
+.barcode-input {
+  width: 100%; padding: 12px 14px;
+  border: 2px solid var(--accent); border-radius: var(--radius-sm);
+  font-family: var(--mono); font-size: 15px; color: var(--text-primary);
+  background: var(--surface); outline: none;
+  transition: box-shadow .15s;
+}
+.barcode-input:focus { box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
+
+/* Scan result toast (large inline) */
+.scan-result-banner {
+  border-radius: var(--radius-sm); padding: 10px 14px;
+  font-size: 13px; font-weight: 600; display: none;
+  align-items: center; gap: 8px; margin-bottom: 12px;
+}
+.scan-result-banner.success { background: var(--green-light); border: 1px solid var(--green-border); color: var(--green); display: flex; }
+.scan-result-banner.error   { background: var(--red-light);   border: 1px solid var(--red-border);   color: var(--red);   display: flex; }
+
+/* Complete button area */
+.complete-area { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn-complete {
+  flex: 1; padding: 14px;
+  background: var(--green); color: #fff;
+  border: none; border-radius: var(--radius-sm);
+  font-family: var(--font); font-size: 15px; font-weight: 700;
+  cursor: pointer; transition: background .15s;
+  min-width: 160px;
+}
+.btn-complete:hover:not(:disabled) { background: #15803d; }
+.btn-complete:disabled { opacity: .4; cursor: not-allowed; }
+.btn-back-check {
+  padding: 14px 18px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); background: var(--surface);
+  font-family: var(--font); font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: background .15s; color: var(--text-primary);
+}
+.btn-back-check:hover { background: var(--bg); }
+
+/* Employee selector on check screen */
+.employee-select-bar {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 14px;
+}
+.employee-select-bar label { font-size: 13px; font-weight: 600; color: var(--text-muted); white-space: nowrap; }
+.employee-select-bar select {
+  flex: 1; padding: 8px 10px;
+  border: 1.5px solid var(--border-strong); border-radius: var(--radius-sm);
+  font-family: var(--font); font-size: 13px; color: var(--text-primary);
+  background: var(--surface); outline: none;
+}
+.employee-select-bar select:focus { border-color: var(--accent); }
+
+/* ═══════════════════════════════════════════════
+   LOG TAB
+═══════════════════════════════════════════════ */
+.log-toolbar {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; align-items: center;
+}
+.log-filter-select, .log-search-input {
+  padding: 7px 10px; border: 1.5px solid var(--border-strong);
+  border-radius: var(--radius-sm); font-family: var(--font);
+  font-size: 13px; color: var(--text-primary); background: var(--surface); outline: none;
+}
+.log-filter-select { min-width: 160px; }
+.log-search-input  { flex: 1; min-width: 180px; }
+.log-filter-select:focus, .log-search-input:focus { border-color: var(--accent); }
+
+.log-export-btn {
+  padding: 7px 14px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); background: var(--surface);
+  font-family: var(--font); font-size: 13px; font-weight: 600;
+  cursor: pointer; color: var(--text-primary);
+}
+.log-export-btn:hover { background: var(--bg); }
+
+.log-list { display: flex; flex-direction: column; gap: 8px; }
+.log-entry {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 12px 14px;
+}
+.log-entry-top {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px;
+}
+.log-type-badge {
+  font-size: 11px; font-weight: 700; padding: 2px 7px;
+  border-radius: 4px; text-transform: uppercase; font-family: var(--mono);
+}
+.log-type-packed { background: var(--green-light); color: var(--green); }
+.log-order { font-family: var(--mono); font-size: 13px; font-weight: 600; }
+.log-meta  { font-family: var(--mono); font-size: 11px; color: var(--text-muted); }
+.log-notes { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+
+/* pagination */
+.pagination-row {
+  display: flex; align-items: center; justify-content: center;
+  gap: 8px; margin-top: 16px; flex-wrap: wrap;
+}
+.page-info { font-size: 13px; color: var(--text-muted); font-family: var(--mono); padding: 0 8px; }
+.page-btn {
+  padding: 6px 14px; border-radius: 7px; border: 1px solid var(--border);
+  background: #fff; font-size: 13px; font-weight: 600; cursor: pointer;
+  font-family: var(--font); color: var(--text-primary);
+  transition: background .15s, border-color .15s;
+}
+.page-btn:hover:not(:disabled) { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+.page-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+/* ═══════════════════════════════════════════════
+   LOADING SPINNER
+═══════════════════════════════════════════════ */
+.spinner {
+  width: 28px; height: 28px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  display: inline-block;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-area { text-align: center; padding: 40px; }
+
+/* Empty state */
+.empty-state { text-align: center; padding: 40px; color: var(--text-muted); font-size: 14px; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════
+     APP HEADER
+═══════════════════════════════════════════════ -->
+<header class="app-header">
+  <div class="header-left">
+    <span class="header-icon">📦</span>
+    <div>
+      <div class="header-title">Pack Checker</div>
+      <div class="header-desc">التحقق من تعبئة الطلبات</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <button class="hbtn hbtn-version" onclick="openChangelog()">v1.0.0 📋</button>
+    <button class="hbtn" onclick="openSettings()">⚙️ الإعدادات</button>
+  </div>
+</header>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ═══════════════════════════════════════════════
+     SETTINGS MODAL
+═══════════════════════════════════════════════ -->
+<div class="modal-overlay hidden" id="settingsModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="modal-title">⚙️ الإعدادات</span>
+      <button class="modal-close" onclick="closeSettings()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="settings-field">
+        <label>WORKER URL</label>
+        <input type="url" id="settingUrl" dir="ltr">
+      </div>
+      <div class="settings-field">
+        <label>WORKER SECRET</label>
+        <input type="password" id="settingSecret" dir="ltr">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-primary" onclick="saveSettings()">حفظ</button>
+      <button class="btn-ghost"   onclick="closeSettings()">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     CHANGELOG MODAL
+═══════════════════════════════════════════════ -->
+<div class="modal-overlay hidden" id="changelogModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="modal-title">📋 سجل التغييرات</span>
+      <button class="modal-close" onclick="closeChangelog()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="cl-entry">
+        <div class="cl-version">v1.0.0</div>
+        <div class="cl-date">17-05-2026</div>
+        <div class="cl-items">
+          <div class="cl-item"><span class="cl-tag new">جديد</span> إطلاق الأداة</div>
+          <div class="cl-item"><span class="cl-tag new">جديد</span> دعم S1 (أوردر عادي) و S2 (استبدال)</div>
+          <div class="cl-item"><span class="cl-tag new">جديد</span> سكان الأوردر والمنتجات بالباركود</div>
+          <div class="cl-item"><span class="cl-tag new">جديد</span> تنبيه بصري وصوتي عند كل سكان</div>
+          <div class="cl-item"><span class="cl-tag new">جديد</span> كتابة metafields وإضافة tag عند الإكمال</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeChangelog()">إغلاق</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     LOGIN OVERLAY
+═══════════════════════════════════════════════ -->
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <button class="login-settings-btn" onclick="openSettings()">⚙️ الإعدادات</button>
+
+    <div class="login-icon">📦</div>
+    <div class="login-title">Pack Checker</div>
+    <div class="login-sub" id="loginSub">اختر اسمك للمتابعة</div>
+
+    <!-- Step 1: Username -->
+    <div id="stepUsername">
+      <div class="login-field">
+        <label>الاسم</label>
+        <select id="loginSelect" onchange="onUsernameChange()">
+          <option value="">— اختر —</option>
+        </select>
+      </div>
+      <button class="btn-primary" style="width:100%;" onclick="proceedToPin()">متابعة</button>
+    </div>
+
+    <!-- Step 2: PIN -->
+    <div id="stepPin" style="display:none;">
+      <div class="pin-dots" id="pinDots">
+        <div class="pin-dot" id="d0"></div>
+        <div class="pin-dot" id="d1"></div>
+        <div class="pin-dot" id="d2"></div>
+        <div class="pin-dot" id="d3"></div>
+      </div>
+      <div id="pinConfirmHint" style="font-size:12px;color:var(--text-muted);text-align:center;margin-bottom:8px;display:none;">
+        أدخل الـ PIN مرة أخرى للتأكيد
+      </div>
+      <div class="pin-keypad" id="pinKeypad">
+        <button class="pin-key" onclick="pinKey('1')">1</button>
+        <button class="pin-key" onclick="pinKey('2')">2</button>
+        <button class="pin-key" onclick="pinKey('3')">3</button>
+        <button class="pin-key" onclick="pinKey('4')">4</button>
+        <button class="pin-key" onclick="pinKey('5')">5</button>
+        <button class="pin-key" onclick="pinKey('6')">6</button>
+        <button class="pin-key" onclick="pinKey('7')">7</button>
+        <button class="pin-key" onclick="pinKey('8')">8</button>
+        <button class="pin-key" onclick="pinKey('9')">9</button>
+        <button class="pin-key del" onclick="pinBack()">← حذف</button>
+        <button class="pin-key" onclick="pinKey('0')">0</button>
+        <button class="pin-key del" onclick="goBackToUsername()">رجوع</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     MAIN CONTENT
+═══════════════════════════════════════════════ -->
+<div class="main-content">
+
+  <!-- Tab Bar -->
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tab-scan"  onclick="switchTab('scan')">🔍 فحص أوردر</button>
+    <button class="tab-btn"       id="tab-log"   onclick="switchTab('log')">📋 السجل</button>
+  </div>
+
+  <!-- ── Screen: Order Entry (Scan Tab) ── -->
+  <div class="screen active" id="screen-scan">
+
+    <!-- Sub-screen: order input -->
+    <div id="subscreenEntry">
+      <div class="card">
+        <div class="card-title">سكان أو أدخل رقم الأوردر</div>
+        <div class="scan-input-wrap">
+          <input
+            type="text"
+            class="scan-input"
+            id="orderScanInput"
+            placeholder="سكان الباركود أو أدخل رقم الأوردر..."
+            autocomplete="off"
+            inputmode="text"
+          >
+          <button class="btn-primary" onclick="submitOrderLookup()" id="btnLookup">بحث</button>
+        </div>
+        <div class="scan-hint">يقبل: رقم الأوردر (#43108 أو 43108) أو Order ID</div>
+      </div>
+
+      <div id="lookupLoading" style="display:none;" class="loading-area">
+        <div class="spinner"></div>
+        <div style="margin-top:12px;font-size:13px;color:var(--text-muted);">جاري البحث...</div>
+      </div>
+    </div>
+
+    <!-- Sub-screen: item checking -->
+    <div id="subscreenCheck" style="display:none;">
+
+      <!-- Order Info Bar -->
+      <div class="card" style="padding:14px 16px; margin-bottom:14px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span class="order-info-name" id="checkOrderName"></span>
+            <span class="stage-badge" id="checkStageBadge"></span>
+          </div>
+          <button class="btn-ghost" style="font-size:12px;padding:6px 12px;" onclick="resetToEntry()">← أوردر جديد</button>
+        </div>
+        <div class="order-info-note" id="checkOrderNote"></div>
+      </div>
+
+      <!-- Employee selector -->
+      <div class="employee-select-bar">
+        <label>مُعبَّأ بواسطة:</label>
+        <select id="packedBySelect">
+          <option value="">— اختر الموظف —</option>
+        </select>
+      </div>
+
+      <!-- Scan Banner -->
+      <div class="scan-result-banner" id="scanBanner"></div>
+
+      <!-- Barcode Input -->
+      <div class="barcode-scan-wrap">
+        <input
+          type="text"
+          class="barcode-input"
+          id="barcodeScanInput"
+          placeholder="سكان باركود المنتج..."
+          autocomplete="off"
+          inputmode="text"
+        >
+      </div>
+
+      <!-- Summary -->
+      <div class="summary-bar">
+        <span class="summary-label">إجمالي القطع</span>
+        <span class="summary-val" id="summaryTotal">0 / 0</span>
+      </div>
+
+      <!-- Items List -->
+      <div class="items-list" id="itemsList"></div>
+
+      <!-- Actions -->
+      <div class="complete-area">
+        <button class="btn-complete" id="btnComplete" onclick="completePack()" disabled>
+          ✅ تأكيد اكتمال التعبئة
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── Log Tab ── -->
+  <div class="screen" id="screen-log">
+    <div class="card">
+      <div class="log-toolbar">
+        <select class="log-filter-select" id="logFilterEmployee" onchange="fetchLog()">
+          <option value="">كل الموظفين</option>
+        </select>
+        <input type="text" class="log-search-input" id="logSearch"
+               placeholder="بحث في الأوردرات..." oninput="debounceLog()">
+        <button class="log-export-btn" onclick="exportLogXLSX()">⬇️ تصدير Excel</button>
+      </div>
+
+      <div id="logLoading" class="loading-area" style="display:none;">
+        <div class="spinner"></div>
+      </div>
+
+      <div class="log-list" id="logList"></div>
+      <div class="empty-state" id="logEmpty" style="display:none;">لا توجد سجلات</div>
+
+      <div class="pagination-row" id="paginationRow" style="display:none;">
+        <button class="page-btn" id="btnPrevPage" onclick="goPage(-1)">→ السابق</button>
+        <span class="page-info" id="pageInfo"></span>
+        <button class="page-btn" id="btnNextPage" onclick="goPage(1)">التالي ←</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main-content -->
+
+<!-- ═══════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════ -->
+<script>
+// ── Config ──────────────────────────────────────
+const LS_URL    = 'pack_checker_worker_url';
+const LS_SECRET = 'pack_checker_worker_secret';
+
+function getConfig() {
+  return {
+    url:    (localStorage.getItem(LS_URL)    || '').replace(/\/$/, ''),
+    secret: localStorage.getItem(LS_SECRET) || '',
+  };
+}
+
+// ── API Helpers ──────────────────────────────────
+async function apiPost(action, body = {}) {
+  const { url, secret } = getConfig();
+  if (!url || !secret) throw new Error('يرجى ضبط إعدادات الـ Worker أولاً');
+  const res = await fetch(`${url}?action=${action}`, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${secret}` },
+    body:    JSON.stringify(body),
+  });
+  return res.json();
+}
+
+async function apiGet(action, params = {}) {
+  const { url, secret } = getConfig();
+  if (!url || !secret) throw new Error('يرجى ضبط إعدادات الـ Worker أولاً');
+  const qs  = new URLSearchParams({ action, ...params }).toString();
+  const res = await fetch(`${url}?${qs}`, {
+    headers: { 'Authorization': `Bearer ${secret}` },
+  });
+  return res.json();
+}
+
+// ── Toast ────────────────────────────────────────
+function showToast(msg, type = 'neutral', duration = 3000) {
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`;
+  t.textContent = msg;
+  document.getElementById('toastContainer').appendChild(t);
+  setTimeout(() => t.remove(), duration);
+}
+
+// ── Time ─────────────────────────────────────────
+function toCairo(iso) {
+  return new Date(new Date(iso).getTime() + 3 * 60 * 60 * 1000);
+}
+function formatDateTime(iso) {
+  const d = toCairo(iso), pad = n => String(n).padStart(2, '0');
+  let h = d.getUTCHours();
+  const ampm = h >= 12 ? 'مساءً' : 'صباحاً';
+  h = h % 12 || 12;
+  return `${pad(d.getUTCDate())}-${pad(d.getUTCMonth()+1)}-${d.getUTCFullYear()} ${pad(h)}:${pad(d.getUTCMinutes())} ${ampm}`;
+}
+
+// ── Settings ─────────────────────────────────────
+function openSettings() {
+  const cfg = getConfig();
+  document.getElementById('settingUrl').value    = cfg.url;
+  document.getElementById('settingSecret').value = cfg.secret;
+  document.getElementById('settingsModal').classList.remove('hidden');
+}
+function closeSettings() { document.getElementById('settingsModal').classList.add('hidden'); }
+function saveSettings() {
+  const url    = document.getElementById('settingUrl').value.trim().replace(/\/$/, '');
+  const secret = document.getElementById('settingSecret').value.trim();
+  localStorage.setItem(LS_URL,    url);
+  localStorage.setItem(LS_SECRET, secret);
+  closeSettings();
+  showToast('تم حفظ الإعدادات', 'success');
+}
+
+// ── Changelog ────────────────────────────────────
+function openChangelog()  { document.getElementById('changelogModal').classList.remove('hidden'); }
+function closeChangelog() { document.getElementById('changelogModal').classList.add('hidden'); }
+
+// ── Tab switching ────────────────────────────────
+let activeTab = 'scan';
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(`tab-${tab}`).classList.add('active');
+  document.getElementById(`screen-${tab}`).classList.add('active');
+  activeTab = tab;
+  if (tab === 'log') fetchLog();
+}
+
+// ═══════════════════════════════════════════════════════
+// LOGIN SYSTEM
+// ═══════════════════════════════════════════════════════
+
+let currentEmployee = null; // { username, displayName }
+let pinBuffer       = '';
+let isNewUser       = false;
+let firstPin        = '';
+let isConfirming    = false;
+
+async function loadEmployeesList() {
+  try {
+    const data = await apiGet('get_employees');
+    const sel  = document.getElementById('loginSelect');
+    sel.innerHTML = '<option value="">— اختر —</option>';
+    (data.employees || []).forEach(e => {
+      const o = document.createElement('option');
+      o.value       = e.username;
+      o.textContent = e.display_name;
+      sel.appendChild(o);
+    });
+  } catch (err) {
+    // silently ignore — settings may not be set yet
+  }
+}
+
+function onUsernameChange() {
+  document.getElementById('loginSub').textContent = 'اختر اسمك للمتابعة';
+}
+
+async function proceedToPin() {
+  const username = document.getElementById('loginSelect').value;
+  if (!username) { showToast('اختر اسمك أولاً', 'error'); return; }
+
+  try {
+    const data = await apiGet('check_employee', { username });
+    if (!data.exists)    { showToast('المستخدم غير موجود', 'error'); return; }
+    if (!data.isActive)  { showToast('الحساب موقوف', 'error'); return; }
+
+    isNewUser    = !data.hasPin;
+    pinBuffer    = '';
+    firstPin     = '';
+    isConfirming = false;
+    updatePinDots();
+
+    document.getElementById('stepUsername').style.display = 'none';
+    document.getElementById('stepPin').style.display      = '';
+    document.getElementById('pinConfirmHint').style.display = 'none';
+
+    if (isNewUser) {
+      document.getElementById('loginSub').textContent = 'أنت مستخدم جديد — أدخل PIN جديد';
+    } else {
+      document.getElementById('loginSub').textContent = `أهلاً! أدخل الـ PIN الخاص بك`;
+    }
+  } catch (err) {
+    showToast(err.message || 'خطأ في الاتصال', 'error');
+  }
+}
+
+function goBackToUsername() {
+  document.getElementById('stepPin').style.display      = 'none';
+  document.getElementById('stepUsername').style.display = '';
+  pinBuffer = ''; firstPin = ''; isConfirming = false;
+  updatePinDots();
+  document.getElementById('loginSub').textContent = 'اختر اسمك للمتابعة';
+}
+
+function pinKey(digit) {
+  if (pinBuffer.length >= 4) return;
+  pinBuffer += digit;
+  updatePinDots();
+  if (pinBuffer.length === 4) setTimeout(submitPin, 200);
+}
+
+function pinBack() {
+  pinBuffer = pinBuffer.slice(0, -1);
+  updatePinDots();
+}
+
+function updatePinDots() {
+  for (let i = 0; i < 4; i++) {
+    document.getElementById(`d${i}`).classList.toggle('filled', i < pinBuffer.length);
+  }
+}
+
+async function submitPin() {
+  const username = document.getElementById('loginSelect').value;
+
+  if (isNewUser) {
+    if (!isConfirming) {
+      firstPin     = pinBuffer;
+      pinBuffer    = '';
+      isConfirming = true;
+      updatePinDots();
+      document.getElementById('loginSub').textContent = 'أدخل الـ PIN مرة أخرى للتأكيد';
+      document.getElementById('pinConfirmHint').style.display = '';
+      return;
+    }
+    if (pinBuffer !== firstPin) {
+      showToast('الـ PIN غير متطابق — أعد المحاولة', 'error');
+      pinBuffer = ''; firstPin = ''; isConfirming = false;
+      updatePinDots();
+      document.getElementById('loginSub').textContent = 'أنت مستخدم جديد — أدخل PIN جديد';
+      document.getElementById('pinConfirmHint').style.display = 'none';
+      return;
+    }
+    // Register
+    try {
+      await apiPost('register_pin', { username, pin: firstPin });
+      const vData = await apiPost('verify_employee', { username, pin: firstPin });
+      if (!vData.ok) { showToast('خطأ في التسجيل', 'error'); pinBuffer = ''; updatePinDots(); return; }
+      finishLogin(username, vData.displayName);
+    } catch (err) {
+      showToast(err.message || 'خطأ', 'error');
+      pinBuffer = ''; updatePinDots();
+    }
+  } else {
+    // Normal login
+    try {
+      const data = await apiPost('verify_employee', { username, pin: pinBuffer });
+      if (!data.ok) {
+        showToast('PIN خطأ', 'error');
+        pinBuffer = ''; updatePinDots(); return;
+      }
+      finishLogin(username, data.displayName);
+    } catch (err) {
+      showToast(err.message || 'خطأ في الاتصال', 'error');
+      pinBuffer = ''; updatePinDots();
+    }
+  }
+}
+
+function finishLogin(username, displayName) {
+  currentEmployee = { username, displayName };
+  document.getElementById('loginOverlay').classList.add('hidden');
+  showToast(`أهلاً ${displayName} 👋`, 'success');
+  // Populate packedBySelect with employee name
+  populatePackedBy();
+}
+
+async function doLogout() {
+  if (currentEmployee) {
+    try { await apiGet('log_logout', { username: currentEmployee.username }); } catch {}
+  }
+  currentEmployee = null;
+  pinBuffer = ''; firstPin = ''; isConfirming = false;
+  updatePinDots();
+  document.getElementById('stepPin').style.display      = 'none';
+  document.getElementById('stepUsername').style.display = '';
+  document.getElementById('loginSub').textContent       = 'اختر اسمك للمتابعة';
+  document.getElementById('loginOverlay').classList.remove('hidden');
+  resetToEntry();
+}
+
+// ═══════════════════════════════════════════════════════
+// ORDER ENTRY & CHECKING
+// ═══════════════════════════════════════════════════════
+
+let currentOrder = null;  // { id, name, note, stage }
+let currentItems = [];    // [{ id, title, sku, quantity, image, options, scanned }]
+let allEmployees = [];    // for packedBy dropdown
+
+async function populatePackedBy() {
+  // Load employees for packedBy dropdown
+  try {
+    const data = await apiGet('get_employees');
+    allEmployees = data.employees || [];
+    const sel = document.getElementById('packedBySelect');
+    sel.innerHTML = '<option value="">— اختر الموظف —</option>';
+    allEmployees.forEach(e => {
+      const o = document.createElement('option');
+      o.value       = e.username;
+      o.textContent = e.display_name;
+      // Pre-select current employee
+      if (currentEmployee && e.username === currentEmployee.username) o.selected = true;
+      sel.appendChild(o);
+    });
+
+    // Also populate log filter
+    const logSel = document.getElementById('logFilterEmployee');
+    logSel.innerHTML = '<option value="">كل الموظفين</option>';
+    allEmployees.forEach(e => {
+      const o = document.createElement('option');
+      o.value       = e.username;
+      o.textContent = e.display_name;
+      logSel.appendChild(o);
+    });
+  } catch {}
+}
+
+// ── Order scan input ─────────────────────────────
+const orderInput = document.getElementById('orderScanInput');
+let orderScanTimer;
+
+orderInput.addEventListener('input', () => {
+  clearTimeout(orderScanTimer);
+  const gap = orderInput.value.length > 3 ? 80 : 400;
+  orderScanTimer = setTimeout(handleOrderScan, gap < 80 ? 150 : 400);
+});
+
+orderInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    clearTimeout(orderScanTimer);
+    handleOrderScan();
+  }
+});
+
+function handleOrderScan() {
+  const val = orderInput.value.trim();
+  orderInput.value = '';
+  orderInput.focus();
+  if (!val) return;
+  lookupOrder(val);
+}
+
+function submitOrderLookup() {
+  const val = orderInput.value.trim();
+  orderInput.value = '';
+  if (!val) return;
+  lookupOrder(val);
+}
+
+async function lookupOrder(raw) {
+  document.getElementById('lookupLoading').style.display = '';
+  document.getElementById('btnLookup').disabled = true;
+
+  try {
+    // Determine if it's a numeric ID or order name
+    const isNumericId = /^\d{10,}$/.test(raw); // Shopify order IDs are ~13 digits
+    const params = isNumericId
+      ? { id: raw }
+      : { name: raw };
+
+    const data = await apiGet('get_order', params);
+
+    if (!data.ok) {
+      if (data.alreadyPacked) {
+        showToast(`⚠️ تم تغليف هذا الأوردر مسبقاً (${data.stage}) — ${data.packedBy}`, 'error', 5000);
+      } else {
+        showToast(data.error || 'خطأ في جلب الأوردر', 'error');
+      }
+      return;
+    }
+
+    // Set up checking session
+    currentOrder = { ...data.order, stage: data.stage };
+    currentItems = data.items.map(item => ({ ...item, scanned: 0 }));
+
+    renderCheckScreen();
+    document.getElementById('subscreenEntry').style.display = 'none';
+    document.getElementById('subscreenCheck').style.display  = '';
+
+    setTimeout(() => {
+      document.getElementById('barcodeScanInput').focus();
+    }, 100);
+
+  } catch (err) {
+    showToast(err.message || 'خطأ في الاتصال', 'error');
+  } finally {
+    document.getElementById('lookupLoading').style.display = 'none';
+    document.getElementById('btnLookup').disabled = false;
+  }
+}
+
+function resetToEntry() {
+  currentOrder = null;
+  currentItems = [];
+  document.getElementById('subscreenCheck').style.display = 'none';
+  document.getElementById('subscreenEntry').style.display = '';
+  document.getElementById('scanBanner').className = 'scan-result-banner';
+  document.getElementById('scanBanner').textContent = '';
+  setTimeout(() => orderInput.focus(), 100);
+}
+
+// ── Render check screen ──────────────────────────
+function renderCheckScreen() {
+  // Order info
+  document.getElementById('checkOrderName').textContent = currentOrder.name;
+
+  const stageBadge = document.getElementById('checkStageBadge');
+  stageBadge.textContent = currentOrder.stage;
+  stageBadge.className   = `stage-badge stage-${currentOrder.stage.toLowerCase()}`;
+
+  const noteEl = document.getElementById('checkOrderNote');
+  if (currentOrder.note) {
+    noteEl.textContent    = `ملاحظة: ${currentOrder.note}`;
+    noteEl.style.display  = 'block';
+  } else {
+    noteEl.style.display  = 'none';
+  }
+
+  renderItemsList();
+  updateSummary();
+  updateCompleteBtn();
+}
+
+function renderItemsList() {
+  const container = document.getElementById('itemsList');
+  container.innerHTML = '';
+
+  currentItems.forEach((item, idx) => {
+    const isDone    = item.scanned >= item.quantity;
+    const isPartial = item.scanned > 0 && item.scanned < item.quantity;
+    const statusCls = isDone ? 'done' : isPartial ? 'partial' : 'pending';
+    const countCls  = isDone ? 'done' : isPartial ? 'partial' : 'pending';
+
+    const optStr = (item.options || []).map(o => o.value).join(' / ');
+
+    const div = document.createElement('div');
+    div.className   = `item-card ${statusCls}`;
+    div.id          = `item-card-${idx}`;
+    div.innerHTML   = `
+      ${item.image
+        ? `<img class="item-img" src="${item.image}" alt="" loading="lazy">`
+        : `<div class="item-img-placeholder">👟</div>`
+      }
+      <div class="item-info">
+        <div class="item-title">${item.title}</div>
+        <div class="item-sku">${item.sku || '—'}</div>
+        ${optStr ? `<div class="item-options">${optStr}</div>` : ''}
+      </div>
+      <div class="item-counter">
+        <div class="item-count-display ${countCls}" id="item-count-${idx}">${item.scanned}/${item.quantity}</div>
+        <div class="item-count-total">قطعة</div>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function updateItemCard(idx) {
+  const item     = currentItems[idx];
+  const isDone   = item.scanned >= item.quantity;
+  const isPartial= item.scanned > 0 && item.scanned < item.quantity;
+  const statusCls= isDone ? 'done' : isPartial ? 'partial' : 'pending';
+  const countCls = isDone ? 'done' : isPartial ? 'partial' : 'pending';
+
+  const card  = document.getElementById(`item-card-${idx}`);
+  const count = document.getElementById(`item-count-${idx}`);
+  if (card)  card.className  = `item-card ${statusCls}`;
+  if (count) {
+    count.className = `item-count-display ${countCls}`;
+    count.textContent = `${item.scanned}/${item.quantity}`;
+  }
+}
+
+function updateSummary() {
+  const totalScanned = currentItems.reduce((s, i) => s + i.scanned, 0);
+  const totalQty     = currentItems.reduce((s, i) => s + i.quantity, 0);
+  document.getElementById('summaryTotal').textContent = `${totalScanned} / ${totalQty}`;
+}
+
+function updateCompleteBtn() {
+  const allDone = currentItems.every(i => i.scanned >= i.quantity);
+  document.getElementById('btnComplete').disabled = !allDone;
+}
+
+// ── Barcode scan input ───────────────────────────
+const barcodeInput = document.getElementById('barcodeScanInput');
+let barcodeScanTimer;
+
+barcodeInput.addEventListener('input', () => {
+  clearTimeout(barcodeScanTimer);
+  const gap = barcodeInput.value.length > 3 ? 80 : 400;
+  barcodeScanTimer = setTimeout(handleBarcodeScan, gap < 80 ? 150 : 400);
+});
+
+barcodeInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    clearTimeout(barcodeScanTimer);
+    handleBarcodeScan();
+  }
+});
+
+function handleBarcodeScan() {
+  const val = barcodeInput.value.trim();
+  barcodeInput.value = '';
+  barcodeInput.focus();
+  if (!val) return;
+  processScan(val);
+}
+
+function processScan(barcode) {
+  // Find matching item by SKU
+  const idx = currentItems.findIndex(
+    item => item.sku && item.sku.toLowerCase() === barcode.toLowerCase()
+            && item.scanned < item.quantity
+  );
+
+  if (idx === -1) {
+    // Check if it exists but is already fully scanned
+    const alreadyFull = currentItems.findIndex(
+      item => item.sku && item.sku.toLowerCase() === barcode.toLowerCase()
+    );
+    if (alreadyFull !== -1) {
+      showScanBanner('error', `⚠️ تم سكان هذا المنتج بالكامل بالفعل`);
+      playSound('error');
+    } else {
+      showScanBanner('error', `❌ الباركود غير موجود في هذا الأوردر: ${barcode}`);
+      playSound('error');
+    }
+    return;
+  }
+
+  // Increment scanned count
+  currentItems[idx].scanned++;
+  updateItemCard(idx);
+  updateSummary();
+  updateCompleteBtn();
+
+  const item    = currentItems[idx];
+  const isDone  = item.scanned >= item.quantity;
+  const msg     = isDone
+    ? `✅ ${item.title} — مكتمل (${item.scanned}/${item.quantity})`
+    : `✔️ ${item.title} — ${item.scanned}/${item.quantity}`;
+
+  showScanBanner('success', msg);
+  playSound('success');
+
+  // Scroll item into view
+  const card = document.getElementById(`item-card-${idx}`);
+  if (card) card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function showScanBanner(type, msg) {
+  const banner = document.getElementById('scanBanner');
+  banner.className   = `scan-result-banner ${type}`;
+  banner.textContent = msg;
+  if (banner._hideTimer) clearTimeout(banner._hideTimer);
+  banner._hideTimer = setTimeout(() => {
+    banner.className = 'scan-result-banner';
+  }, 3000);
+}
+
+// ── Audio feedback ───────────────────────────────
+let audioCtx;
+function getAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function playSound(type) {
+  try {
+    const ctx = getAudio();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    if (type === 'success') {
+      osc.frequency.setValueAtTime(880, ctx.currentTime);
+      osc.frequency.setValueAtTime(1100, ctx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.25);
+    } else {
+      osc.frequency.setValueAtTime(300, ctx.currentTime);
+      osc.frequency.setValueAtTime(200, ctx.currentTime + 0.15);
+      gain.gain.setValueAtTime(0.4, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.35);
+    }
+  } catch {}
+}
+
+// ── Complete pack ────────────────────────────────
+async function completePack() {
+  if (!currentEmployee) { showToast('يجب تسجيل الدخول أولاً', 'error'); return; }
+
+  const packedByUsername = document.getElementById('packedBySelect').value;
+  if (!packedByUsername) { showToast('اختر اسم الموظف المُعبِّأ', 'error'); return; }
+
+  const packedByDisplay = allEmployees.find(e => e.username === packedByUsername)?.display_name
+                       || packedByUsername;
+
+  const btn = document.getElementById('btnComplete');
+  btn.disabled   = true;
+  btn.textContent = '⏳ جاري الحفظ...';
+
+  try {
+    const data = await apiPost('complete_pack', {
+      orderId:   currentOrder.id,
+      orderName: currentOrder.name,
+      stage:     currentOrder.stage,
+      employee:  currentEmployee.username,
+      packedBy:  packedByDisplay,
+      items:     currentItems.map(i => ({ id: i.id, title: i.title, sku: i.sku, quantity: i.quantity })),
+    });
+
+    if (!data.ok) {
+      showToast(data.error || 'خطأ في الحفظ', 'error');
+      btn.disabled   = false;
+      btn.textContent = '✅ تأكيد اكتمال التعبئة';
+      return;
+    }
+
+    showToast(`✅ تم حفظ تعبئة ${currentOrder.name} بنجاح`, 'success', 4000);
+    playSound('success');
+    setTimeout(() => resetToEntry(), 1500);
+
+  } catch (err) {
+    showToast(err.message || 'خطأ في الاتصال', 'error');
+    btn.disabled   = false;
+    btn.textContent = '✅ تأكيد اكتمال التعبئة';
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// LOG TAB
+// ═══════════════════════════════════════════════════════
+
+const LOG_PAGE_SIZE = 100;
+let logCurrentPage  = 1;
+let logTotalCount   = 0;
+let logDebounceTimer;
+
+function debounceLog() {
+  clearTimeout(logDebounceTimer);
+  logDebounceTimer = setTimeout(() => { logCurrentPage = 1; fetchLog(); }, 400);
+}
+
+async function fetchLog() {
+  const employee = document.getElementById('logFilterEmployee').value || null;
+  const search   = document.getElementById('logSearch').value.trim()  || null;
+  const offset   = (logCurrentPage - 1) * LOG_PAGE_SIZE;
+
+  const params      = { limit: LOG_PAGE_SIZE, offset };
+  const countParams = {};
+  if (employee) { params.employee = employee; countParams.employee = employee; }
+  if (search)   { params.search   = search;   countParams.search   = search;   }
+
+  document.getElementById('logLoading').style.display = '';
+  document.getElementById('logList').innerHTML = '';
+  document.getElementById('logEmpty').style.display = 'none';
+  document.getElementById('paginationRow').style.display = 'none';
+
+  try {
+    const [pageData, countData] = await Promise.all([
+      apiGet('get_logs',       params),
+      apiGet('get_logs_count', countParams),
+    ]);
+
+    logTotalCount = countData.total || 0;
+    renderLog(pageData.entries || []);
+    renderPagination();
+  } catch (err) {
+    showToast(err.message || 'خطأ في جلب السجل', 'error');
+  } finally {
+    document.getElementById('logLoading').style.display = 'none';
+  }
+}
+
+function renderLog(entries) {
+  const list = document.getElementById('logList');
+  const empty = document.getElementById('logEmpty');
+  list.innerHTML = '';
+
+  if (!entries.length) { empty.style.display = ''; return; }
+  empty.style.display = 'none';
+
+  entries.forEach(e => {
+    const extra = e.extra ? JSON.parse(e.extra) : {};
+    const div   = document.createElement('div');
+    div.className = 'log-entry';
+    div.innerHTML = `
+      <div class="log-entry-top">
+        <span class="log-type-badge log-type-packed">مُعبَّأ</span>
+        <span class="log-order">${e.order_name || '—'}</span>
+        <span class="stage-badge stage-${(extra.stage||'s1').toLowerCase()}" style="padding:2px 7px;font-size:11px;">${extra.stage || ''}</span>
+        <span class="log-meta" style="margin-right:auto;">${formatDateTime(e.timestamp)}</span>
+      </div>
+      <div class="log-meta">بواسطة: ${e.employee || '—'} ${extra.packedBy ? '← مُعبَّأ بواسطة: ' + extra.packedBy : ''}</div>
+      ${e.notes ? `<div class="log-notes">${e.notes}</div>` : ''}
+    `;
+    list.appendChild(div);
+  });
+}
+
+function renderPagination() {
+  const totalPages = Math.ceil(logTotalCount / LOG_PAGE_SIZE);
+  const row        = document.getElementById('paginationRow');
+
+  if (totalPages <= 1) { row.style.display = 'none'; return; }
+  row.style.display = 'flex';
+
+  document.getElementById('pageInfo').textContent =
+    `صفحة ${logCurrentPage.toLocaleString('en-US')} من ${totalPages.toLocaleString('en-US')}`;
+  document.getElementById('btnPrevPage').disabled = logCurrentPage <= 1;
+  document.getElementById('btnNextPage').disabled = logCurrentPage >= totalPages;
+}
+
+function goPage(dir) {
+  const totalPages = Math.ceil(logTotalCount / LOG_PAGE_SIZE);
+  const next = logCurrentPage + dir;
+  if (next < 1 || next > totalPages) return;
+  logCurrentPage = next;
+  fetchLog();
+}
+
+async function exportLogXLSX() {
+  const employee = document.getElementById('logFilterEmployee').value || null;
+  const search   = document.getElementById('logSearch').value.trim()  || null;
+  const params   = {};
+  if (employee) params.employee = employee;
+  if (search)   params.search   = search;
+
+  try {
+    showToast('جاري تجهيز ملف Excel...', 'neutral');
+    const data    = await apiGet('get_logs_export', params);
+    const entries = data.entries || [];
+
+    const wb   = new ExcelJS.Workbook();
+    wb.views   = [{ rightToLeft: true }];
+    const ws   = wb.addWorksheet('Pack Log');
+
+    ws.columns = [
+      { header: 'التاريخ',       key: 'timestamp',   width: 22 },
+      { header: 'الأوردر',       key: 'order_name',  width: 12 },
+      { header: 'المرحلة',       key: 'stage',       width: 8  },
+      { header: 'الموظف',        key: 'employee',    width: 16 },
+      { header: 'مُعبَّأ بواسطة', key: 'packed_by',  width: 16 },
+      { header: 'الملاحظات',     key: 'notes',       width: 40 },
+    ];
+
+    entries.forEach(e => {
+      const extra = e.extra ? JSON.parse(e.extra) : {};
+      ws.addRow({
+        timestamp:  formatDateTime(e.timestamp),
+        order_name: e.order_name || '',
+        stage:      extra.stage || '',
+        employee:   e.employee  || '',
+        packed_by:  extra.packedBy || '',
+        notes:      e.notes     || '',
+      });
+    });
+
+    const buf  = await wb.xlsx.writeBuffer();
+    const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const link = document.createElement('a');
+    link.href  = URL.createObjectURL(blob);
+    link.download = `pack-log-${new Date().toISOString().slice(0,10)}.xlsx`;
+    link.click();
+    showToast('تم تصدير السجل', 'success');
+  } catch (err) {
+    showToast(err.message || 'خطأ في التصدير', 'error');
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+
+window.addEventListener('DOMContentLoaded', () => {
+  loadEmployeesList();
+  orderInput.focus();
+});
+</script>
+</body>
+</html>
