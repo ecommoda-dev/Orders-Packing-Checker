@@ -158,11 +158,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);min-
 .scan-banner.ok{background:var(--green-light);border:1px solid var(--green-border);color:var(--green);display:flex}
 .scan-banner.err{background:var(--red-light);border:1px solid var(--red-border);color:var(--red);display:flex}
 
-/* ── Items ── */
-.employee-bar{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+/* ── Packed By Bar ── */
+.employee-bar{display:flex;align-items:center;gap:10px;margin-bottom:14px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px}
 .employee-bar label{font-size:13px;font-weight:600;color:var(--text-muted);white-space:nowrap}
-.employee-bar select{flex:1;padding:8px 10px;border:1.5px solid var(--border-strong);border-radius:var(--radius-sm);font-family:var(--font);font-size:13px;background:var(--surface);outline:none}
-.employee-bar select:focus{border-color:var(--accent)}
+.employee-bar-name{font-size:14px;font-weight:700;color:var(--text-primary)}
+
+/* ── Summary + Items ── */
 .summary-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;box-shadow:var(--shadow)}
 .summary-label{font-size:13px;color:var(--text-muted)}.summary-val{font-family:var(--mono);font-size:15px;font-weight:700}
 .items-list{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
@@ -221,7 +222,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);min-
     </div>
   </div>
   <div class="header-right">
-    <button class="hbtn hbtn-version" onclick="openChangelog()">v1.1.0 📋</button>
+    <button class="hbtn hbtn-version" onclick="openChangelog()">v1.1.2 📋</button>
     <button class="hbtn" onclick="openSettings()">⚙️ الإعدادات</button>
   </div>
 </header>
@@ -260,6 +261,20 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);min-
       <button class="modal-close" onclick="closeChangelog()">×</button>
     </div>
     <div class="modal-body">
+      <div class="cl-entry">
+        <div class="cl-version">v1.1.2</div>
+        <div class="cl-date">18-05-2026</div>
+        <div class="cl-items">
+          <div class="cl-item"><span class="cl-tag change">تغيير</span> تقسيم input الأوردر إلى مربعين منفصلين: سكانر (تلقائي) + إدخال يدوي (زرار بحث أو Enter فقط)</div>
+        </div>
+      </div>
+      <div class="cl-entry">
+        <div class="cl-version">v1.1.1</div>
+        <div class="cl-date">18-05-2026</div>
+        <div class="cl-items">
+          <div class="cl-item"><span class="cl-tag fix">إصلاح</span> حقل "مُعبَّأ بواسطة" ثابت على الموظف الذي سجّل الدخول — لا يمكن تغييره</div>
+        </div>
+      </div>
       <div class="cl-entry">
         <div class="cl-version">v1.1.0</div>
         <div class="cl-date">18-05-2026</div>
@@ -341,14 +356,22 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);min-
     <!-- Entry Sub-screen -->
     <div id="subscreenEntry">
       <div class="card">
-        <div class="card-title">سكان أو أدخل رقم الأوردر</div>
+        <!-- Scanner Input -->
+        <div class="card-title">🔫 ماسح الباركود</div>
+        <input type="text" class="scan-input" id="orderScanInput"
+               placeholder="امسح الباركود هنا..." autocomplete="off" inputmode="text"
+               style="width:100%;margin-bottom:6px">
+        <div class="scan-hint">Scanner Gun: امسح وسيتم الاستعلام تلقائياً</div>
+      </div>
+      <div class="card" style="margin-top:-8px">
+        <!-- Manual Input -->
+        <div class="card-title">⌨️ إدخال يدوي</div>
         <div class="scan-input-wrap">
-          <input type="text" class="scan-input" id="orderScanInput"
-                 placeholder="سكان الباركود أو أدخل رقم الأوردر..."
-                 autocomplete="off" inputmode="text">
-          <button class="btn-primary" id="btnLookup" onclick="submitOrderLookup()">بحث</button>
+          <input type="text" class="scan-input" id="orderManualInput"
+                 placeholder="أدخل رقم الأوردر يدوياً..." autocomplete="off" inputmode="text">
+          <button class="btn-primary" id="btnLookup" onclick="submitManualLookup()">بحث</button>
         </div>
-        <div class="scan-hint">يقبل: رقم الأوردر (#43108 أو 43108) أو Order ID</div>
+        <div class="scan-hint">أدخل الرقم مع أو بدون # ثم اضغط بحث أو Enter</div>
       </div>
       <div id="lookupLoading" class="loading-area" style="display:none">
         <div class="spinner"></div>
@@ -404,10 +427,13 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);min-
 
       <!-- Packing Content (hidden when conflict) -->
       <div id="packingContent">
+
+        <!-- Packed By — fixed to logged-in employee -->
         <div class="employee-bar">
           <label>مُعبَّأ بواسطة:</label>
-          <select id="packedBySelect"><option value="">— اختر الموظف —</option></select>
+          <span class="employee-bar-name" id="packedByName"></span>
         </div>
+
         <div class="scan-banner" id="scanBanner"></div>
         <input type="text" class="barcode-input" id="barcodeScanInput"
                placeholder="سكان باركود المنتج..." autocomplete="off" inputmode="text">
@@ -529,6 +555,7 @@ function switchTab(tab) {
 // ═══════════════════════════════════════════════
 let currentEmployee = null;
 let pinBuffer = '', isNewUser = false, firstPin = '', isConfirming = false;
+let allEmployees = [];
 
 async function loadEmployeesList() {
   try {
@@ -614,35 +641,24 @@ async function submitPin() {
   }
 }
 
-function finishLogin(username, displayName) {
+async function finishLogin(username, displayName) {
   currentEmployee = { username, displayName };
   document.getElementById('loginOverlay').classList.add('hidden');
   showToast(`أهلاً ${displayName} 👋`, 'success');
-  populateEmployees();
+
+  // اسم الموظف ثابت في حقل "مُعبَّأ بواسطة"
+  document.getElementById('packedByName').textContent = displayName;
+
+  // تحميل قائمة الموظفين للفلتر فقط
+  await loadAllEmployees();
 }
 
-// ═══════════════════════════════════════════════
-// ORDER LOOKUP
-// ═══════════════════════════════════════════════
-let currentOrder    = null;
-let currentItems    = [];
-let currentAnalysis = null;
-let allEmployees    = [];
-
-async function populateEmployees() {
+async function loadAllEmployees() {
   try {
     const data = await apiGet('get_employees');
     allEmployees = data.employees || [];
-    // packedBy select
-    const sel = document.getElementById('packedBySelect');
-    sel.innerHTML = '<option value="">— اختر الموظف —</option>';
-    allEmployees.forEach(e => {
-      const o = document.createElement('option');
-      o.value = e.username; o.textContent = e.display_name;
-      if (currentEmployee && e.username === currentEmployee.username) o.selected = true;
-      sel.appendChild(o);
-    });
-    // log filter
+
+    // log filter فقط
     const logSel = document.getElementById('logFilterEmployee');
     logSel.innerHTML = '<option value="">كل الموظفين</option>';
     allEmployees.forEach(e => {
@@ -653,17 +669,21 @@ async function populateEmployees() {
   } catch {}
 }
 
-// ── Order scan input (scanner gun pattern) ──────
+// ═══════════════════════════════════════════════
+// ORDER LOOKUP
+// ═══════════════════════════════════════════════
+let currentOrder    = null;
+let currentItems    = [];
+let currentAnalysis = null;
+
+// ── Scanner input (scanner gun pattern — auto-submit on burst) ──
 const orderInput = document.getElementById('orderScanInput');
-let orderTimer, lastOrder = 0;
+let orderScanTimer;
 orderInput.addEventListener('input', () => {
-  clearTimeout(orderTimer);
-  const gap = Date.now() - lastOrder;
-  lastOrder = Date.now();
-  orderTimer = setTimeout(handleOrderScan, gap < 80 ? 150 : 400);
-});
-orderInput.addEventListener('keydown', e => {
-  if (e.key === 'Enter') { clearTimeout(orderTimer); handleOrderScan(); }
+  clearTimeout(orderScanTimer);
+  // Scanner bursts fire <80ms apart → wait 150ms after burst ends
+  // For longer strings (order IDs >3 chars), always use 150ms
+  orderScanTimer = setTimeout(handleOrderScan, orderInput.value.length > 3 ? 150 : 150);
 });
 function handleOrderScan() {
   const val = orderInput.value.trim();
@@ -671,12 +691,21 @@ function handleOrderScan() {
   if (!val) return;
   lookupOrder(val);
 }
-function submitOrderLookup() {
-  const val = orderInput.value.trim();
-  orderInput.value = '';
+
+// ── Manual input (Enter or button only — no auto-submit) ─────────
+const orderManualInput = document.getElementById('orderManualInput');
+orderManualInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') submitManualLookup();
+});
+function submitManualLookup() {
+  const val = orderManualInput.value.trim();
   if (!val) return;
+  orderManualInput.value = '';
   lookupOrder(val);
 }
+
+// ── Deprecated alias (kept for safety) ───────────────────────────
+function submitOrderLookup() { submitManualLookup(); }
 
 async function lookupOrder(raw) {
   document.getElementById('lookupLoading').style.display = '';
@@ -807,11 +836,9 @@ function renderStageIndicator(sa, stage) {
 function renderConflictPanel(sa) {
   const s = sa.signals;
 
-  // Shopify link (using numeric orderId)
   document.getElementById('shopifyLink').href =
     `https://admin.shopify.com/store/6c7e1a-53/orders/${currentOrder.id}`;
 
-  // Data grid
   document.getElementById('conflictData').innerHTML = `
     <div class="conflict-row">
       <span class="conflict-label">Return نشط:</span>
@@ -982,9 +1009,9 @@ function playBeep(type) {
 // ── Complete Pack ──────────────────────────────
 async function completePack() {
   if (!currentEmployee) { showToast('يجب تسجيل الدخول أولاً', 'error'); return; }
-  const packedByUsername = document.getElementById('packedBySelect').value;
-  if (!packedByUsername) { showToast('اختر اسم الموظف المُعبِّأ', 'error'); return; }
-  const packedByDisplay = allEmployees.find(e => e.username === packedByUsername)?.display_name || packedByUsername;
+
+  // packedBy دائماً من الـ session — لا يمكن تغييره
+  const packedByDisplay = currentEmployee.displayName;
 
   const btn = document.getElementById('btnComplete');
   btn.disabled = true; btn.textContent = '⏳ جاري الحفظ...';
