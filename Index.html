@@ -7,516 +7,211 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
-
 <style>
-/* ═══════════════════════════════════════════════
-   CSS VARIABLES — Design System
-═══════════════════════════════════════════════ */
 :root {
-  --bg:             #f3f4f6;
-  --surface:        #ffffff;
-  --surface-2:      #f9fafb;
-  --border:         #e5e7eb;
-  --border-strong:  #d1d5db;
-  --text-primary:   #111827;
-  --text-secondary: #6b7280;
-  --text-muted:     #6b7280;
-  --accent:         #2563eb;
-  --accent-light:   #eff6ff;
-  --accent-dark:    #1d4ed8;
-  --green:          #16a34a;
-  --green-light:    #f0fdf4;
-  --green-border:   #86efac;
-  --red:            #dc2626;
-  --red-light:      #fef2f2;
-  --red-border:     #fca5a5;
-  --amber:          #d97706;
-  --amber-light:    #fffbeb;
-  --amber-border:   #fcd34d;
-  --purple:         #7c3aed;
-  --purple-light:   #f5f3ff;
-  --purple-border:  #c4b5fd;
-  --radius:         12px;
-  --radius-sm:      8px;
-  --shadow:         0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
-  --font:           'Noto Sans Arabic', -apple-system, sans-serif;
-  --mono:           'IBM Plex Mono', monospace;
+  --bg:#f3f4f6; --surface:#fff; --surface-2:#f9fafb;
+  --border:#e5e7eb; --border-strong:#d1d5db;
+  --text-primary:#111827; --text-secondary:#6b7280; --text-muted:#6b7280;
+  --accent:#2563eb; --accent-light:#eff6ff; --accent-dark:#1d4ed8;
+  --green:#16a34a; --green-light:#f0fdf4; --green-border:#86efac;
+  --red:#dc2626; --red-light:#fef2f2; --red-border:#fca5a5;
+  --amber:#d97706; --amber-light:#fffbeb; --amber-border:#fcd34d;
+  --purple:#7c3aed; --purple-light:#f5f3ff; --purple-border:#c4b5fd;
+  --radius:12px; --radius-sm:8px;
+  --shadow:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
+  --font:'Noto Sans Arabic',-apple-system,sans-serif;
+  --mono:'IBM Plex Mono',monospace;
 }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg);color:var(--text-primary);min-height:100vh;direction:rtl}
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  font-family: var(--font);
-  background: var(--bg);
-  color: var(--text-primary);
-  min-height: 100vh;
-  direction: rtl;
-}
+/* ── Header ── */
+.app-header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:var(--shadow)}
+.header-left{display:flex;align-items:center;gap:10px}
+.header-icon{font-size:22px}
+.header-title{font-size:15px;font-weight:700}
+.header-desc{font-size:12px;color:var(--text-muted)}
+.header-right{display:flex;align-items:center;gap:8px}
+.hbtn{padding:6px 12px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;color:var(--text-primary);transition:background .15s;display:flex;align-items:center;gap:5px}
+.hbtn:hover{background:var(--bg)}
+.hbtn-version{font-family:var(--mono);color:var(--text-muted);font-size:11px}
 
-/* ═══════════════════════════════════════════════
-   APP HEADER
-═══════════════════════════════════════════════ */
-.app-header {
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  padding: 0 20px;
-  height: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  box-shadow: var(--shadow);
-}
-.header-left { display: flex; align-items: center; gap: 10px; }
-.header-icon { font-size: 22px; }
-.header-title { font-size: 15px; font-weight: 700; color: var(--text-primary); }
-.header-desc  { font-size: 12px; color: var(--text-muted); }
-.header-right { display: flex; align-items: center; gap: 8px; }
+/* ── Toast ── */
+.toast-container{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast{padding:10px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;color:#fff;box-shadow:0 4px 12px rgba(0,0,0,.2);animation:toastIn .3s ease;max-width:320px}
+.toast-success{background:var(--green)}.toast-error{background:var(--red)}.toast-neutral{background:#1a1d27}
+@keyframes toastIn{from{transform:translateX(100%);opacity:0}to{transform:none;opacity:1}}
 
-.hbtn {
-  padding: 6px 12px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  background: var(--surface);
-  font-family: var(--font);
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  color: var(--text-primary);
-  transition: background .15s, border-color .15s;
-  display: flex; align-items: center; gap: 5px;
-}
-.hbtn:hover { background: var(--bg); }
-.hbtn-version { font-family: var(--mono); color: var(--text-muted); font-size: 11px; }
+/* ── Modals ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.hidden{display:none}
+.modal-box{background:var(--surface);border-radius:var(--radius);box-shadow:0 20px 60px rgba(0,0,0,.2);width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
+.modal-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-size:15px;font-weight:700}
+.modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-muted);line-height:1}
+.modal-body{padding:20px;display:flex;flex-direction:column;gap:14px}
+.modal-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:8px}
+.settings-field label{display:block;font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
+.settings-field input{width:100%;padding:9px 11px;border:1.5px solid var(--border-strong);border-radius:var(--radius-sm);font-family:var(--mono);font-size:12px;background:var(--surface);outline:none;direction:ltr;transition:border-color .15s}
+.settings-field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.08)}
+.btn-primary{padding:9px 18px;border-radius:var(--radius-sm);border:none;background:var(--accent);color:#fff;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;transition:background .15s}
+.btn-primary:hover{background:var(--accent-dark)}.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-ghost{padding:9px 18px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);color:var(--text-primary);font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;transition:background .15s}
+.btn-ghost:hover{background:var(--bg)}
+.cl-entry{padding:10px 0;border-bottom:1px solid var(--border)}.cl-entry:last-child{border-bottom:none}
+.cl-version{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--accent);margin-bottom:2px}
+.cl-date{font-size:11px;color:var(--text-muted);margin-bottom:6px}
+.cl-items{display:flex;flex-direction:column;gap:4px}
+.cl-item{display:flex;align-items:flex-start;gap:6px;font-size:13px}
+.cl-tag{font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;flex-shrink:0;margin-top:1px}
+.cl-tag.new{background:#dcfce7;color:#15803d}.cl-tag.fix{background:#fef9c3;color:#854d0e}.cl-tag.change{background:#e0e7ff;color:#3730a3}
 
-/* ═══════════════════════════════════════════════
-   TOAST
-═══════════════════════════════════════════════ */
-.toast-container {
-  position: fixed; bottom: 20px; right: 20px;
-  z-index: 9999; display: flex; flex-direction: column; gap: 8px;
-}
-.toast {
-  padding: 10px 16px; border-radius: var(--radius-sm);
-  font-size: 13px; font-weight: 600; color: #fff;
-  box-shadow: 0 4px 12px rgba(0,0,0,.2);
-  animation: toastIn .3s ease; max-width: 320px;
-}
-.toast-success  { background: var(--green); }
-.toast-error    { background: var(--red); }
-.toast-neutral  { background: #1a1d27; }
-@keyframes toastIn { from { transform: translateX(100%); opacity: 0; } to { transform: none; opacity: 1; } }
+/* ── Login ── */
+.login-overlay{position:fixed;inset:0;background:linear-gradient(135deg,#1e3a5f 0%,#1a1d27 100%);z-index:400;display:flex;align-items:center;justify-content:center;padding:20px}
+.login-overlay.hidden{display:none}
+.login-card{background:var(--surface);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.3);width:100%;max-width:360px;padding:32px 28px;position:relative}
+.login-settings-btn{position:absolute;top:14px;left:14px;background:none;border:1px solid var(--border);color:var(--text-muted);font-size:12px;font-weight:600;padding:5px 10px;border-radius:7px;cursor:pointer;font-family:var(--font)}
+.login-settings-btn:hover{background:var(--bg);color:var(--text-primary)}
+.login-icon{font-size:40px;text-align:center;margin-bottom:8px}
+.login-title{font-size:20px;font-weight:800;text-align:center;margin-bottom:4px}
+.login-sub{font-size:13px;color:var(--text-muted);text-align:center;margin-bottom:24px}
+.login-field{margin-bottom:14px}
+.login-field label{display:block;font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:5px}
+.login-field select,.login-field input{width:100%;padding:10px 12px;border:1.5px solid var(--border-strong);border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;background:var(--surface);outline:none;transition:border-color .15s}
+.login-field select:focus,.login-field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.08)}
+.pin-dots{display:flex;justify-content:center;gap:12px;margin:16px 0 10px}
+.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border-strong);background:transparent;transition:all .15s}
+.pin-dot.filled{background:var(--accent);border-color:var(--accent)}
+.pin-keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.pin-key{aspect-ratio:1;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);font-family:var(--mono);font-size:18px;font-weight:600;cursor:pointer;transition:background .1s;display:flex;align-items:center;justify-content:center}
+.pin-key:hover{background:var(--accent-light);border-color:var(--accent)}
+.pin-key.del{font-size:14px;color:var(--text-muted)}
 
-/* ═══════════════════════════════════════════════
-   MODALS
-═══════════════════════════════════════════════ */
-.modal-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,.45);
-  z-index: 500; display: flex; align-items: center; justify-content: center;
-  padding: 20px;
-}
-.modal-overlay.hidden { display: none; }
-.modal-box {
-  background: var(--surface); border-radius: var(--radius);
-  box-shadow: 0 20px 60px rgba(0,0,0,.2);
-  width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto;
-}
-.modal-header {
-  padding: 16px 20px; border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: space-between;
-}
-.modal-title { font-size: 15px; font-weight: 700; }
-.modal-close {
-  background: none; border: none; font-size: 20px;
-  cursor: pointer; color: var(--text-muted); line-height: 1;
-}
-.modal-body { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
-.modal-footer {
-  padding: 14px 20px; border-top: 1px solid var(--border);
-  display: flex; gap: 8px; justify-content: flex-start;
-}
+/* ── Main ── */
+.main-content{padding:20px;max-width:700px;margin:0 auto}
+.tab-bar{display:flex;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:4px;margin-bottom:20px;box-shadow:var(--shadow)}
+.tab-btn{flex:1;padding:8px 12px;border:none;border-radius:var(--radius-sm);background:none;font-family:var(--font);font-size:13px;font-weight:600;color:var(--text-muted);cursor:pointer;transition:all .15s}
+.tab-btn.active{background:var(--accent);color:#fff}
+.screen{display:none}.screen.active{display:block}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin-bottom:16px}
+.card-title{font-size:13px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px}
 
-.settings-field label {
-  display: block; font-size: 12px; font-weight: 600;
-  color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: .5px;
-}
-.settings-field input {
-  width: 100%; padding: 9px 11px;
-  border: 1.5px solid var(--border-strong); border-radius: var(--radius-sm);
-  font-family: var(--mono); font-size: 12px; color: var(--text-primary);
-  background: var(--surface); outline: none; direction: ltr;
-  transition: border-color .15s;
-}
-.settings-field input:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(37,99,235,.08);
-}
+/* ── Stage Indicator ── */
+.stage-indicator-card{border-radius:var(--radius);padding:14px 18px;margin-bottom:14px;display:flex;align-items:flex-start;gap:14px}
+.stage-indicator-card.s1{background:var(--accent-light);border:2px solid #bfdbfe}
+.stage-indicator-card.s2{background:var(--purple-light);border:2px solid var(--purple-border)}
+.stage-indicator-card.conflict{background:#fff5f5;border:2px solid var(--red-border)}
+.stage-indicator-card.unclear{background:var(--amber-light);border:2px solid var(--amber-border)}
+.stage-badge-xl{font-family:var(--mono);font-size:22px;font-weight:700;padding:6px 14px;border-radius:var(--radius-sm);flex-shrink:0;line-height:1}
+.stage-badge-xl.s1{background:var(--accent);color:#fff}
+.stage-badge-xl.s2{background:var(--purple);color:#fff}
+.stage-badge-xl.conflict{background:var(--red);color:#fff}
+.stage-badge-xl.unclear{background:var(--amber);color:#fff}
+.stage-indicator-info{flex:1}
+.stage-indicator-title{font-size:14px;font-weight:700;margin-bottom:8px}
+.stage-signals{display:flex;flex-direction:column;gap:5px}
+.stage-signal-row{display:flex;align-items:center;gap:8px;font-size:12px}
+.sig-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.sig-dot.on{background:var(--green)}.sig-dot.off{background:var(--border-strong)}
+.sig-label{color:var(--text-muted)}.sig-value{font-family:var(--mono);font-weight:600}
 
-.btn-primary {
-  padding: 9px 18px; border-radius: var(--radius-sm); border: none;
-  background: var(--accent); color: #fff; font-family: var(--font);
-  font-size: 13px; font-weight: 700; cursor: pointer; transition: background .15s;
-}
-.btn-primary:hover { background: var(--accent-dark); }
-.btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+/* ── Conflict Panel ── */
+.conflict-panel{background:#fff5f5;border:2px solid var(--red);border-radius:var(--radius);padding:20px;margin-bottom:16px}
+.conflict-header{display:flex;align-items:flex-start;gap:12px;margin-bottom:16px}
+.conflict-icon-big{font-size:28px;flex-shrink:0}
+.conflict-title{font-size:16px;font-weight:800;color:var(--red);margin-bottom:4px}
+.conflict-subtitle{font-size:13px;color:#b91c1c}
+.conflict-data{background:#fff;border:1px solid var(--red-border);border-radius:var(--radius-sm);padding:14px;margin-bottom:12px;display:flex;flex-direction:column;gap:9px}
+.conflict-row{display:flex;align-items:flex-start;gap:10px;font-size:13px}
+.conflict-label{font-weight:700;color:var(--text-muted);min-width:130px;flex-shrink:0}
+.conflict-val{font-family:var(--mono);font-weight:600}
+.conflict-val.set{color:var(--red)}.conflict-val.unset{color:var(--text-muted);font-family:var(--font);font-style:italic}
+.conflict-reason{background:#fef2f2;border-right:4px solid var(--red);border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;color:#b91c1c;font-weight:600;margin-bottom:14px}
+.conflict-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn-shopify{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:var(--radius-sm);background:var(--red);color:#fff;font-family:var(--font);font-size:13px;font-weight:700;text-decoration:none;transition:background .15s}
+.btn-shopify:hover{background:#b91c1c}
 
-.btn-ghost {
-  padding: 9px 18px; border-radius: var(--radius-sm);
-  border: 1px solid var(--border); background: var(--surface);
-  color: var(--text-primary); font-family: var(--font);
-  font-size: 13px; font-weight: 600; cursor: pointer; transition: background .15s;
-}
-.btn-ghost:hover { background: var(--bg); }
+/* ── Unclear Warning ── */
+.unclear-warning{background:var(--amber-light);border-right:4px solid var(--amber);border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;color:#92400e;font-weight:600;margin-bottom:14px;display:none}
+.unclear-warning.show{display:block}
 
-/* Changelog */
-.cl-entry { padding: 10px 0; border-bottom: 1px solid var(--border); }
-.cl-entry:last-child { border-bottom: none; }
-.cl-version { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--accent); margin-bottom: 2px; }
-.cl-date    { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; }
-.cl-items   { display: flex; flex-direction: column; gap: 4px; }
-.cl-item    { display: flex; align-items: flex-start; gap: 6px; font-size: 13px; }
-.cl-tag     { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; flex-shrink: 0; margin-top: 1px; }
-.cl-tag.new    { background: #dcfce7; color: #15803d; }
-.cl-tag.fix    { background: #fef9c3; color: #854d0e; }
-.cl-tag.change { background: #e0e7ff; color: #3730a3; }
+/* ── Order Header ── */
+.order-header-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px;box-shadow:var(--shadow)}
+.order-header-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.order-name{font-family:var(--mono);font-size:20px;font-weight:700}
+.stage-badge-sm{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:13px;font-weight:700;font-family:var(--mono)}
+.stage-badge-sm.s1{background:var(--accent-light);color:var(--accent)}
+.stage-badge-sm.s2{background:var(--purple-light);color:var(--purple);border:1px solid var(--purple-border)}
+.order-note{font-size:13px;color:var(--text-secondary);background:var(--amber-light);border:1px solid var(--amber-border);border-radius:var(--radius-sm);padding:6px 10px;margin-top:10px;display:none}
 
-/* ═══════════════════════════════════════════════
-   LOGIN SCREEN
-═══════════════════════════════════════════════ */
-.login-overlay {
-  position: fixed; inset: 0;
-  background: linear-gradient(135deg, #1e3a5f 0%, #1a1d27 100%);
-  z-index: 400; display: flex; align-items: center; justify-content: center;
-  padding: 20px;
-}
-.login-overlay.hidden { display: none; }
+/* ── Scan inputs ── */
+.scan-input-wrap{display:flex;gap:8px}
+.scan-input{flex:1;padding:12px 14px;border:2px solid var(--accent);border-radius:var(--radius-sm);font-family:var(--mono);font-size:16px;background:var(--surface);outline:none;transition:box-shadow .15s}
+.scan-input:focus{box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.scan-hint{font-size:12px;color:var(--text-muted);margin-top:6px;text-align:center}
+.barcode-input{width:100%;padding:12px 14px;border:2px solid var(--accent);border-radius:var(--radius-sm);font-family:var(--mono);font-size:15px;background:var(--surface);outline:none;transition:box-shadow .15s;margin-bottom:16px}
+.barcode-input:focus{box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.barcode-input:disabled{border-color:var(--border);background:var(--bg);cursor:not-allowed}
 
-.login-card {
-  background: var(--surface); border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0,0,0,.3);
-  width: 100%; max-width: 360px;
-  padding: 32px 28px;
-  position: relative;
-}
+/* ── Scan banner ── */
+.scan-banner{border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;font-weight:600;display:none;align-items:center;gap:8px;margin-bottom:12px}
+.scan-banner.ok{background:var(--green-light);border:1px solid var(--green-border);color:var(--green);display:flex}
+.scan-banner.err{background:var(--red-light);border:1px solid var(--red-border);color:var(--red);display:flex}
 
-.login-settings-btn {
-  position: absolute; top: 14px; left: 14px;
-  background: none; border: 1px solid var(--border);
-  color: var(--text-muted); font-size: 12px; font-weight: 600;
-  padding: 5px 10px; border-radius: 7px; cursor: pointer;
-  font-family: var(--font);
-}
-.login-settings-btn:hover { background: var(--bg); color: var(--text-primary); }
+/* ── Items ── */
+.employee-bar{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.employee-bar label{font-size:13px;font-weight:600;color:var(--text-muted);white-space:nowrap}
+.employee-bar select{flex:1;padding:8px 10px;border:1.5px solid var(--border-strong);border-radius:var(--radius-sm);font-family:var(--font);font-size:13px;background:var(--surface);outline:none}
+.employee-bar select:focus{border-color:var(--accent)}
+.summary-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;box-shadow:var(--shadow)}
+.summary-label{font-size:13px;color:var(--text-muted)}.summary-val{font-family:var(--mono);font-size:15px;font-weight:700}
+.items-list{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+.item-card{background:var(--surface);border:2px solid var(--border);border-radius:var(--radius);padding:14px;display:flex;align-items:center;gap:14px;transition:all .2s}
+.item-card.done{background:var(--green-light);border-color:var(--green-border)}
+.item-card.partial{background:var(--amber-light);border-color:var(--amber-border)}
+.item-img{width:60px;height:60px;object-fit:cover;border-radius:var(--radius-sm);border:1px solid var(--border);flex-shrink:0;background:var(--bg)}
+.item-placeholder{width:60px;height:60px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:24px}
+.item-info{flex:1;min-width:0}
+.item-title{font-size:14px;font-weight:600;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item-sku{font-family:var(--mono);font-size:12px;color:var(--text-muted);margin-bottom:4px}
+.item-opts{font-size:12px;color:var(--text-secondary)}
+.item-count-wrap{flex-shrink:0;text-align:center}
+.item-count{font-family:var(--mono);font-size:22px;font-weight:700;line-height:1}
+.item-count.done{color:var(--green)}.item-count.partial{color:var(--amber)}.item-count.pending{color:var(--text-muted)}
+.item-count-sub{font-size:11px;color:var(--text-muted);margin-top:2px}
+.btn-complete{width:100%;padding:14px;background:var(--green);color:#fff;border:none;border-radius:var(--radius-sm);font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer;transition:background .15s}
+.btn-complete:hover:not(:disabled){background:#15803d}
+.btn-complete:disabled{opacity:.4;cursor:not-allowed}
 
-.login-icon  { font-size: 40px; text-align: center; margin-bottom: 8px; }
-.login-title { font-size: 20px; font-weight: 800; text-align: center; color: var(--text-primary); margin-bottom: 4px; }
-.login-sub   { font-size: 13px; color: var(--text-muted); text-align: center; margin-bottom: 24px; }
+/* ── Log ── */
+.log-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+.log-sel,.log-search{padding:7px 10px;border:1.5px solid var(--border-strong);border-radius:var(--radius-sm);font-family:var(--font);font-size:13px;background:var(--surface);outline:none}
+.log-sel{min-width:160px}.log-search{flex:1;min-width:180px}
+.log-sel:focus,.log-search:focus{border-color:var(--accent)}
+.log-export{padding:7px 14px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer}
+.log-export:hover{background:var(--bg)}
+.log-list{display:flex;flex-direction:column;gap:8px}
+.log-entry{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px}
+.log-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px}
+.log-badge{font-size:11px;font-weight:700;padding:2px 7px;border-radius:4px;font-family:var(--mono);background:var(--green-light);color:var(--green)}
+.log-order{font-family:var(--mono);font-size:13px;font-weight:600}
+.log-meta{font-family:var(--mono);font-size:11px;color:var(--text-muted)}
+.log-note{font-size:13px;color:var(--text-secondary);margin-top:4px}
+.pagination-row{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px;flex-wrap:wrap}
+.page-info{font-size:13px;color:var(--text-muted);font-family:var(--mono);padding:0 8px}
+.page-btn{padding:6px 14px;border-radius:7px;border:1px solid var(--border);background:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font)}
+.page-btn:hover:not(:disabled){background:var(--accent-light);border-color:var(--accent);color:var(--accent)}
+.page-btn:disabled{opacity:.4;cursor:not-allowed}
 
-.login-field { margin-bottom: 14px; }
-.login-field label {
-  display: block; font-size: 12px; font-weight: 600;
-  color: var(--text-muted); margin-bottom: 5px;
-}
-.login-field select, .login-field input {
-  width: 100%; padding: 10px 12px;
-  border: 1.5px solid var(--border-strong); border-radius: var(--radius-sm);
-  font-family: var(--font); font-size: 14px; color: var(--text-primary);
-  background: var(--surface); outline: none; transition: border-color .15s;
-}
-.login-field select:focus,
-.login-field input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,.08); }
-
-/* PIN keypad */
-.pin-dots {
-  display: flex; justify-content: center; gap: 12px; margin: 16px 0 10px;
-}
-.pin-dot {
-  width: 14px; height: 14px; border-radius: 50%;
-  border: 2px solid var(--border-strong); background: transparent;
-  transition: background .15s, border-color .15s;
-}
-.pin-dot.filled { background: var(--accent); border-color: var(--accent); }
-
-.pin-keypad {
-  display: grid; grid-template-columns: repeat(3, 1fr);
-  gap: 8px; margin-bottom: 14px;
-}
-.pin-key {
-  aspect-ratio: 1; border-radius: var(--radius-sm);
-  border: 1px solid var(--border); background: var(--surface);
-  font-family: var(--mono); font-size: 18px; font-weight: 600;
-  cursor: pointer; transition: background .1s; display: flex;
-  align-items: center; justify-content: center;
-}
-.pin-key:hover { background: var(--accent-light); border-color: var(--accent); }
-.pin-key.del   { font-size: 14px; color: var(--text-muted); }
-
-/* ═══════════════════════════════════════════════
-   MAIN CONTENT
-═══════════════════════════════════════════════ */
-.main-content { padding: 20px; max-width: 700px; margin: 0 auto; }
-
-/* Tabs */
-.tab-bar {
-  display: flex; gap: 4px; background: var(--surface);
-  border: 1px solid var(--border); border-radius: var(--radius);
-  padding: 4px; margin-bottom: 20px; box-shadow: var(--shadow);
-}
-.tab-btn {
-  flex: 1; padding: 8px 12px; border: none; border-radius: var(--radius-sm);
-  background: none; font-family: var(--font); font-size: 13px; font-weight: 600;
-  color: var(--text-muted); cursor: pointer; transition: all .15s;
-}
-.tab-btn.active { background: var(--accent); color: #fff; }
-
-/* ── Screen: Order Entry ── */
-.screen { display: none; }
-.screen.active { display: block; }
-
-.card {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px;
-  margin-bottom: 16px;
-}
-.card-title {
-  font-size: 13px; font-weight: 700; color: var(--text-muted);
-  text-transform: uppercase; letter-spacing: .5px; margin-bottom: 14px;
-}
-
-.scan-input-wrap { position: relative; display: flex; gap: 8px; }
-.scan-input {
-  flex: 1; padding: 12px 14px;
-  border: 2px solid var(--accent); border-radius: var(--radius-sm);
-  font-family: var(--mono); font-size: 16px; color: var(--text-primary);
-  background: var(--surface); outline: none;
-  transition: box-shadow .15s;
-}
-.scan-input:focus { box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
-
-.scan-hint {
-  font-size: 12px; color: var(--text-muted); margin-top: 6px; text-align: center;
-}
-
-/* Stage Badge */
-.stage-badge {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 4px 10px; border-radius: 20px;
-  font-size: 12px; font-weight: 700; font-family: var(--mono);
-}
-.stage-s1 { background: var(--accent-light); color: var(--accent); }
-.stage-s2 { background: var(--purple-light); color: var(--purple); border: 1px solid var(--purple-border); }
-
-/* Order info bar */
-.order-info-bar {
-  background: var(--surface-2); border: 1px solid var(--border);
-  border-radius: var(--radius-sm); padding: 12px 14px;
-  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-}
-.order-info-name {
-  font-family: var(--mono); font-size: 18px; font-weight: 700; color: var(--text-primary);
-}
-.order-info-note {
-  font-size: 13px; color: var(--text-secondary); flex: 1;
-  background: var(--amber-light); border: 1px solid var(--amber-border);
-  border-radius: var(--radius-sm); padding: 6px 10px;
-  margin-top: 8px; width: 100%;
-  display: none; /* shown only when note exists */
-}
-
-/* ── Item List ── */
-.items-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
-
-.item-card {
-  background: var(--surface); border: 2px solid var(--border);
-  border-radius: var(--radius); padding: 14px;
-  display: flex; align-items: center; gap: 14px;
-  transition: border-color .2s, background .2s;
-}
-.item-card.done    { background: var(--green-light);  border-color: var(--green-border); }
-.item-card.partial { background: var(--amber-light);  border-color: var(--amber-border); }
-.item-card.pending { background: var(--surface);       border-color: var(--border); }
-
-.item-img {
-  width: 60px; height: 60px; object-fit: cover;
-  border-radius: var(--radius-sm); border: 1px solid var(--border);
-  flex-shrink: 0; background: var(--bg);
-}
-.item-img-placeholder {
-  width: 60px; height: 60px; border-radius: var(--radius-sm);
-  border: 1px solid var(--border); background: var(--bg);
-  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
-  font-size: 24px;
-}
-
-.item-info { flex: 1; min-width: 0; }
-.item-title {
-  font-size: 14px; font-weight: 600; color: var(--text-primary);
-  margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.item-sku {
-  font-family: var(--mono); font-size: 12px; color: var(--text-muted); margin-bottom: 4px;
-}
-.item-options {
-  font-size: 12px; color: var(--text-secondary);
-}
-
-.item-counter {
-  flex-shrink: 0; text-align: center;
-}
-.item-count-display {
-  font-family: var(--mono); font-size: 22px; font-weight: 700;
-  line-height: 1;
-}
-.item-count-display.done    { color: var(--green); }
-.item-count-display.partial { color: var(--amber); }
-.item-count-display.pending { color: var(--text-muted); }
-.item-count-total { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-
-/* Summary bar */
-.summary-bar {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 12px 16px;
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 16px; box-shadow: var(--shadow);
-}
-.summary-label { font-size: 13px; color: var(--text-muted); }
-.summary-val   { font-family: var(--mono); font-size: 15px; font-weight: 700; color: var(--text-primary); }
-
-/* Scan input in check screen */
-.barcode-scan-wrap {
-  display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px;
-}
-.barcode-input {
-  width: 100%; padding: 12px 14px;
-  border: 2px solid var(--accent); border-radius: var(--radius-sm);
-  font-family: var(--mono); font-size: 15px; color: var(--text-primary);
-  background: var(--surface); outline: none;
-  transition: box-shadow .15s;
-}
-.barcode-input:focus { box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
-
-/* Scan result toast (large inline) */
-.scan-result-banner {
-  border-radius: var(--radius-sm); padding: 10px 14px;
-  font-size: 13px; font-weight: 600; display: none;
-  align-items: center; gap: 8px; margin-bottom: 12px;
-}
-.scan-result-banner.success { background: var(--green-light); border: 1px solid var(--green-border); color: var(--green); display: flex; }
-.scan-result-banner.error   { background: var(--red-light);   border: 1px solid var(--red-border);   color: var(--red);   display: flex; }
-
-/* Complete button area */
-.complete-area { display: flex; gap: 8px; flex-wrap: wrap; }
-.btn-complete {
-  flex: 1; padding: 14px;
-  background: var(--green); color: #fff;
-  border: none; border-radius: var(--radius-sm);
-  font-family: var(--font); font-size: 15px; font-weight: 700;
-  cursor: pointer; transition: background .15s;
-  min-width: 160px;
-}
-.btn-complete:hover:not(:disabled) { background: #15803d; }
-.btn-complete:disabled { opacity: .4; cursor: not-allowed; }
-.btn-back-check {
-  padding: 14px 18px; border-radius: var(--radius-sm);
-  border: 1px solid var(--border); background: var(--surface);
-  font-family: var(--font); font-size: 14px; font-weight: 600;
-  cursor: pointer; transition: background .15s; color: var(--text-primary);
-}
-.btn-back-check:hover { background: var(--bg); }
-
-/* Employee selector on check screen */
-.employee-select-bar {
-  display: flex; align-items: center; gap: 10px;
-  margin-bottom: 14px;
-}
-.employee-select-bar label { font-size: 13px; font-weight: 600; color: var(--text-muted); white-space: nowrap; }
-.employee-select-bar select {
-  flex: 1; padding: 8px 10px;
-  border: 1.5px solid var(--border-strong); border-radius: var(--radius-sm);
-  font-family: var(--font); font-size: 13px; color: var(--text-primary);
-  background: var(--surface); outline: none;
-}
-.employee-select-bar select:focus { border-color: var(--accent); }
-
-/* ═══════════════════════════════════════════════
-   LOG TAB
-═══════════════════════════════════════════════ */
-.log-toolbar {
-  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; align-items: center;
-}
-.log-filter-select, .log-search-input {
-  padding: 7px 10px; border: 1.5px solid var(--border-strong);
-  border-radius: var(--radius-sm); font-family: var(--font);
-  font-size: 13px; color: var(--text-primary); background: var(--surface); outline: none;
-}
-.log-filter-select { min-width: 160px; }
-.log-search-input  { flex: 1; min-width: 180px; }
-.log-filter-select:focus, .log-search-input:focus { border-color: var(--accent); }
-
-.log-export-btn {
-  padding: 7px 14px; border-radius: var(--radius-sm);
-  border: 1px solid var(--border); background: var(--surface);
-  font-family: var(--font); font-size: 13px; font-weight: 600;
-  cursor: pointer; color: var(--text-primary);
-}
-.log-export-btn:hover { background: var(--bg); }
-
-.log-list { display: flex; flex-direction: column; gap: 8px; }
-.log-entry {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius-sm); padding: 12px 14px;
-}
-.log-entry-top {
-  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px;
-}
-.log-type-badge {
-  font-size: 11px; font-weight: 700; padding: 2px 7px;
-  border-radius: 4px; text-transform: uppercase; font-family: var(--mono);
-}
-.log-type-packed { background: var(--green-light); color: var(--green); }
-.log-order { font-family: var(--mono); font-size: 13px; font-weight: 600; }
-.log-meta  { font-family: var(--mono); font-size: 11px; color: var(--text-muted); }
-.log-notes { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
-
-/* pagination */
-.pagination-row {
-  display: flex; align-items: center; justify-content: center;
-  gap: 8px; margin-top: 16px; flex-wrap: wrap;
-}
-.page-info { font-size: 13px; color: var(--text-muted); font-family: var(--mono); padding: 0 8px; }
-.page-btn {
-  padding: 6px 14px; border-radius: 7px; border: 1px solid var(--border);
-  background: #fff; font-size: 13px; font-weight: 600; cursor: pointer;
-  font-family: var(--font); color: var(--text-primary);
-  transition: background .15s, border-color .15s;
-}
-.page-btn:hover:not(:disabled) { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
-.page-btn:disabled { opacity: .4; cursor: not-allowed; }
-
-/* ═══════════════════════════════════════════════
-   LOADING SPINNER
-═══════════════════════════════════════════════ */
-.spinner {
-  width: 28px; height: 28px;
-  border: 3px solid var(--border);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: spin .7s linear infinite;
-  display: inline-block;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-.loading-area { text-align: center; padding: 40px; }
-
-/* Empty state */
-.empty-state { text-align: center; padding: 40px; color: var(--text-muted); font-size: 14px; }
+/* ── Misc ── */
+.spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-area{text-align:center;padding:40px}
+.empty-state{text-align:center;padding:40px;color:var(--text-muted);font-size:14px}
 </style>
 </head>
 <body>
 
-<!-- ═══════════════════════════════════════════════
-     APP HEADER
-═══════════════════════════════════════════════ -->
 <header class="app-header">
   <div class="header-left">
     <span class="header-icon">📦</span>
@@ -526,17 +221,14 @@ body {
     </div>
   </div>
   <div class="header-right">
-    <button class="hbtn hbtn-version" onclick="openChangelog()">v1.0.0 📋</button>
+    <button class="hbtn hbtn-version" onclick="openChangelog()">v1.1.0 📋</button>
     <button class="hbtn" onclick="openSettings()">⚙️ الإعدادات</button>
   </div>
 </header>
 
-<!-- Toast Container -->
 <div class="toast-container" id="toastContainer"></div>
 
-<!-- ═══════════════════════════════════════════════
-     SETTINGS MODAL
-═══════════════════════════════════════════════ -->
+<!-- Settings Modal -->
 <div class="modal-overlay hidden" id="settingsModal">
   <div class="modal-box">
     <div class="modal-header">
@@ -555,14 +247,12 @@ body {
     </div>
     <div class="modal-footer">
       <button class="btn-primary" onclick="saveSettings()">حفظ</button>
-      <button class="btn-ghost"   onclick="closeSettings()">إلغاء</button>
+      <button class="btn-ghost" onclick="closeSettings()">إلغاء</button>
     </div>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════
-     CHANGELOG MODAL
-═══════════════════════════════════════════════ -->
+<!-- Changelog Modal -->
 <div class="modal-overlay hidden" id="changelogModal">
   <div class="modal-box">
     <div class="modal-header">
@@ -571,14 +261,22 @@ body {
     </div>
     <div class="modal-body">
       <div class="cl-entry">
+        <div class="cl-version">v1.1.0</div>
+        <div class="cl-date">18-05-2026</div>
+        <div class="cl-items">
+          <div class="cl-item"><span class="cl-tag change">تغيير</span> إعادة بناء منطق تحديد المرحلة — 3 signals مستقلة (Return + manual_status + status_2_r_e)</div>
+          <div class="cl-item"><span class="cl-tag new">جديد</span> لوحة عرض تفاصيل المرحلة S1/S2 في شاشة الفحص</div>
+          <div class="cl-item"><span class="cl-tag new">جديد</span> لوحة تعارض دائمة تمنع التعبئة عند وجود بيانات متناقضة</div>
+          <div class="cl-item"><span class="cl-tag new">جديد</span> تنبيه عند عدم وضوح المرحلة (S1 افتراضي)</div>
+          <div class="cl-item"><span class="cl-tag fix">إصلاح</span> فحص top-level GraphQL errors في كل الـ mutations</div>
+          <div class="cl-item"><span class="cl-tag fix">إصلاح</span> already-packed guard يفحص S1 وS2 بغض النظر عن المرحلة المكتشفة</div>
+        </div>
+      </div>
+      <div class="cl-entry">
         <div class="cl-version">v1.0.0</div>
         <div class="cl-date">17-05-2026</div>
         <div class="cl-items">
-          <div class="cl-item"><span class="cl-tag new">جديد</span> إطلاق الأداة</div>
-          <div class="cl-item"><span class="cl-tag new">جديد</span> دعم S1 (أوردر عادي) و S2 (استبدال)</div>
-          <div class="cl-item"><span class="cl-tag new">جديد</span> سكان الأوردر والمنتجات بالباركود</div>
-          <div class="cl-item"><span class="cl-tag new">جديد</span> تنبيه بصري وصوتي عند كل سكان</div>
-          <div class="cl-item"><span class="cl-tag new">جديد</span> كتابة metafields وإضافة tag عند الإكمال</div>
+          <div class="cl-item"><span class="cl-tag new">جديد</span> إطلاق الأداة — سكان S1 وS2 مع كتابة الميتافيلدز</div>
         </div>
       </div>
     </div>
@@ -588,18 +286,13 @@ body {
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════
-     LOGIN OVERLAY
-═══════════════════════════════════════════════ -->
+<!-- Login Overlay -->
 <div class="login-overlay" id="loginOverlay">
   <div class="login-card">
     <button class="login-settings-btn" onclick="openSettings()">⚙️ الإعدادات</button>
-
     <div class="login-icon">📦</div>
     <div class="login-title">Pack Checker</div>
     <div class="login-sub" id="loginSub">اختر اسمك للمتابعة</div>
-
-    <!-- Step 1: Username -->
     <div id="stepUsername">
       <div class="login-field">
         <label>الاسم</label>
@@ -607,21 +300,17 @@ body {
           <option value="">— اختر —</option>
         </select>
       </div>
-      <button class="btn-primary" style="width:100%;" onclick="proceedToPin()">متابعة</button>
+      <button class="btn-primary" style="width:100%" onclick="proceedToPin()">متابعة</button>
     </div>
-
-    <!-- Step 2: PIN -->
-    <div id="stepPin" style="display:none;">
+    <div id="stepPin" style="display:none">
       <div class="pin-dots" id="pinDots">
-        <div class="pin-dot" id="d0"></div>
-        <div class="pin-dot" id="d1"></div>
-        <div class="pin-dot" id="d2"></div>
-        <div class="pin-dot" id="d3"></div>
+        <div class="pin-dot" id="d0"></div><div class="pin-dot" id="d1"></div>
+        <div class="pin-dot" id="d2"></div><div class="pin-dot" id="d3"></div>
       </div>
-      <div id="pinConfirmHint" style="font-size:12px;color:var(--text-muted);text-align:center;margin-bottom:8px;display:none;">
+      <div id="pinConfirmHint" style="font-size:12px;color:var(--text-muted);text-align:center;margin-bottom:8px;display:none">
         أدخل الـ PIN مرة أخرى للتأكيد
       </div>
-      <div class="pin-keypad" id="pinKeypad">
+      <div class="pin-keypad">
         <button class="pin-key" onclick="pinKey('1')">1</button>
         <button class="pin-key" onclick="pinKey('2')">2</button>
         <button class="pin-key" onclick="pinKey('3')">3</button>
@@ -639,229 +328,207 @@ body {
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════
-     MAIN CONTENT
-═══════════════════════════════════════════════ -->
+<!-- Main Content -->
 <div class="main-content">
-
-  <!-- Tab Bar -->
   <div class="tab-bar">
-    <button class="tab-btn active" id="tab-scan"  onclick="switchTab('scan')">🔍 فحص أوردر</button>
-    <button class="tab-btn"       id="tab-log"   onclick="switchTab('log')">📋 السجل</button>
+    <button class="tab-btn active" id="tab-scan" onclick="switchTab('scan')">🔍 فحص أوردر</button>
+    <button class="tab-btn" id="tab-log" onclick="switchTab('log')">📋 السجل</button>
   </div>
 
-  <!-- ── Screen: Order Entry (Scan Tab) ── -->
+  <!-- Scan Tab -->
   <div class="screen active" id="screen-scan">
 
-    <!-- Sub-screen: order input -->
+    <!-- Entry Sub-screen -->
     <div id="subscreenEntry">
       <div class="card">
         <div class="card-title">سكان أو أدخل رقم الأوردر</div>
         <div class="scan-input-wrap">
-          <input
-            type="text"
-            class="scan-input"
-            id="orderScanInput"
-            placeholder="سكان الباركود أو أدخل رقم الأوردر..."
-            autocomplete="off"
-            inputmode="text"
-          >
-          <button class="btn-primary" onclick="submitOrderLookup()" id="btnLookup">بحث</button>
+          <input type="text" class="scan-input" id="orderScanInput"
+                 placeholder="سكان الباركود أو أدخل رقم الأوردر..."
+                 autocomplete="off" inputmode="text">
+          <button class="btn-primary" id="btnLookup" onclick="submitOrderLookup()">بحث</button>
         </div>
         <div class="scan-hint">يقبل: رقم الأوردر (#43108 أو 43108) أو Order ID</div>
       </div>
-
-      <div id="lookupLoading" style="display:none;" class="loading-area">
+      <div id="lookupLoading" class="loading-area" style="display:none">
         <div class="spinner"></div>
-        <div style="margin-top:12px;font-size:13px;color:var(--text-muted);">جاري البحث...</div>
+        <div style="margin-top:12px;font-size:13px;color:var(--text-muted)">جاري البحث...</div>
       </div>
     </div>
 
-    <!-- Sub-screen: item checking -->
-    <div id="subscreenCheck" style="display:none;">
+    <!-- Check Sub-screen -->
+    <div id="subscreenCheck" style="display:none">
 
-      <!-- Order Info Bar -->
-      <div class="card" style="padding:14px 16px; margin-bottom:14px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
-          <div style="display:flex;align-items:center;gap:10px;">
-            <span class="order-info-name" id="checkOrderName"></span>
-            <span class="stage-badge" id="checkStageBadge"></span>
+      <!-- Order Header -->
+      <div class="order-header-card">
+        <div class="order-header-top">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span class="order-name" id="checkOrderName"></span>
+            <span class="stage-badge-sm" id="checkStageBadge"></span>
           </div>
-          <button class="btn-ghost" style="font-size:12px;padding:6px 12px;" onclick="resetToEntry()">← أوردر جديد</button>
+          <button class="btn-ghost" style="font-size:12px;padding:6px 12px" onclick="resetToEntry()">← أوردر جديد</button>
         </div>
-        <div class="order-info-note" id="checkOrderNote"></div>
+        <div class="order-note" id="checkOrderNote"></div>
       </div>
 
-      <!-- Employee selector -->
-      <div class="employee-select-bar">
-        <label>مُعبَّأ بواسطة:</label>
-        <select id="packedBySelect">
-          <option value="">— اختر الموظف —</option>
-        </select>
+      <!-- Stage Indicator -->
+      <div class="stage-indicator-card" id="stageCard">
+        <div class="stage-badge-xl" id="stageBadgeXl"></div>
+        <div class="stage-indicator-info">
+          <div class="stage-indicator-title" id="stageTitle"></div>
+          <div class="stage-signals" id="stageSignals"></div>
+        </div>
       </div>
 
-      <!-- Scan Banner -->
-      <div class="scan-result-banner" id="scanBanner"></div>
-
-      <!-- Barcode Input -->
-      <div class="barcode-scan-wrap">
-        <input
-          type="text"
-          class="barcode-input"
-          id="barcodeScanInput"
-          placeholder="سكان باركود المنتج..."
-          autocomplete="off"
-          inputmode="text"
-        >
+      <!-- Unclear Warning -->
+      <div class="unclear-warning" id="unclearWarn">
+        ⚠️ لم يتم تحديد manual_status أو status_2_r_e — يُعامَل الأوردر كـ S1 افتراضياً. تأكد من صحة هذا قبل التعبئة.
       </div>
 
-      <!-- Summary -->
-      <div class="summary-bar">
-        <span class="summary-label">إجمالي القطع</span>
-        <span class="summary-val" id="summaryTotal">0 / 0</span>
+      <!-- Conflict Panel (blocks packing) -->
+      <div class="conflict-panel" id="conflictPanel" style="display:none">
+        <div class="conflict-header">
+          <div class="conflict-icon-big">🚫</div>
+          <div>
+            <div class="conflict-title">تعارض في بيانات الأوردر</div>
+            <div class="conflict-subtitle">لا يمكن المتابعة — يرجى تصحيح البيانات في Shopify أولاً ثم إعادة سكان الأوردر</div>
+          </div>
+        </div>
+        <div class="conflict-data" id="conflictData"></div>
+        <div class="conflict-reason" id="conflictReason"></div>
+        <div class="conflict-actions">
+          <a id="shopifyLink" href="#" target="_blank" class="btn-shopify">فتح الأوردر في Shopify ↗</a>
+          <button class="btn-ghost" onclick="resetToEntry()">← أوردر آخر</button>
+        </div>
       </div>
 
-      <!-- Items List -->
-      <div class="items-list" id="itemsList"></div>
-
-      <!-- Actions -->
-      <div class="complete-area">
+      <!-- Packing Content (hidden when conflict) -->
+      <div id="packingContent">
+        <div class="employee-bar">
+          <label>مُعبَّأ بواسطة:</label>
+          <select id="packedBySelect"><option value="">— اختر الموظف —</option></select>
+        </div>
+        <div class="scan-banner" id="scanBanner"></div>
+        <input type="text" class="barcode-input" id="barcodeScanInput"
+               placeholder="سكان باركود المنتج..." autocomplete="off" inputmode="text">
+        <div class="summary-bar">
+          <span class="summary-label">إجمالي القطع</span>
+          <span class="summary-val" id="summaryTotal">0 / 0</span>
+        </div>
+        <div class="items-list" id="itemsList"></div>
         <button class="btn-complete" id="btnComplete" onclick="completePack()" disabled>
           ✅ تأكيد اكتمال التعبئة
         </button>
       </div>
 
     </div>
-  </div>
+  </div><!-- /screen-scan -->
 
-  <!-- ── Log Tab ── -->
+  <!-- Log Tab -->
   <div class="screen" id="screen-log">
     <div class="card">
       <div class="log-toolbar">
-        <select class="log-filter-select" id="logFilterEmployee" onchange="fetchLog()">
+        <select class="log-sel" id="logFilterEmployee" onchange="fetchLog()">
           <option value="">كل الموظفين</option>
         </select>
-        <input type="text" class="log-search-input" id="logSearch"
+        <input type="text" class="log-search" id="logSearch"
                placeholder="بحث في الأوردرات..." oninput="debounceLog()">
-        <button class="log-export-btn" onclick="exportLogXLSX()">⬇️ تصدير Excel</button>
+        <button class="log-export" onclick="exportLogXLSX()">⬇️ تصدير Excel</button>
       </div>
-
-      <div id="logLoading" class="loading-area" style="display:none;">
-        <div class="spinner"></div>
-      </div>
-
+      <div id="logLoading" class="loading-area" style="display:none"><div class="spinner"></div></div>
       <div class="log-list" id="logList"></div>
-      <div class="empty-state" id="logEmpty" style="display:none;">لا توجد سجلات</div>
-
-      <div class="pagination-row" id="paginationRow" style="display:none;">
+      <div class="empty-state" id="logEmpty" style="display:none">لا توجد سجلات</div>
+      <div class="pagination-row" id="paginationRow" style="display:none">
         <button class="page-btn" id="btnPrevPage" onclick="goPage(-1)">→ السابق</button>
         <span class="page-info" id="pageInfo"></span>
         <button class="page-btn" id="btnNextPage" onclick="goPage(1)">التالي ←</button>
       </div>
     </div>
   </div>
+</div>
 
-</div><!-- /main-content -->
-
-<!-- ═══════════════════════════════════════════════
-     JAVASCRIPT
-═══════════════════════════════════════════════ -->
 <script>
 // ── Config ──────────────────────────────────────
 const LS_URL    = 'pack_checker_worker_url';
 const LS_SECRET = 'pack_checker_worker_secret';
-
 function getConfig() {
   return {
     url:    (localStorage.getItem(LS_URL)    || '').replace(/\/$/, ''),
-    secret: localStorage.getItem(LS_SECRET) || '',
+    secret:  localStorage.getItem(LS_SECRET) || '',
   };
 }
 
-// ── API Helpers ──────────────────────────────────
+// ── API ──────────────────────────────────────────
 async function apiPost(action, body = {}) {
   const { url, secret } = getConfig();
   if (!url || !secret) throw new Error('يرجى ضبط إعدادات الـ Worker أولاً');
   const res = await fetch(`${url}?action=${action}`, {
-    method:  'POST',
+    method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${secret}` },
-    body:    JSON.stringify(body),
+    body: JSON.stringify(body),
   });
   return res.json();
 }
-
 async function apiGet(action, params = {}) {
   const { url, secret } = getConfig();
   if (!url || !secret) throw new Error('يرجى ضبط إعدادات الـ Worker أولاً');
   const qs  = new URLSearchParams({ action, ...params }).toString();
-  const res = await fetch(`${url}?${qs}`, {
-    headers: { 'Authorization': `Bearer ${secret}` },
-  });
+  const res = await fetch(`${url}?${qs}`, { headers: { 'Authorization': `Bearer ${secret}` } });
   return res.json();
 }
 
-// ── Toast ────────────────────────────────────────
-function showToast(msg, type = 'neutral', duration = 3000) {
+// ── Toast ──────────────────────────────────────
+function showToast(msg, type = 'neutral', dur = 3000) {
   const t = document.createElement('div');
   t.className = `toast toast-${type}`;
   t.textContent = msg;
   document.getElementById('toastContainer').appendChild(t);
-  setTimeout(() => t.remove(), duration);
+  setTimeout(() => t.remove(), dur);
 }
 
-// ── Time ─────────────────────────────────────────
+// ── Time ───────────────────────────────────────
 function toCairo(iso) {
-  return new Date(new Date(iso).getTime() + 3 * 60 * 60 * 1000);
+  return new Date(new Date(iso).getTime() + 3 * 3600000);
 }
-function formatDateTime(iso) {
-  const d = toCairo(iso), pad = n => String(n).padStart(2, '0');
+function fmtDT(iso) {
+  const d = toCairo(iso), p = n => String(n).padStart(2, '0');
   let h = d.getUTCHours();
   const ampm = h >= 12 ? 'مساءً' : 'صباحاً';
   h = h % 12 || 12;
-  return `${pad(d.getUTCDate())}-${pad(d.getUTCMonth()+1)}-${d.getUTCFullYear()} ${pad(h)}:${pad(d.getUTCMinutes())} ${ampm}`;
+  return `${p(d.getUTCDate())}-${p(d.getUTCMonth()+1)}-${d.getUTCFullYear()} ${p(h)}:${p(d.getUTCMinutes())} ${ampm}`;
 }
 
-// ── Settings ─────────────────────────────────────
+// ── Settings ───────────────────────────────────
 function openSettings() {
-  const cfg = getConfig();
-  document.getElementById('settingUrl').value    = cfg.url;
-  document.getElementById('settingSecret').value = cfg.secret;
+  const c = getConfig();
+  document.getElementById('settingUrl').value    = c.url;
+  document.getElementById('settingSecret').value = c.secret;
   document.getElementById('settingsModal').classList.remove('hidden');
 }
 function closeSettings() { document.getElementById('settingsModal').classList.add('hidden'); }
 function saveSettings() {
-  const url    = document.getElementById('settingUrl').value.trim().replace(/\/$/, '');
-  const secret = document.getElementById('settingSecret').value.trim();
-  localStorage.setItem(LS_URL,    url);
-  localStorage.setItem(LS_SECRET, secret);
+  localStorage.setItem(LS_URL,    document.getElementById('settingUrl').value.trim().replace(/\/$/, ''));
+  localStorage.setItem(LS_SECRET, document.getElementById('settingSecret').value.trim());
   closeSettings();
   showToast('تم حفظ الإعدادات', 'success');
 }
-
-// ── Changelog ────────────────────────────────────
 function openChangelog()  { document.getElementById('changelogModal').classList.remove('hidden'); }
 function closeChangelog() { document.getElementById('changelogModal').classList.add('hidden'); }
 
-// ── Tab switching ────────────────────────────────
-let activeTab = 'scan';
+// ── Tabs ───────────────────────────────────────
 function switchTab(tab) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(`tab-${tab}`).classList.add('active');
   document.getElementById(`screen-${tab}`).classList.add('active');
-  activeTab = tab;
   if (tab === 'log') fetchLog();
 }
 
-// ═══════════════════════════════════════════════════════
-// LOGIN SYSTEM
-// ═══════════════════════════════════════════════════════
-
-let currentEmployee = null; // { username, displayName }
-let pinBuffer       = '';
-let isNewUser       = false;
-let firstPin        = '';
-let isConfirming    = false;
+// ═══════════════════════════════════════════════
+// LOGIN
+// ═══════════════════════════════════════════════
+let currentEmployee = null;
+let pinBuffer = '', isNewUser = false, firstPin = '', isConfirming = false;
 
 async function loadEmployeesList() {
   try {
@@ -870,13 +537,10 @@ async function loadEmployeesList() {
     sel.innerHTML = '<option value="">— اختر —</option>';
     (data.employees || []).forEach(e => {
       const o = document.createElement('option');
-      o.value       = e.username;
-      o.textContent = e.display_name;
+      o.value = e.username; o.textContent = e.display_name;
       sel.appendChild(o);
     });
-  } catch (err) {
-    // silently ignore — settings may not be set yet
-  }
+  } catch {}
 }
 
 function onUsernameChange() {
@@ -886,102 +550,67 @@ function onUsernameChange() {
 async function proceedToPin() {
   const username = document.getElementById('loginSelect').value;
   if (!username) { showToast('اختر اسمك أولاً', 'error'); return; }
-
   try {
     const data = await apiGet('check_employee', { username });
-    if (!data.exists)    { showToast('المستخدم غير موجود', 'error'); return; }
-    if (!data.isActive)  { showToast('الحساب موقوف', 'error'); return; }
-
-    isNewUser    = !data.hasPin;
-    pinBuffer    = '';
-    firstPin     = '';
-    isConfirming = false;
-    updatePinDots();
-
+    if (!data.exists)   { showToast('المستخدم غير موجود', 'error'); return; }
+    if (!data.isActive) { showToast('الحساب موقوف', 'error'); return; }
+    isNewUser = !data.hasPin;
+    pinBuffer = ''; firstPin = ''; isConfirming = false; updatePinDots();
     document.getElementById('stepUsername').style.display = 'none';
     document.getElementById('stepPin').style.display      = '';
     document.getElementById('pinConfirmHint').style.display = 'none';
-
-    if (isNewUser) {
-      document.getElementById('loginSub').textContent = 'أنت مستخدم جديد — أدخل PIN جديد';
-    } else {
-      document.getElementById('loginSub').textContent = `أهلاً! أدخل الـ PIN الخاص بك`;
-    }
-  } catch (err) {
-    showToast(err.message || 'خطأ في الاتصال', 'error');
-  }
+    document.getElementById('loginSub').textContent = isNewUser
+      ? 'أنت مستخدم جديد — أدخل PIN جديد'
+      : 'أهلاً! أدخل الـ PIN الخاص بك';
+  } catch (err) { showToast(err.message || 'خطأ في الاتصال', 'error'); }
 }
 
 function goBackToUsername() {
   document.getElementById('stepPin').style.display      = 'none';
   document.getElementById('stepUsername').style.display = '';
-  pinBuffer = ''; firstPin = ''; isConfirming = false;
-  updatePinDots();
+  pinBuffer = ''; firstPin = ''; isConfirming = false; updatePinDots();
   document.getElementById('loginSub').textContent = 'اختر اسمك للمتابعة';
 }
 
-function pinKey(digit) {
+function pinKey(d) {
   if (pinBuffer.length >= 4) return;
-  pinBuffer += digit;
-  updatePinDots();
+  pinBuffer += d; updatePinDots();
   if (pinBuffer.length === 4) setTimeout(submitPin, 200);
 }
-
-function pinBack() {
-  pinBuffer = pinBuffer.slice(0, -1);
-  updatePinDots();
-}
-
+function pinBack() { pinBuffer = pinBuffer.slice(0, -1); updatePinDots(); }
 function updatePinDots() {
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < 4; i++)
     document.getElementById(`d${i}`).classList.toggle('filled', i < pinBuffer.length);
-  }
 }
 
 async function submitPin() {
   const username = document.getElementById('loginSelect').value;
-
   if (isNewUser) {
     if (!isConfirming) {
-      firstPin     = pinBuffer;
-      pinBuffer    = '';
-      isConfirming = true;
-      updatePinDots();
+      firstPin = pinBuffer; pinBuffer = ''; isConfirming = true; updatePinDots();
       document.getElementById('loginSub').textContent = 'أدخل الـ PIN مرة أخرى للتأكيد';
       document.getElementById('pinConfirmHint').style.display = '';
       return;
     }
     if (pinBuffer !== firstPin) {
       showToast('الـ PIN غير متطابق — أعد المحاولة', 'error');
-      pinBuffer = ''; firstPin = ''; isConfirming = false;
-      updatePinDots();
+      pinBuffer = ''; firstPin = ''; isConfirming = false; updatePinDots();
       document.getElementById('loginSub').textContent = 'أنت مستخدم جديد — أدخل PIN جديد';
       document.getElementById('pinConfirmHint').style.display = 'none';
       return;
     }
-    // Register
     try {
       await apiPost('register_pin', { username, pin: firstPin });
-      const vData = await apiPost('verify_employee', { username, pin: firstPin });
-      if (!vData.ok) { showToast('خطأ في التسجيل', 'error'); pinBuffer = ''; updatePinDots(); return; }
-      finishLogin(username, vData.displayName);
-    } catch (err) {
-      showToast(err.message || 'خطأ', 'error');
-      pinBuffer = ''; updatePinDots();
-    }
+      const v = await apiPost('verify_employee', { username, pin: firstPin });
+      if (!v.ok) { showToast('خطأ في التسجيل', 'error'); pinBuffer = ''; updatePinDots(); return; }
+      finishLogin(username, v.displayName);
+    } catch (err) { showToast(err.message || 'خطأ', 'error'); pinBuffer = ''; updatePinDots(); }
   } else {
-    // Normal login
     try {
       const data = await apiPost('verify_employee', { username, pin: pinBuffer });
-      if (!data.ok) {
-        showToast('PIN خطأ', 'error');
-        pinBuffer = ''; updatePinDots(); return;
-      }
+      if (!data.ok) { showToast('PIN خطأ', 'error'); pinBuffer = ''; updatePinDots(); return; }
       finishLogin(username, data.displayName);
-    } catch (err) {
-      showToast(err.message || 'خطأ في الاتصال', 'error');
-      pinBuffer = ''; updatePinDots();
-    }
+    } catch (err) { showToast(err.message || 'خطأ', 'error'); pinBuffer = ''; updatePinDots(); }
   }
 }
 
@@ -989,85 +618,59 @@ function finishLogin(username, displayName) {
   currentEmployee = { username, displayName };
   document.getElementById('loginOverlay').classList.add('hidden');
   showToast(`أهلاً ${displayName} 👋`, 'success');
-  // Populate packedBySelect with employee name
-  populatePackedBy();
+  populateEmployees();
 }
 
-async function doLogout() {
-  if (currentEmployee) {
-    try { await apiGet('log_logout', { username: currentEmployee.username }); } catch {}
-  }
-  currentEmployee = null;
-  pinBuffer = ''; firstPin = ''; isConfirming = false;
-  updatePinDots();
-  document.getElementById('stepPin').style.display      = 'none';
-  document.getElementById('stepUsername').style.display = '';
-  document.getElementById('loginSub').textContent       = 'اختر اسمك للمتابعة';
-  document.getElementById('loginOverlay').classList.remove('hidden');
-  resetToEntry();
-}
+// ═══════════════════════════════════════════════
+// ORDER LOOKUP
+// ═══════════════════════════════════════════════
+let currentOrder    = null;
+let currentItems    = [];
+let currentAnalysis = null;
+let allEmployees    = [];
 
-// ═══════════════════════════════════════════════════════
-// ORDER ENTRY & CHECKING
-// ═══════════════════════════════════════════════════════
-
-let currentOrder = null;  // { id, name, note, stage }
-let currentItems = [];    // [{ id, title, sku, quantity, image, options, scanned }]
-let allEmployees = [];    // for packedBy dropdown
-
-async function populatePackedBy() {
-  // Load employees for packedBy dropdown
+async function populateEmployees() {
   try {
     const data = await apiGet('get_employees');
     allEmployees = data.employees || [];
+    // packedBy select
     const sel = document.getElementById('packedBySelect');
     sel.innerHTML = '<option value="">— اختر الموظف —</option>';
     allEmployees.forEach(e => {
       const o = document.createElement('option');
-      o.value       = e.username;
-      o.textContent = e.display_name;
-      // Pre-select current employee
+      o.value = e.username; o.textContent = e.display_name;
       if (currentEmployee && e.username === currentEmployee.username) o.selected = true;
       sel.appendChild(o);
     });
-
-    // Also populate log filter
+    // log filter
     const logSel = document.getElementById('logFilterEmployee');
     logSel.innerHTML = '<option value="">كل الموظفين</option>';
     allEmployees.forEach(e => {
       const o = document.createElement('option');
-      o.value       = e.username;
-      o.textContent = e.display_name;
+      o.value = e.username; o.textContent = e.display_name;
       logSel.appendChild(o);
     });
   } catch {}
 }
 
-// ── Order scan input ─────────────────────────────
+// ── Order scan input (scanner gun pattern) ──────
 const orderInput = document.getElementById('orderScanInput');
-let orderScanTimer;
-
+let orderTimer, lastOrder = 0;
 orderInput.addEventListener('input', () => {
-  clearTimeout(orderScanTimer);
-  const gap = orderInput.value.length > 3 ? 80 : 400;
-  orderScanTimer = setTimeout(handleOrderScan, gap < 80 ? 150 : 400);
+  clearTimeout(orderTimer);
+  const gap = Date.now() - lastOrder;
+  lastOrder = Date.now();
+  orderTimer = setTimeout(handleOrderScan, gap < 80 ? 150 : 400);
 });
-
 orderInput.addEventListener('keydown', e => {
-  if (e.key === 'Enter') {
-    clearTimeout(orderScanTimer);
-    handleOrderScan();
-  }
+  if (e.key === 'Enter') { clearTimeout(orderTimer); handleOrderScan(); }
 });
-
 function handleOrderScan() {
   const val = orderInput.value.trim();
-  orderInput.value = '';
-  orderInput.focus();
+  orderInput.value = ''; orderInput.focus();
   if (!val) return;
   lookupOrder(val);
 }
-
 function submitOrderLookup() {
   const val = orderInput.value.trim();
   orderInput.value = '';
@@ -1078,37 +681,30 @@ function submitOrderLookup() {
 async function lookupOrder(raw) {
   document.getElementById('lookupLoading').style.display = '';
   document.getElementById('btnLookup').disabled = true;
-
   try {
-    // Determine if it's a numeric ID or order name
-    const isNumericId = /^\d{10,}$/.test(raw); // Shopify order IDs are ~13 digits
-    const params = isNumericId
-      ? { id: raw }
-      : { name: raw };
-
-    const data = await apiGet('get_order', params);
+    const isId = /^\d{10,}$/.test(raw);
+    const data  = await apiGet('get_order', isId ? { id: raw } : { name: raw });
 
     if (!data.ok) {
       if (data.alreadyPacked) {
-        showToast(`⚠️ تم تغليف هذا الأوردر مسبقاً (${data.stage}) — ${data.packedBy}`, 'error', 5000);
+        showToast(`⚠️ تم تغليف مسبقاً (${data.stage}) — ${data.packedBy}`, 'error', 6000);
       } else {
         showToast(data.error || 'خطأ في جلب الأوردر', 'error');
       }
       return;
     }
 
-    // Set up checking session
-    currentOrder = { ...data.order, stage: data.stage };
-    currentItems = data.items.map(item => ({ ...item, scanned: 0 }));
+    currentOrder    = { ...data.order, stage: data.stage };
+    currentItems    = data.items.map(i => ({ ...i, scanned: 0 }));
+    currentAnalysis = data.stageAnalysis;
 
-    renderCheckScreen();
     document.getElementById('subscreenEntry').style.display = 'none';
-    document.getElementById('subscreenCheck').style.display  = '';
+    document.getElementById('subscreenCheck').style.display = '';
+    renderCheckScreen();
 
-    setTimeout(() => {
-      document.getElementById('barcodeScanInput').focus();
-    }, 100);
-
+    if (!currentAnalysis?.conflict) {
+      setTimeout(() => document.getElementById('barcodeScanInput').focus(), 100);
+    }
   } catch (err) {
     showToast(err.message || 'خطأ في الاتصال', 'error');
   } finally {
@@ -1118,65 +714,153 @@ async function lookupOrder(raw) {
 }
 
 function resetToEntry() {
-  currentOrder = null;
-  currentItems = [];
+  currentOrder = null; currentItems = []; currentAnalysis = null;
   document.getElementById('subscreenCheck').style.display = 'none';
   document.getElementById('subscreenEntry').style.display = '';
-  document.getElementById('scanBanner').className = 'scan-result-banner';
-  document.getElementById('scanBanner').textContent = '';
+  document.getElementById('scanBanner').className = 'scan-banner';
   setTimeout(() => orderInput.focus(), 100);
 }
 
-// ── Render check screen ──────────────────────────
+// ── Render Check Screen ──────────────────────────
 function renderCheckScreen() {
-  // Order info
-  document.getElementById('checkOrderName').textContent = currentOrder.name;
+  const sa    = currentAnalysis;
+  const stage = currentOrder.stage;
 
-  const stageBadge = document.getElementById('checkStageBadge');
-  stageBadge.textContent = currentOrder.stage;
-  stageBadge.className   = `stage-badge stage-${currentOrder.stage.toLowerCase()}`;
+  // Order header
+  document.getElementById('checkOrderName').textContent = currentOrder.name;
+  const sb = document.getElementById('checkStageBadge');
+  sb.textContent = stage;
+  sb.className   = `stage-badge-sm ${stage.toLowerCase()}`;
 
   const noteEl = document.getElementById('checkOrderNote');
   if (currentOrder.note) {
-    noteEl.textContent    = `ملاحظة: ${currentOrder.note}`;
-    noteEl.style.display  = 'block';
+    noteEl.textContent   = `ملاحظة: ${currentOrder.note}`;
+    noteEl.style.display = 'block';
   } else {
-    noteEl.style.display  = 'none';
+    noteEl.style.display = 'none';
   }
 
-  renderItemsList();
-  updateSummary();
-  updateCompleteBtn();
+  // Stage indicator
+  renderStageIndicator(sa, stage);
+
+  // Conflict / unclear / normal
+  const conflictEl = document.getElementById('conflictPanel');
+  const packingEl  = document.getElementById('packingContent');
+  const unclearEl  = document.getElementById('unclearWarn');
+
+  if (sa?.conflict) {
+    conflictEl.style.display = '';
+    packingEl.style.display  = 'none';
+    unclearEl.classList.remove('show');
+    renderConflictPanel(sa);
+  } else {
+    conflictEl.style.display = 'none';
+    packingEl.style.display  = '';
+    unclearEl.classList.toggle('show', !!sa?.unclear);
+    renderItemsList();
+    updateSummary();
+    updateCompleteBtn();
+  }
 }
 
+function renderStageIndicator(sa, stage) {
+  const card   = document.getElementById('stageCard');
+  const badge  = document.getElementById('stageBadgeXl');
+  const title  = document.getElementById('stageTitle');
+  const sigs   = document.getElementById('stageSignals');
+  const s      = sa?.signals;
+
+  let cardCls, badgeCls, titleText;
+
+  if (sa?.conflict) {
+    cardCls = 'conflict'; badgeCls = 'conflict';
+    titleText = `⚠️ تعارض — ${stage} (مُرجَّح) — مطلوب مراجعة`;
+  } else if (sa?.unclear) {
+    cardCls = 'unclear'; badgeCls = 'unclear';
+    titleText = `${stage} — افتراضي (لا يوجد تصنيف محدد)`;
+  } else {
+    cardCls = stage.toLowerCase(); badgeCls = stage.toLowerCase();
+    titleText = stage === 'S2' ? `${stage} — أوردر استبدال / رجيع` : `${stage} — أوردر عادي`;
+  }
+
+  card.className  = `stage-indicator-card ${cardCls}`;
+  badge.className = `stage-badge-xl ${badgeCls}`;
+  badge.textContent = stage;
+  title.textContent = titleText;
+
+  if (!s) { sigs.innerHTML = ''; return; }
+
+  sigs.innerHTML = [
+    { label: 'Return نشط', on: s.hasActiveReturn,
+      val: s.hasActiveReturn ? `${s.activeReturnCount} return(s)` : 'لا يوجد' },
+    { label: 'manual_status', on: s.s1Signal, val: s.manualStatus || 'غير محدد' },
+    { label: 'status_2_r_e',  on: s.s2MetaSignal, val: s.status2re || 'غير محدد' },
+  ].map(r => `
+    <div class="stage-signal-row">
+      <div class="sig-dot ${r.on ? 'on' : 'off'}"></div>
+      <span class="sig-label">${r.label}:</span>
+      <span class="sig-value">${r.val}</span>
+    </div>
+  `).join('');
+}
+
+function renderConflictPanel(sa) {
+  const s = sa.signals;
+
+  // Shopify link (using numeric orderId)
+  document.getElementById('shopifyLink').href =
+    `https://admin.shopify.com/store/6c7e1a-53/orders/${currentOrder.id}`;
+
+  // Data grid
+  document.getElementById('conflictData').innerHTML = `
+    <div class="conflict-row">
+      <span class="conflict-label">Return نشط:</span>
+      <span class="conflict-val ${s.hasActiveReturn ? 'set' : 'unset'}">
+        ${s.hasActiveReturn ? `✅ يوجد (${s.activeReturnCount})` : '❌ لا يوجد'}
+      </span>
+    </div>
+    <div class="conflict-row">
+      <span class="conflict-label">manual_status:</span>
+      <span class="conflict-val ${s.manualStatus ? 'set' : 'unset'}">
+        ${s.manualStatus || 'غير محدد'}
+      </span>
+    </div>
+    <div class="conflict-row">
+      <span class="conflict-label">status_2_r_e:</span>
+      <span class="conflict-val ${s.status2re ? 'set' : 'unset'}">
+        ${s.status2re || 'غير محدد'}
+      </span>
+    </div>
+  `;
+
+  document.getElementById('conflictReason').textContent = sa.conflictType || 'يوجد تعارض في البيانات';
+}
+
+// ── Items ─────────────────────────────────────────
 function renderItemsList() {
   const container = document.getElementById('itemsList');
   container.innerHTML = '';
-
   currentItems.forEach((item, idx) => {
     const isDone    = item.scanned >= item.quantity;
-    const isPartial = item.scanned > 0 && item.scanned < item.quantity;
-    const statusCls = isDone ? 'done' : isPartial ? 'partial' : 'pending';
-    const countCls  = isDone ? 'done' : isPartial ? 'partial' : 'pending';
-
-    const optStr = (item.options || []).map(o => o.value).join(' / ');
-
-    const div = document.createElement('div');
-    div.className   = `item-card ${statusCls}`;
-    div.id          = `item-card-${idx}`;
+    const isPartial = item.scanned > 0 && !isDone;
+    const cls       = isDone ? 'done' : isPartial ? 'partial' : '';
+    const cntCls    = isDone ? 'done' : isPartial ? 'partial' : 'pending';
+    const opts      = (item.options || []).map(o => o.value).join(' / ');
+    const div       = document.createElement('div');
+    div.className   = `item-card ${cls}`;
+    div.id          = `ic-${idx}`;
     div.innerHTML   = `
       ${item.image
         ? `<img class="item-img" src="${item.image}" alt="" loading="lazy">`
-        : `<div class="item-img-placeholder">👟</div>`
-      }
+        : `<div class="item-placeholder">👟</div>`}
       <div class="item-info">
         <div class="item-title">${item.title}</div>
         <div class="item-sku">${item.sku || '—'}</div>
-        ${optStr ? `<div class="item-options">${optStr}</div>` : ''}
+        ${opts ? `<div class="item-opts">${opts}</div>` : ''}
       </div>
-      <div class="item-counter">
-        <div class="item-count-display ${countCls}" id="item-count-${idx}">${item.scanned}/${item.quantity}</div>
-        <div class="item-count-total">قطعة</div>
+      <div class="item-count-wrap">
+        <div class="item-count ${cntCls}" id="cnt-${idx}">${item.scanned}/${item.quantity}</div>
+        <div class="item-count-sub">قطعة</div>
       </div>
     `;
     container.appendChild(div);
@@ -1184,62 +868,50 @@ function renderItemsList() {
 }
 
 function updateItemCard(idx) {
-  const item     = currentItems[idx];
-  const isDone   = item.scanned >= item.quantity;
-  const isPartial= item.scanned > 0 && item.scanned < item.quantity;
-  const statusCls= isDone ? 'done' : isPartial ? 'partial' : 'pending';
-  const countCls = isDone ? 'done' : isPartial ? 'partial' : 'pending';
-
-  const card  = document.getElementById(`item-card-${idx}`);
-  const count = document.getElementById(`item-count-${idx}`);
-  if (card)  card.className  = `item-card ${statusCls}`;
-  if (count) {
-    count.className = `item-count-display ${countCls}`;
-    count.textContent = `${item.scanned}/${item.quantity}`;
-  }
+  const item    = currentItems[idx];
+  const isDone  = item.scanned >= item.quantity;
+  const isP     = item.scanned > 0 && !isDone;
+  const cls     = isDone ? 'done' : isP ? 'partial' : '';
+  const cntCls  = isDone ? 'done' : isP ? 'partial' : 'pending';
+  const card    = document.getElementById(`ic-${idx}`);
+  const cnt     = document.getElementById(`cnt-${idx}`);
+  if (card) card.className  = `item-card ${cls}`;
+  if (cnt)  { cnt.className = `item-count ${cntCls}`; cnt.textContent = `${item.scanned}/${item.quantity}`; }
 }
 
 function updateSummary() {
-  const totalScanned = currentItems.reduce((s, i) => s + i.scanned, 0);
-  const totalQty     = currentItems.reduce((s, i) => s + i.quantity, 0);
-  document.getElementById('summaryTotal').textContent = `${totalScanned} / ${totalQty}`;
+  const scanned = currentItems.reduce((s, i) => s + i.scanned, 0);
+  const total   = currentItems.reduce((s, i) => s + i.quantity, 0);
+  document.getElementById('summaryTotal').textContent = `${scanned} / ${total}`;
 }
 
 function updateCompleteBtn() {
-  const allDone = currentItems.every(i => i.scanned >= i.quantity);
+  const allDone = currentItems.length > 0 && currentItems.every(i => i.scanned >= i.quantity);
   document.getElementById('btnComplete').disabled = !allDone;
 }
 
-// ── Barcode scan input ───────────────────────────
+// ── Barcode scan (scanner gun pattern) ──────────
 const barcodeInput = document.getElementById('barcodeScanInput');
-let barcodeScanTimer;
-
+let barcodeTimer, lastBarcode = 0;
 barcodeInput.addEventListener('input', () => {
-  clearTimeout(barcodeScanTimer);
-  const gap = barcodeInput.value.length > 3 ? 80 : 400;
-  barcodeScanTimer = setTimeout(handleBarcodeScan, gap < 80 ? 150 : 400);
+  clearTimeout(barcodeTimer);
+  const gap = Date.now() - lastBarcode;
+  lastBarcode = Date.now();
+  barcodeTimer = setTimeout(handleBarcode, gap < 80 ? 150 : 400);
 });
-
 barcodeInput.addEventListener('keydown', e => {
-  if (e.key === 'Enter') {
-    clearTimeout(barcodeScanTimer);
-    handleBarcodeScan();
-  }
+  if (e.key === 'Enter') { clearTimeout(barcodeTimer); handleBarcode(); }
 });
-
-function handleBarcodeScan() {
+function handleBarcode() {
   const val = barcodeInput.value.trim();
-  barcodeInput.value = '';
-  barcodeInput.focus();
+  barcodeInput.value = ''; barcodeInput.focus();
   if (!val) return;
   processScan(val);
 }
 
-function processScan(barcode) {
-  const input = barcode.toLowerCase().trim();
-
-  // Find matching item by barcode first, then SKU fallback
-  const idx = currentItems.findIndex(item => {
+function processScan(bc) {
+  const input = bc.toLowerCase().trim();
+  const idx   = currentItems.findIndex(item => {
     if (item.scanned >= item.quantity) return false;
     if (item.barcode && item.barcode.toLowerCase() === input) return true;
     if (item.sku    && item.sku.toLowerCase()     === input) return true;
@@ -1247,98 +919,75 @@ function processScan(barcode) {
   });
 
   if (idx === -1) {
-    // Check if it exists but is already fully scanned
-    const alreadyFull = currentItems.findIndex(item => {
+    const exists = currentItems.findIndex(item => {
       if (item.barcode && item.barcode.toLowerCase() === input) return true;
       if (item.sku    && item.sku.toLowerCase()     === input) return true;
       return false;
     });
-    if (alreadyFull !== -1) {
-      showScanBanner('error', `⚠️ تم سكان هذا المنتج بالكامل بالفعل`);
-      playSound('error');
+    if (exists !== -1) {
+      showScanBanner('err', `⚠️ تم سكان هذا المنتج بالكامل بالفعل`);
     } else {
-      showScanBanner('error', `❌ الباركود غير موجود في هذا الأوردر: ${barcode}`);
-      playSound('error');
+      showScanBanner('err', `❌ الباركود غير موجود في هذا الأوردر: ${bc}`);
     }
+    playBeep('error');
     return;
   }
 
-  // Increment scanned count
   currentItems[idx].scanned++;
   updateItemCard(idx);
   updateSummary();
   updateCompleteBtn();
 
-  const item    = currentItems[idx];
-  const isDone  = item.scanned >= item.quantity;
-  const msg     = isDone
+  const item = currentItems[idx];
+  const done = item.scanned >= item.quantity;
+  showScanBanner('ok', done
     ? `✅ ${item.title} — مكتمل (${item.scanned}/${item.quantity})`
-    : `✔️ ${item.title} — ${item.scanned}/${item.quantity}`;
-
-  showScanBanner('success', msg);
-  playSound('success');
-
-  // Scroll item into view
-  const card = document.getElementById(`item-card-${idx}`);
-  if (card) card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    : `✔️ ${item.title} — ${item.scanned}/${item.quantity}`);
+  playBeep('success');
+  document.getElementById(`ic-${idx}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 function showScanBanner(type, msg) {
-  const banner = document.getElementById('scanBanner');
-  banner.className   = `scan-result-banner ${type}`;
-  banner.textContent = msg;
-  if (banner._hideTimer) clearTimeout(banner._hideTimer);
-  banner._hideTimer = setTimeout(() => {
-    banner.className = 'scan-result-banner';
-  }, 3000);
+  const b = document.getElementById('scanBanner');
+  b.className   = `scan-banner ${type}`;
+  b.textContent = msg;
+  if (b._t) clearTimeout(b._t);
+  b._t = setTimeout(() => { b.className = 'scan-banner'; }, 3000);
 }
 
-// ── Audio feedback ───────────────────────────────
+// ── Audio ──────────────────────────────────────
 let audioCtx;
-function getAudio() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  return audioCtx;
-}
-
-function playSound(type) {
+function playBeep(type) {
   try {
-    const ctx = getAudio();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain); gain.connect(audioCtx.destination);
     if (type === 'success') {
-      osc.frequency.setValueAtTime(880, ctx.currentTime);
-      osc.frequency.setValueAtTime(1100, ctx.currentTime + 0.1);
-      gain.gain.setValueAtTime(0.3, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 0.25);
+      osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+      osc.frequency.setValueAtTime(1100, audioCtx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
+      osc.start(audioCtx.currentTime); osc.stop(audioCtx.currentTime + 0.25);
     } else {
-      osc.frequency.setValueAtTime(300, ctx.currentTime);
-      osc.frequency.setValueAtTime(200, ctx.currentTime + 0.15);
-      gain.gain.setValueAtTime(0.4, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 0.35);
+      osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+      osc.frequency.setValueAtTime(200, audioCtx.currentTime + 0.15);
+      gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
+      osc.start(audioCtx.currentTime); osc.stop(audioCtx.currentTime + 0.35);
     }
   } catch {}
 }
 
-// ── Complete pack ────────────────────────────────
+// ── Complete Pack ──────────────────────────────
 async function completePack() {
   if (!currentEmployee) { showToast('يجب تسجيل الدخول أولاً', 'error'); return; }
-
   const packedByUsername = document.getElementById('packedBySelect').value;
   if (!packedByUsername) { showToast('اختر اسم الموظف المُعبِّأ', 'error'); return; }
-
-  const packedByDisplay = allEmployees.find(e => e.username === packedByUsername)?.display_name
-                       || packedByUsername;
+  const packedByDisplay = allEmployees.find(e => e.username === packedByUsername)?.display_name || packedByUsername;
 
   const btn = document.getElementById('btnComplete');
-  btn.disabled   = true;
-  btn.textContent = '⏳ جاري الحفظ...';
+  btn.disabled = true; btn.textContent = '⏳ جاري الحفظ...';
 
   try {
     const data = await apiPost('complete_pack', {
@@ -1352,45 +1001,38 @@ async function completePack() {
 
     if (!data.ok) {
       showToast(data.error || 'خطأ في الحفظ', 'error');
-      btn.disabled   = false;
-      btn.textContent = '✅ تأكيد اكتمال التعبئة';
+      btn.disabled = false; btn.textContent = '✅ تأكيد اكتمال التعبئة';
       return;
     }
 
     showToast(`✅ تم حفظ تعبئة ${currentOrder.name} بنجاح`, 'success', 4000);
-    playSound('success');
+    playBeep('success');
     setTimeout(() => resetToEntry(), 1500);
-
   } catch (err) {
     showToast(err.message || 'خطأ في الاتصال', 'error');
-    btn.disabled   = false;
-    btn.textContent = '✅ تأكيد اكتمال التعبئة';
+    btn.disabled = false; btn.textContent = '✅ تأكيد اكتمال التعبئة';
   }
 }
 
-// ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
 // LOG TAB
-// ═══════════════════════════════════════════════════════
-
-const LOG_PAGE_SIZE = 100;
-let logCurrentPage  = 1;
-let logTotalCount   = 0;
-let logDebounceTimer;
+// ═══════════════════════════════════════════════
+const LOG_PAGE = 100;
+let logPage = 1, logTotal = 0, logDebTimer;
 
 function debounceLog() {
-  clearTimeout(logDebounceTimer);
-  logDebounceTimer = setTimeout(() => { logCurrentPage = 1; fetchLog(); }, 400);
+  clearTimeout(logDebTimer);
+  logDebTimer = setTimeout(() => { logPage = 1; fetchLog(); }, 400);
 }
 
 async function fetchLog() {
   const employee = document.getElementById('logFilterEmployee').value || null;
   const search   = document.getElementById('logSearch').value.trim()  || null;
-  const offset   = (logCurrentPage - 1) * LOG_PAGE_SIZE;
-
-  const params      = { limit: LOG_PAGE_SIZE, offset };
-  const countParams = {};
-  if (employee) { params.employee = employee; countParams.employee = employee; }
-  if (search)   { params.search   = search;   countParams.search   = search;   }
+  const offset   = (logPage - 1) * LOG_PAGE;
+  const params   = { limit: LOG_PAGE, offset };
+  const cParams  = {};
+  if (employee) { params.employee = employee; cParams.employee = employee; }
+  if (search)   { params.search   = search;   cParams.search   = search; }
 
   document.getElementById('logLoading').style.display = '';
   document.getElementById('logList').innerHTML = '';
@@ -1398,13 +1040,12 @@ async function fetchLog() {
   document.getElementById('paginationRow').style.display = 'none';
 
   try {
-    const [pageData, countData] = await Promise.all([
-      apiGet('get_logs',       params),
-      apiGet('get_logs_count', countParams),
+    const [pd, cd] = await Promise.all([
+      apiGet('get_logs', params),
+      apiGet('get_logs_count', cParams),
     ]);
-
-    logTotalCount = countData.total || 0;
-    renderLog(pageData.entries || []);
+    logTotal = cd.total || 0;
+    renderLog(pd.entries || []);
     renderPagination();
   } catch (err) {
     showToast(err.message || 'خطأ في جلب السجل', 'error');
@@ -1414,50 +1055,49 @@ async function fetchLog() {
 }
 
 function renderLog(entries) {
-  const list = document.getElementById('logList');
+  const list  = document.getElementById('logList');
   const empty = document.getElementById('logEmpty');
   list.innerHTML = '';
-
   if (!entries.length) { empty.style.display = ''; return; }
   empty.style.display = 'none';
-
   entries.forEach(e => {
     const extra = e.extra ? JSON.parse(e.extra) : {};
     const div   = document.createElement('div');
     div.className = 'log-entry';
+    const stageCls = (extra.stage || 's1').toLowerCase();
     div.innerHTML = `
-      <div class="log-entry-top">
-        <span class="log-type-badge log-type-packed">مُعبَّأ</span>
+      <div class="log-top">
+        <span class="log-badge">مُعبَّأ</span>
         <span class="log-order">${e.order_name || '—'}</span>
-        <span class="stage-badge stage-${(extra.stage||'s1').toLowerCase()}" style="padding:2px 7px;font-size:11px;">${extra.stage || ''}</span>
-        <span class="log-meta" style="margin-right:auto;">${formatDateTime(e.timestamp)}</span>
+        <span class="stage-badge-sm ${stageCls}" style="padding:2px 7px;font-size:11px">${extra.stage || ''}</span>
+        <span class="log-meta" style="margin-right:auto">${fmtDT(e.timestamp)}</span>
       </div>
-      <div class="log-meta">بواسطة: ${e.employee || '—'} ${extra.packedBy ? '← مُعبَّأ بواسطة: ' + extra.packedBy : ''}</div>
-      ${e.notes ? `<div class="log-notes">${e.notes}</div>` : ''}
+      <div class="log-meta">
+        بواسطة: ${e.employee || '—'}
+        ${extra.packedBy ? ` ← مُعبَّأ بواسطة: ${extra.packedBy}` : ''}
+      </div>
+      ${e.notes ? `<div class="log-note">${e.notes}</div>` : ''}
     `;
     list.appendChild(div);
   });
 }
 
 function renderPagination() {
-  const totalPages = Math.ceil(logTotalCount / LOG_PAGE_SIZE);
-  const row        = document.getElementById('paginationRow');
-
-  if (totalPages <= 1) { row.style.display = 'none'; return; }
+  const total = Math.ceil(logTotal / LOG_PAGE);
+  const row   = document.getElementById('paginationRow');
+  if (total <= 1) { row.style.display = 'none'; return; }
   row.style.display = 'flex';
-
   document.getElementById('pageInfo').textContent =
-    `صفحة ${logCurrentPage.toLocaleString('en-US')} من ${totalPages.toLocaleString('en-US')}`;
-  document.getElementById('btnPrevPage').disabled = logCurrentPage <= 1;
-  document.getElementById('btnNextPage').disabled = logCurrentPage >= totalPages;
+    `صفحة ${logPage.toLocaleString('en-US')} من ${total.toLocaleString('en-US')}`;
+  document.getElementById('btnPrevPage').disabled = logPage <= 1;
+  document.getElementById('btnNextPage').disabled = logPage >= total;
 }
 
 function goPage(dir) {
-  const totalPages = Math.ceil(logTotalCount / LOG_PAGE_SIZE);
-  const next = logCurrentPage + dir;
-  if (next < 1 || next > totalPages) return;
-  logCurrentPage = next;
-  fetchLog();
+  const total = Math.ceil(logTotal / LOG_PAGE);
+  const next  = logPage + dir;
+  if (next < 1 || next > total) return;
+  logPage = next; fetchLog();
 }
 
 async function exportLogXLSX() {
@@ -1466,37 +1106,32 @@ async function exportLogXLSX() {
   const params   = {};
   if (employee) params.employee = employee;
   if (search)   params.search   = search;
-
   try {
     showToast('جاري تجهيز ملف Excel...', 'neutral');
     const data    = await apiGet('get_logs_export', params);
     const entries = data.entries || [];
-
     const wb   = new ExcelJS.Workbook();
     wb.views   = [{ rightToLeft: true }];
     const ws   = wb.addWorksheet('Pack Log');
-
     ws.columns = [
-      { header: 'التاريخ',       key: 'timestamp',   width: 22 },
-      { header: 'الأوردر',       key: 'order_name',  width: 12 },
-      { header: 'المرحلة',       key: 'stage',       width: 8  },
-      { header: 'الموظف',        key: 'employee',    width: 16 },
-      { header: 'مُعبَّأ بواسطة', key: 'packed_by',  width: 16 },
-      { header: 'الملاحظات',     key: 'notes',       width: 40 },
+      { header: 'التاريخ',        key: 'ts',        width: 22 },
+      { header: 'الأوردر',        key: 'order',     width: 12 },
+      { header: 'المرحلة',        key: 'stage',     width: 8  },
+      { header: 'الموظف',         key: 'employee',  width: 16 },
+      { header: 'مُعبَّأ بواسطة', key: 'packed_by', width: 16 },
+      { header: 'الملاحظات',      key: 'notes',     width: 40 },
     ];
-
     entries.forEach(e => {
       const extra = e.extra ? JSON.parse(e.extra) : {};
       ws.addRow({
-        timestamp:  formatDateTime(e.timestamp),
-        order_name: e.order_name || '',
-        stage:      extra.stage || '',
-        employee:   e.employee  || '',
-        packed_by:  extra.packedBy || '',
-        notes:      e.notes     || '',
+        ts:        fmtDT(e.timestamp),
+        order:     e.order_name || '',
+        stage:     extra.stage  || '',
+        employee:  e.employee   || '',
+        packed_by: extra.packedBy || '',
+        notes:     e.notes      || '',
       });
     });
-
     const buf  = await wb.xlsx.writeBuffer();
     const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     const link = document.createElement('a');
@@ -1509,10 +1144,7 @@ async function exportLogXLSX() {
   }
 }
 
-// ═══════════════════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════════════════
-
+// ── Init ────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
   loadEmployeesList();
   orderInput.focus();
