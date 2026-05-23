@@ -319,7 +319,7 @@ details[open]>.about-summary{border-radius:8px 8px 0 0}
   </div>
   <div class="header-right">
     <button class="hbtn" onclick="openAbout()">ℹ️ عن الأداة</button>
-    <button class="hbtn hbtn-version" onclick="openChangelog()">v1.2.0 📋</button>
+    <button class="hbtn hbtn-version" onclick="openChangelog()">v1.3.0 📋</button>
     <button class="hbtn settings-missing" id="headerSettingsBtn" onclick="openSettings()">⚙️ الإعدادات</button>
   </div>
 </header>
@@ -363,10 +363,19 @@ details[open]>.about-summary{border-radius:8px 8px 0 0}
     </div>
     <div class="modal-body">
       <div class="cl-entry">
+        <div class="cl-version">v1.3.0</div>
+        <div class="cl-date">23-05-2026</div>
+        <div class="cl-items">
+          <div class="cl-item"><span class="cl-tag fix">إصلاح</span> حذف lineItemsEditCount من GraphQL query — الحقل غير موجود في Shopify API (Field doesn't exist on type 'Order')</div>
+          <div class="cl-item"><span class="cl-tag change">تغيير</span> كشف تغيير المنتجات الآن يعتمد على مقارنة items fingerprint (SKU:qty) بدل عداد lineItemsEditCount</div>
+          <div class="cl-item"><span class="cl-tag change">تغيير</span> complete_pack لا يُرسل/يُخزّن editCount — عمود edit_count محفوظ في D1 للتوافق مع السجلات القديمة فقط</div>
+        </div>
+      </div>
+      <div class="cl-entry">
         <div class="cl-version">v1.2.0</div>
         <div class="cl-date">23-05-2026</div>
         <div class="cl-items">
-          <div class="cl-item"><span class="cl-tag new">جديد</span> كشف تغييرات الأوردر عبر lineItemsEditCount (Solution E) — إذا تم تعديل المنتجات بعد التغليف تُفتح نافذة إعادة التغليف تلقائياً</div>
+          <div class="cl-item"><span class="cl-tag new">جديد</span> كشف تغييرات الأوردر — إذا تم تعديل المنتجات بعد التغليف تُفتح نافذة إعادة التغليف تلقائياً</div>
           <div class="cl-item"><span class="cl-tag new">جديد</span> لوحة Override — اختيار سبب إعادة التغليف من 3 خيارات</div>
           <div class="cl-item"><span class="cl-tag new">جديد</span> نافذة تأكيد إرجاع المخزون قبل السماح بإعادة التغليف</div>
           <div class="cl-item"><span class="cl-tag new">جديد</span> أعمدة D1 جديدة: stage, item_count, items, edit_reason, edit_count</div>
@@ -430,15 +439,15 @@ details[open]>.about-summary{border-radius:8px 8px 0 0}
           <div class="about-steps">
             <div class="about-step"><span class="about-num">1</span><span>سكان باركود الأوردر أو إدخال رقمه → Worker يجلب بيانات الأوردر من Shopify</span></div>
             <div class="about-step"><span class="about-num">2</span><span>الأداة تحدد المرحلة (S1/S2) بناءً على 3 signals: Return نشط + manual_status + status_2_r_e</span></div>
-            <div class="about-step"><span class="about-num">3</span><span>لو الأوردر مُغلَّف مسبقاً: يقارن lineItemsEditCount الحالي بالمخزّن في D1 — إذا تغيّر يفتح نافذة Override</span></div>
+            <div class="about-step"><span class="about-num">3</span><span>لو الأوردر مُغلَّف مسبقاً: يبني fingerprint من SKU+qty للـ items الحالية ويقارنها بالمخزّن في D1 — إذا اختلفت يفتح نافذة Override</span></div>
             <div class="about-step"><span class="about-num">4</span><span>Override: الموظف يختار السبب، يؤكد إرجاع المخزون، ثم يُعيد التغليف</span></div>
-            <div class="about-step"><span class="about-num">5</span><span>سكان منتجات الأوردر واحداً بالبـاركود/SKU → عند اكتمالها → زرار "تأكيد اكتمال التعبئة"</span></div>
-            <div class="about-step"><span class="about-num">6</span><span>Worker يكتب metafields التغليف في Shopify، يضيف tag، ويسجل في D1</span></div>
+            <div class="about-step"><span class="about-num">5</span><span>سكان منتجات الأوردر واحداً بالباركود/SKU → عند اكتمالها → زرار "تأكيد اكتمال التعبئة"</span></div>
+            <div class="about-step"><span class="about-num">6</span><span>Worker يكتب metafields التغليف في Shopify، يضيف tag، ويسجل في D1 مع items summary للمقارنة المستقبلية</span></div>
           </div>
           <div class="about-label">الـ Endpoints الرئيسية</div>
           <div class="about-endpoints">
-            <div class="about-ep"><code>get_order</code><span>جلب بيانات الأوردر + تحليل المرحلة + كشف التغيير</span></div>
-            <div class="about-ep"><code>complete_pack</code><span>كتابة metafields + tag + تسجيل D1 بالأعمدة الجديدة</span></div>
+            <div class="about-ep"><code>get_order</code><span>جلب بيانات الأوردر + تحليل المرحلة + كشف التغيير بالـ fingerprint</span></div>
+            <div class="about-ep"><code>complete_pack</code><span>كتابة metafields + tag + تسجيل D1 مع items summary</span></div>
             <div class="about-ep"><code>get_logs / get_logs_count / get_logs_export</code><span>استعراض وتصدير سجل التغليف</span></div>
           </div>
         </div>
@@ -448,34 +457,42 @@ details[open]>.about-summary{border-radius:8px 8px 0 0}
         <summary class="about-summary">🔧 تشريح الكود</summary>
         <div class="about-body">
           <pre class="about-code">FEATURE MAP
-──────────────────────────────────────────────────────────────────────
+──────────────────────────────────────────────────────────────────────────
 Feature                        │ File    │ §Section   │ fn / action
-──────────────────────────────────────────────────────────────────────
+──────────────────────────────────────────────────────────────────────────
 Stage detection (3 signals)    │ Worker  │ §PACK      │ analyzeStage()
-Change detection (editCount)   │ Worker  │ §PACK      │ get_order
+Items fingerprint (change det) │ Worker  │ §PACK      │ buildFingerprint()
+                               │         │            │ parseSavedItemsString()
+Change detection (fingerprint) │ Worker  │ §PACK      │ get_order
 Already-packed override panel  │ HTML    │ §TOOL-JS   │ renderAlreadyPackedOverride()
 Reason selection (3 options)   │ HTML    │ §TOOL-JS   │ showReasonSelection()
 Stock return confirm modal      │ HTML    │ §TOOL-JS   │ showStockReturnModal()
 Write pack metafields           │ Worker  │ §PACK      │ complete_pack
-Write new D1 columns            │ Worker  │ §PACK      │ complete_pack (UPDATE after writeLog)
+Write D1 columns (incl. items) │ Worker  │ §PACK      │ complete_pack (UPDATE after writeLog)
 Log: show edit_reason           │ HTML    │ §LOG-JS    │ renderLog()
 XLSX export (edit_reason col)   │ HTML    │ §LOG-JS    │ exportLogXLSX()
-──────────────────────────────────────────────────────────────────────
+──────────────────────────────────────────────────────────────────────────
 
 KEY VARIABLES (HTML)
 LS_URL        = 'pack_checker_worker_url'
 LS_SECRET     = 'pack_checker_worker_secret'
 LS_ADMIN_URL  = 'admin_worker_url'
-currentEmployee      ← JS memory only (username, displayName)
+currentEmployee          ← JS memory only (username, displayName)
 currentAlreadyPackedData ← JS memory (packedBy, storedItems, stage)
-currentEditReason    ← JS memory (text of selected reason)
-currentOrder.editCount ← lineItemsEditCount from Shopify
+currentEditReason        ← JS memory (text of selected reason)
+
+KEY VARIABLES (Worker)
+buildFingerprint(items)        → JSON.stringify(["SKU:qty",...].sort())
+parseSavedItemsString(str)     → parses "SKU ×qty, ..." back to [{sku,quantity}]
+changeDetected                 → currentFP !== storedFP  (true if no stored log)
 
 NOTES
-- lineItemsEditCount يزيد عند أي تعديل على المنتجات فقط (لا tag أو metafield)
-- NULL في edit_count يعني سجل قديم → changeDetected=true دائماً (safe default)
+- lineItemsEditCount مش موجود في Shopify Order type — تم استبداله بـ fingerprint
+- NULL في عمود items → changeDetected=true دائماً (safe default)
+- edit_count column محفوظ في D1 schema للتوافق — لكن لا يُكتب في v1.3.0+
 - clone+addEventListener في showStockReturnModal (لا pendingAction variable)
-- D1 migration إلزامي قبل deploy Worker v1.2.0</pre>
+- items fingerprint: يقارن SKU (أو title لو مافيش SKU) + quantity فقط
+- D1 migration (ALTER TABLE) إلزامي قبل deploy v1.2.0 — مش مطلوب لـ v1.3.0</pre>
         </div>
       </details>
     </div>
@@ -1017,7 +1034,7 @@ async function loadAllEmployees() {
 let currentOrder    = null;
 let currentItems    = [];
 let currentAnalysis = null;
-let currentAlreadyPackedData = null; // { packedBy, storedItems, stage }
+let currentAlreadyPackedData = null;
 let currentEditReason = null;
 
 const orderInput = document.getElementById('orderScanInput');
@@ -1055,13 +1072,13 @@ async function lookupOrder(raw) {
 
     if (data.alreadyPacked) {
       if (!data.changeDetected) {
-        // No change — block as before
+        // No change — block
         showToast(`⚠️ تم تغليف مسبقاً (${data.stage}) — ${data.packedBy}`, 'error', 6000);
         playBeep('error');
         return;
       }
       // Change detected — show override panel
-      currentOrder = { ...data.order, stage: data.stage, editCount: data.currentEditCount || 0 };
+      currentOrder = { ...data.order, stage: data.stage };
       currentItems = (data.items || []).map(i => ({ ...i, scanned: 0 }));
       currentAnalysis = data.stageAnalysis;
       currentAlreadyPackedData = {
@@ -1081,7 +1098,8 @@ async function lookupOrder(raw) {
       return;
     }
 
-    currentOrder    = { ...data.order, stage: data.stage, editCount: data.editCount || 0 };
+    // editCount removed — no longer stored on currentOrder
+    currentOrder    = { ...data.order, stage: data.stage };
     currentItems    = data.items.map(i => ({ ...i, scanned: 0 }));
     currentAnalysis = data.stageAnalysis;
     currentAlreadyPackedData = null;
@@ -1107,7 +1125,6 @@ function resetToEntry() {
   currentAlreadyPackedData = null; currentEditReason = null;
   document.getElementById('subscreenCheck').style.display = 'none';
   document.getElementById('subscreenEntry').style.display = '';
-  // Reset stageCard visibility for next order
   document.getElementById('stageCard').style.display = '';
   document.getElementById('alreadyPackedPanel').style.display = 'none';
   document.getElementById('packingContent').style.display = '';
@@ -1119,7 +1136,6 @@ function resetToEntry() {
 function renderAlreadyPackedOverride() {
   const ap = currentAlreadyPackedData;
 
-  // Set order header
   document.getElementById('checkOrderName').textContent = currentOrder.name;
   const sb = document.getElementById('checkStageBadge');
   sb.textContent = currentOrder.stage;
@@ -1133,17 +1149,14 @@ function renderAlreadyPackedOverride() {
     noteEl.style.display = 'none';
   }
 
-  // Hide: stageCard, conflictPanel, packingContent, unclearWarn
   document.getElementById('stageCard').style.display = 'none';
   document.getElementById('conflictPanel').style.display = 'none';
   document.getElementById('packingContent').style.display = 'none';
   document.getElementById('unclearWarn').classList.remove('show');
 
-  // Show override panel
   const panel = document.getElementById('alreadyPackedPanel');
   panel.style.display = '';
 
-  // Populate ap-data
   document.getElementById('apData').innerHTML = `
     <div class="ap-row">
       <span class="ap-label">مُغلَّف بواسطة:</span>
@@ -1160,10 +1173,8 @@ function renderAlreadyPackedOverride() {
     </div>
   `;
 
-  // Reset reason section
   document.getElementById('reasonSection').classList.remove('visible');
   document.getElementById('btnOverridePack').style.display = '';
-  // Reset radio to first option
   document.querySelectorAll('input[name="packReason"]').forEach((r, i) => {
     r.checked = i === 0;
     document.getElementById(`reason${i}`).classList.toggle('selected', i === 0);
@@ -1196,7 +1207,6 @@ function confirmReasonAndShowModal() {
   if (!selected) { showToast('اختر سبب إعادة التغليف أولاً', 'error'); return; }
   currentEditReason = selected.value;
   showStockReturnModal(() => {
-    // Confirmed: proceed to normal packing
     document.getElementById('alreadyPackedPanel').style.display = 'none';
     document.getElementById('stageCard').style.display = '';
     renderCheckScreen();
@@ -1214,7 +1224,6 @@ function showStockReturnModal(onConfirm) {
 
   modal.classList.remove('hidden');
 
-  // clone+addEventListener (per architecture rules — no pendingAction variable)
   const confirmBtn = document.getElementById('stockReturnConfirmBtn');
   const cancelBtn  = document.getElementById('stockReturnCancelBtn');
   const newConfirm = confirmBtn.cloneNode(true);
@@ -1228,7 +1237,6 @@ function showStockReturnModal(onConfirm) {
   });
   newCancel.addEventListener('click', () => {
     modal.classList.add('hidden');
-    // Restore reason section so user can re-try
     document.getElementById('reasonSection').classList.add('visible');
     document.getElementById('btnOverridePack').style.display = 'none';
   });
@@ -1239,11 +1247,9 @@ function renderCheckScreen() {
   const sa    = currentAnalysis;
   const stage = currentOrder.stage;
 
-  // Reset override-specific state
   document.getElementById('alreadyPackedPanel').style.display = 'none';
   document.getElementById('stageCard').style.display = '';
 
-  // Order header
   document.getElementById('checkOrderName').textContent = currentOrder.name;
   const sb = document.getElementById('checkStageBadge');
   sb.textContent = stage;
@@ -1447,6 +1453,7 @@ async function completePack() {
   const btn = document.getElementById('btnComplete');
   btn.disabled = true; btn.textContent = '⏳ جاري الحفظ...';
   try {
+    // editCount removed from payload — Worker v1.3.0+ doesn't use it
     const data = await apiPost('complete_pack', {
       orderId:    currentOrder.id,
       orderName:  currentOrder.name,
@@ -1455,7 +1462,6 @@ async function completePack() {
       packedBy:   packedByDisplay,
       items:      currentItems.map(i => ({ id: i.id, title: i.title, sku: i.sku, quantity: i.quantity })),
       editReason: currentEditReason || null,
-      editCount:  currentOrder.editCount || 0,
     });
     if (!data.ok) {
       showToast(data.error || 'خطأ في الحفظ', 'error');
