@@ -120,25 +120,47 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);min-
 .pin-key.utility{color:var(--red);background:var(--red-light);border-color:var(--red-border);font-family:var(--font);font-size:13px;font-weight:900}
 .pin-key.utility:hover:not(:disabled){background:var(--red);color:#fff;border-color:var(--red)}
 .pin-key:disabled{opacity:.55;cursor:not-allowed}
-.login-alert{display:none;min-height:38px;border-radius:10px;border:1px solid var(--red-border);background:var(--red-light);color:var(--red);padding:9px 12px;font-size:12px;font-weight:800;text-align:center;line-height:1.6}
-.login-alert.visible{display:block}
-.login-primary{display:none;align-items:center;justify-content:center;gap:7px;width:100%;min-height:58px;margin-top:1px;border:none;border-radius:10px;background:var(--accent);color:#fff;font-family:var(--font);font-size:15px;font-weight:900;cursor:pointer;transition:background .15s,opacity .15s,transform .06s}
-.login-primary.visible{display:inline-flex}
-.login-primary:hover:not(:disabled){background:var(--accent-dark)}
-.login-primary:active:not(:disabled){transform:translateY(1px)}
-.login-primary:disabled{opacity:.56;cursor:not-allowed}
-.login-secondary{display:none;align-items:center;justify-content:center;width:100%;min-height:42px;border-radius:10px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text-secondary);font-family:var(--font);font-size:12px;font-weight:800;cursor:pointer;transition:all .15s}
-.login-secondary.visible{display:inline-flex}
-.login-secondary:hover{border-color:var(--accent);background:var(--accent-light);color:var(--accent)}
+.login-alert{display:none;min-height:38px;border-radius:10px;border:1px solid var(--red-border);background:var(--red-light);color:var(--red);padding:9px 12px;font-size:12px;font-weight:800;line-height:1.6;text-align:center}
+.login-alert.visible{display:block;animation:pinZoneIn .12s ease}
+.login-actions{display:flex;flex-direction:column;gap:9px;margin-top:2px}
+.login-primary-btn{width:100%;min-height:48px;border:none;border-radius:10px;background:var(--accent);color:#fff;font-family:var(--font);font-size:14px;font-weight:900;cursor:pointer;transition:background .15s,opacity .15s;display:flex;align-items:center;justify-content:center}
+.login-primary-btn:hover:not(:disabled){background:var(--accent-dark)}
+.login-primary-btn:disabled{opacity:.55;cursor:not-allowed}
+.login-secondary-btn{display:none;width:100%;min-height:42px;border:1.5px solid var(--border-strong);border-radius:10px;background:var(--surface);color:var(--text-secondary);font-family:var(--font);font-size:13px;font-weight:800;cursor:pointer;transition:all .15s}
+.login-secondary-btn.visible{display:block}
+.login-secondary-btn:hover{background:var(--surface-2);color:var(--text-primary)}
 
 /* ── Main ── */
-.main-content{padding:20px;max-width:700px;margin:0 auto}
-.tab-bar{display:flex;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:4px;margin-bottom:20px;box-shadow:var(--shadow)}
+.main-content{padding:18px clamp(18px,2vw,34px);max-width:1540px;margin:0 auto}
+.tab-bar{display:flex;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:4px;margin:0 auto 20px;box-shadow:var(--shadow);max-width:980px}
 .tab-btn{flex:1;padding:8px 12px;border:none;border-radius:var(--radius-sm);background:none;font-family:var(--font);font-size:13px;font-weight:600;color:var(--text-muted);cursor:pointer;transition:all .15s}
 .tab-btn.active{background:var(--accent);color:#fff}
 .screen{display:none}.screen.active{display:block}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin-bottom:16px}
 .card-title{font-size:13px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px}
+
+
+/* ── Desktop Check Layout ── */
+.check-layout{display:grid;grid-template-columns:minmax(0,1fr) 370px;gap:18px;align-items:start}
+.order-side-panel{grid-column:2;position:sticky;top:76px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.packing-main{grid-column:1;min-width:0}
+.order-side-panel .order-header-card,.order-side-panel .stage-indicator-card,.order-side-panel .unclear-warning,.order-side-panel .conflict-panel,.order-side-panel .ap-panel{margin-bottom:0}
+.order-side-panel .conflict-panel,.order-side-panel .ap-panel{box-shadow:var(--shadow)}
+.packing-main .employee-bar{margin-bottom:12px}
+@media (min-width:1600px){
+  .check-layout{grid-template-columns:minmax(0,1fr) 400px}
+}
+@media (max-width:1100px){
+  .main-content{padding:16px;max-width:760px}
+  .tab-bar{max-width:none}
+  .check-layout{display:block}
+  .order-side-panel{position:static;display:flex;flex-direction:column;gap:12px;margin-bottom:14px}
+  .packing-main{min-width:0}
+}
+@media (max-width:640px){
+  .main-content{padding:12px}
+  .scan-input-wrap{flex-direction:column}
+}
 
 /* ── Stage Indicator ── */
 .stage-indicator-card{border-radius:var(--radius);padding:14px 18px;margin-bottom:14px;display:flex;align-items:flex-start;gap:14px}
@@ -170,50 +192,51 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);min-
 .conflict-label{font-weight:700;color:var(--text-muted);min-width:130px;flex-shrink:0}
 .conflict-val{font-family:var(--mono);font-weight:600}
 .conflict-val.set{color:var(--red)}.conflict-val.unset{color:var(--text-muted);font-family:var(--font);font-style:italic}
-.conflict-reason{background:#fef2f2;border-right:4px solid var(--red);border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;color:#b91c1c;font-weight:600;margin-bottom:14px}
-.conflict-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.btn-shopify{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:var(--radius-sm);background:var(--red);color:#fff;font-family:var(--font);font-size:13px;font-weight:700;text-decoration:none;transition:background .15s}
-.btn-shopify:hover{background:#b91c1c}
+.conflict-reason{background:#fef2f2;border-right:4px solid var(--red);border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;color:#991b1b;margin-bottom:14px}
+.conflict-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn-shopify{display:inline-flex;align-items:center;justify-content:center;padding:9px 16px;border-radius:var(--radius-sm);background:#111827;color:#fff;text-decoration:none;font-family:var(--font);font-size:13px;font-weight:700;transition:background .15s}
+.btn-shopify:hover{background:#374151}
 
 /* ── Unclear Warning ── */
-.unclear-warning{background:var(--amber-light);border-right:4px solid var(--amber);border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;color:#92400e;font-weight:600;margin-bottom:14px;display:none}
+.unclear-warning{background:var(--amber-light);border-right:4px solid var(--amber);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:14px;color:#92400e;font-size:13px;font-weight:600;display:none}
 .unclear-warning.show{display:block}
 
 /* ── Already Packed Override Panel ── */
-.ap-panel{background:var(--orange-light);border:2px solid var(--orange-border);border-radius:var(--radius);padding:20px;margin-bottom:16px}
+.ap-panel{background:var(--orange-light);border:2px solid var(--orange);border-radius:var(--radius);padding:20px;margin-bottom:16px;display:none}
 .ap-header{display:flex;align-items:flex-start;gap:12px;margin-bottom:16px}
-.ap-icon{font-size:28px;flex-shrink:0}
-.ap-header-info{flex:1}
-.ap-title{font-size:16px;font-weight:800;color:var(--orange);margin-bottom:4px}
-.ap-subtitle{font-size:13px;color:#9a3412}
-.ap-data{background:#fff;border:1px solid var(--orange-border);border-radius:var(--radius-sm);padding:14px;margin-bottom:14px;display:flex;flex-direction:column;gap:9px}
+.ap-icon{font-size:30px;flex-shrink:0}
+.ap-title{font-size:17px;font-weight:800;color:#9a3412;margin-bottom:4px}
+.ap-subtitle{font-size:13px;color:#c2410c}
+.ap-data{background:#fff;border:1px solid var(--orange-border);border-radius:var(--radius-sm);padding:14px;margin-bottom:12px;display:flex;flex-direction:column;gap:8px}
 .ap-row{display:flex;align-items:flex-start;gap:10px;font-size:13px}
-.ap-label{font-weight:700;color:var(--text-muted);min-width:130px;flex-shrink:0}
-.ap-val{font-family:var(--mono);font-weight:600;color:var(--text-primary);word-break:break-word}
-.ap-change-note{background:var(--amber-light);border-right:4px solid var(--amber);border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;color:#92400e;font-weight:600;margin-bottom:16px}
-.btn-override{width:100%;padding:13px;border:none;border-radius:var(--radius-sm);background:var(--orange);color:#fff;font-family:var(--font);font-size:14px;font-weight:800;cursor:pointer;transition:background .15s}
+.ap-label{font-weight:700;color:var(--text-muted);min-width:110px}
+.ap-val{font-family:var(--mono);font-weight:600;color:#9a3412}
+.ap-change-note{background:#fff7ed;border-right:4px solid var(--orange);border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;color:#9a3412;margin-bottom:14px}
+.btn-override{width:100%;padding:12px;background:var(--orange);color:#fff;border:none;border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;font-weight:800;cursor:pointer;transition:background .15s;margin-bottom:12px}
 .btn-override:hover{background:#c2410c}
 
 /* ── Reason Selection ── */
-.reason-section{display:none;margin-top:14px;border-top:1px solid var(--orange-border);padding-top:14px}
+.reason-section{display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--orange-border)}
 .reason-section.visible{display:block}
-.reason-title{font-size:13px;font-weight:700;color:var(--text-primary);margin-bottom:10px}
-.reason-options{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
-.reason-option{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--border-strong);border-radius:var(--radius-sm);cursor:pointer;transition:all .15s;background:var(--surface)}
-.reason-option:hover{border-color:var(--accent);background:var(--accent-light)}
-.reason-option.selected{border-color:var(--accent);background:var(--accent-light)}
-.reason-option input[type=radio]{accent-color:var(--accent);width:16px;height:16px;flex-shrink:0;cursor:pointer}
-.reason-option-text{font-size:13px;font-weight:600;color:var(--text-primary)}
-.btn-reason-confirm{width:100%;padding:13px;border:none;border-radius:var(--radius-sm);background:var(--accent);color:#fff;font-family:var(--font);font-size:14px;font-weight:800;cursor:pointer;transition:background .15s}
-.btn-reason-confirm:hover{background:var(--accent-dark)}
+.reason-title{font-size:13px;font-weight:700;color:#9a3412;margin-bottom:10px}
+.reason-options{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.reason-option{display:flex;align-items:flex-start;gap:10px;background:#fff;border:1.5px solid var(--orange-border);border-radius:var(--radius-sm);padding:10px 12px;cursor:pointer;transition:all .15s}
+.reason-option:hover{border-color:var(--orange);background:#fffaf5}
+.reason-option.selected{border-color:var(--orange);background:#fff7ed}
+.reason-option input{margin-top:3px;accent-color:var(--orange)}
+.reason-option-text{font-size:13px;font-weight:600;color:var(--text-primary);line-height:1.5}
+.btn-reason-confirm{width:100%;padding:11px;background:var(--orange);color:#fff;border:none;border-radius:var(--radius-sm);font-family:var(--font);font-size:13px;font-weight:800;cursor:pointer}
+.btn-reason-confirm:hover{background:#c2410c}
 .btn-reason-confirm:disabled{opacity:.5;cursor:not-allowed}
 
 /* ── Stock Return Modal ── */
 .stock-return-modal .modal-box{max-width:420px}
 .stock-return-icon{font-size:36px;text-align:center;margin-bottom:10px}
-.stock-return-msg{font-size:14px;font-weight:600;line-height:1.75;text-align:center;color:var(--text-primary)}
-.stock-return-items{font-family:var(--mono);font-size:12px;color:var(--text-muted);text-align:center;margin-top:6px;padding:6px 10px;background:var(--surface-2);border-radius:var(--radius-sm);border:1px solid var(--border)}
-.modal-footer.centered{justify-content:center;gap:12px}
+.stock-return-title{font-size:16px;font-weight:800;text-align:center;color:var(--red);margin-bottom:8px}
+.stock-return-text{font-size:13px;line-height:1.8;color:var(--text-secondary);text-align:center}
+.stock-return-items{margin-top:10px;padding:10px;background:var(--surface-2);border-radius:var(--radius-sm);font-family:var(--mono);font-size:12px;color:var(--text-primary);direction:ltr;text-align:left}
+.btn-danger{padding:9px 18px;border-radius:var(--radius-sm);border:none;background:var(--red);color:#fff;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;transition:background .15s}
+.btn-danger:hover{background:#b91c1c}
 
 /* ── Order Header ── */
 .order-header-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px;box-shadow:var(--shadow)}
@@ -225,7 +248,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);min-
 .order-note{font-size:13px;color:var(--text-secondary);background:var(--amber-light);border:1px solid var(--amber-border);border-radius:var(--radius-sm);padding:6px 10px;margin-top:10px;display:none}
 
 /* ── Edit reason badge in log ── */
-.log-edit-reason{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:2px 7px;border-radius:4px;background:var(--orange-light);color:var(--orange);border:1px solid var(--orange-border);margin-top:4px}
+.log-edit-reason{margin-top:6px;padding:6px 9px;border-radius:7px;background:var(--orange-light);color:var(--orange);border:1px solid var(--orange-border);font-size:12px;font-weight:700}
 
 /* ── Scan inputs ── */
 .scan-input-wrap{display:flex;gap:8px}
@@ -243,24 +266,46 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);min-
 .employee-bar-name{font-size:14px;font-weight:700;color:var(--text-primary)}
 
 /* ── Summary + Items ── */
-.summary-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;box-shadow:var(--shadow)}
+.summary-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;box-shadow:var(--shadow)}
 .summary-label{font-size:13px;color:var(--text-muted)}.summary-val{font-family:var(--mono);font-size:15px;font-weight:700}
-.items-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:16px;direction:ltr}
-.item-card{background:var(--surface);border:2px solid var(--border);border-radius:var(--radius);padding:14px;min-height:292px;display:flex;flex-direction:column;align-items:stretch;gap:10px;transition:all .2s;direction:rtl;position:relative}
+.progress-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px;box-shadow:var(--shadow)}
+.progress-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
+.progress-title{font-size:13px;font-weight:800;color:var(--text-primary)}
+.progress-sub{font-size:12px;color:var(--text-muted);margin-top:2px}
+.progress-percent{font-family:var(--mono);font-size:19px;font-weight:800;color:var(--accent);direction:ltr;white-space:nowrap}
+.progress-track{height:12px;border-radius:999px;background:var(--surface-2);border:1px solid var(--border);overflow:hidden}
+.progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--green));border-radius:999px;transition:width .2s ease}
+.progress-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.progress-stat{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:8px;text-align:center}
+.progress-stat-label{font-size:11px;color:var(--text-muted);margin-bottom:2px}
+.progress-stat-val{font-family:var(--mono);font-size:14px;font-weight:800;color:var(--text-primary)}
+.items-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:16px;direction:ltr}
+.item-card{background:var(--surface);border:2px solid var(--border);border-radius:var(--radius);padding:12px;min-height:262px;display:flex;flex-direction:column;align-items:stretch;gap:9px;transition:all .2s;direction:rtl;position:relative}
 .item-card.has-image{cursor:zoom-in}
 .item-card.has-image:hover{border-color:#bfdbfe;box-shadow:0 8px 20px rgba(37,99,235,.10);transform:translateY(-1px)}
 .item-card.done{background:var(--green-light);border-color:var(--green-border)}
 .item-card.partial{background:var(--amber-light);border-color:var(--amber-border)}
-.item-img{width:100%;height:165px;object-fit:contain;border-radius:var(--radius-sm);border:1px solid var(--border);flex-shrink:0;background:#fff;padding:8px}
-.item-placeholder{width:100%;height:165px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:42px}
+.item-img{width:100%;height:140px;object-fit:contain;border-radius:var(--radius-sm);border:1px solid var(--border);flex-shrink:0;background:#fff;padding:8px}
+.item-placeholder{width:100%;height:140px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:40px}
 .item-info{min-width:0;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px}
-.item-title{font-size:14px;font-weight:800;line-height:1.45;margin-bottom:0;white-space:normal;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-.item-sku{font-family:var(--mono);font-size:12px;color:var(--text-muted);margin-bottom:0;direction:ltr;text-align:center}
-.item-opts{font-size:12px;color:var(--text-secondary);direction:ltr;text-align:center}
-.item-count-wrap{margin-top:auto;padding-top:10px;border-top:1px solid var(--border);display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-shrink:0;text-align:right}
-.item-count{font-family:var(--mono);font-size:24px;font-weight:800;line-height:1}
+.item-title{font-size:13px;font-weight:800;line-height:1.45;margin-bottom:0;white-space:normal;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.item-sku{font-family:var(--mono);font-size:11px;color:var(--text-muted);margin-bottom:0;direction:ltr;text-align:center}
+.item-opts{font-size:11px;color:var(--text-secondary);direction:ltr;text-align:center}
+.item-count-wrap{margin-top:auto;padding-top:9px;border-top:1px solid var(--border);display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-shrink:0;text-align:right}
+.item-count{font-family:var(--mono);font-size:22px;font-weight:800;line-height:1}
 .item-count.done{color:var(--green)}.item-count.partial{color:var(--amber)}.item-count.pending{color:var(--text-muted)}
 .item-count-sub{font-size:11px;color:var(--text-muted);margin-top:0}
+@media (max-width:1100px){
+  .items-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .item-card{min-height:292px;padding:14px}
+  .item-img,.item-placeholder{height:165px}
+  .item-title{font-size:14px}
+  .item-sku,.item-opts{font-size:12px}
+}
+@media (max-width:640px){
+  .progress-stats{grid-template-columns:1fr}
+  .items-list{grid-template-columns:1fr}
+}
 .image-popup-overlay{position:fixed;inset:0;background:rgba(17,24,39,.88);z-index:1200;display:flex;align-items:center;justify-content:center;padding:28px;cursor:zoom-out}
 .image-popup-overlay.hidden{display:none}
 .image-popup-box{max-width:min(92vw,1180px);max-height:92vh;background:#fff;border-radius:18px;padding:18px;box-shadow:0 24px 80px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center}
@@ -296,19 +341,18 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);min-
 .empty-state{text-align:center;padding:40px;color:var(--text-muted);font-size:14px}
 
 /* ── About Modal ── */
-.about-summary{padding:10px 14px;cursor:pointer;font-weight:700;font-size:14px;background:var(--surface-2);border-radius:8px;list-style:none;display:flex;align-items:center;gap:6px;user-select:none}
-.about-summary::-webkit-details-marker{display:none}
-details[open]>.about-summary{border-radius:8px 8px 0 0}
-.about-body{border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;padding:14px 16px;font-size:13px;line-height:1.75}
-.about-desc{color:var(--text-primary);margin:0 0 12px}
-.about-label{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 6px}
-.about-steps{display:flex;flex-direction:column;gap:8px}
-.about-step{display:flex;gap:10px;align-items:flex-start}
-.about-num{min-width:22px;height:22px;background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-family:var(--mono);flex-shrink:0}
-.about-endpoints{display:flex;flex-direction:column;gap:6px}
-.about-ep{display:flex;gap:10px;align-items:baseline;font-size:13px}
-.about-ep code{font-family:var(--mono);font-size:12px;background:var(--surface-2);border:1px solid var(--border);border-radius:5px;padding:1px 7px;color:var(--accent);white-space:nowrap;flex-shrink:0}
-.about-code{font-family:var(--mono);font-size:12px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;overflow-x:auto;white-space:pre;direction:ltr;text-align:left;line-height:1.65;color:var(--text-primary);margin:0}
+.about-summary{font-weight:800;font-size:14px;cursor:pointer;padding:10px 0;color:var(--text-primary)}
+.about-body{padding:8px 0 12px;color:var(--text-secondary);font-size:13px;line-height:1.8}
+.about-desc{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;margin-bottom:12px;color:var(--text-primary)}
+.about-label{font-size:11px;font-weight:900;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin:12px 0 4px}
+.about-steps{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.about-step{display:flex;gap:9px;align-items:flex-start;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px}
+.about-num{width:22px;height:22px;display:inline-grid;place-items:center;border-radius:999px;background:var(--accent);color:#fff;font-size:11px;font-family:var(--mono);font-weight:800;flex-shrink:0}
+.about-grid{display:grid;grid-template-columns:1fr;gap:7px}
+.about-endpoint{display:grid;grid-template-columns:minmax(160px,230px) 1fr;gap:8px;align-items:start;background:#fff;border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px}
+.about-endpoint code{font-family:var(--mono);font-size:11px;color:var(--purple);direction:ltr;text-align:left}
+.about-note{background:var(--amber-light);border-right:4px solid var(--amber);border-radius:var(--radius-sm);padding:10px 12px;color:#92400e;font-weight:700}
+.about-muted{color:var(--text-muted);font-size:12px;margin-top:8px}
 </style>
 </head>
 <body>
@@ -318,26 +362,26 @@ details[open]>.about-summary{border-radius:8px 8px 0 0}
      ══════════════════════════════════════════════════════════════ -->
 <header class="app-header">
   <div class="header-left">
-    <span class="header-icon">📦</span>
+    <div class="header-icon">📦</div>
     <div>
       <div class="header-title">Pack Checker</div>
-      <div class="header-desc">التحقق من تعبئة الطلبات</div>
+      <div class="header-desc">التحقق من تغليف الطلبات</div>
     </div>
   </div>
   <div class="header-right">
     <button class="hbtn" onclick="openAbout()">ℹ️ عن الأداة</button>
-    <button class="hbtn hbtn-version" onclick="openChangelog()">v1.3.0 📋</button>
-    <button class="hbtn settings-missing" id="headerSettingsBtn" onclick="openSettings()">⚙️ الإعدادات</button>
+    <button class="hbtn hbtn-version" onclick="openChangelog()">📋 v1.3.0</button>
+    <button class="hbtn" id="activeUserBtn" style="display:none" onclick="logout()">👤 —</button>
+    <button class="hbtn" id="settingsBtn" onclick="openSettings()">⚙️ الإعدادات</button>
   </div>
 </header>
 
 <div class="toast-container" id="toastContainer"></div>
 
-
 <!-- Product Image Fullscreen Popup -->
 <div class="image-popup-overlay hidden" id="imagePopup" onclick="closeImagePopup()" aria-hidden="true">
   <div class="image-popup-box" onclick="event.stopPropagation()">
-    <img id="imagePopupImg" src="" alt="">
+    <img id="imagePopupImg" alt="Product image">
   </div>
 </div>
 
@@ -351,15 +395,15 @@ details[open]>.about-summary{border-radius:8px 8px 0 0}
     <div class="modal-body">
       <div class="settings-field">
         <label>WORKER URL</label>
-        <input type="text" id="settingUrl" dir="ltr">
+        <input type="text" id="cfgWorkerUrl" dir="ltr">
       </div>
       <div class="settings-field">
         <label>WORKER SECRET</label>
-        <input type="password" id="settingSecret" dir="ltr">
+        <input type="password" id="cfgWorkerSecret" dir="ltr">
       </div>
       <div class="settings-field">
         <label>ADMIN WORKER URL</label>
-        <input type="text" id="settingAdminUrl" dir="ltr">
+        <input type="text" id="cfgAdminUrl" dir="ltr">
       </div>
     </div>
     <div class="modal-footer">
@@ -373,52 +417,38 @@ details[open]>.about-summary{border-radius:8px 8px 0 0}
 <div class="modal-overlay hidden" id="changelogModal">
   <div class="modal-box">
     <div class="modal-header">
-      <span class="modal-title">📋 سجل التغييرات</span>
+      <span class="modal-title">📋 سجل الإصدارات</span>
       <button class="modal-close" onclick="closeChangelog()">×</button>
     </div>
     <div class="modal-body">
       <div class="cl-entry">
         <div class="cl-version">v1.3.0</div>
-        <div class="cl-date">23-05-2026</div>
+        <div class="cl-date">20-05-2026</div>
         <div class="cl-items">
-          <div class="cl-item"><span class="cl-tag fix">إصلاح</span> حذف lineItemsEditCount من GraphQL query — الحقل غير موجود في Shopify API (Field doesn't exist on type 'Order')</div>
-          <div class="cl-item"><span class="cl-tag change">تغيير</span> كشف تغيير المنتجات الآن يعتمد على مقارنة items fingerprint (SKU:qty) بدل عداد lineItemsEditCount</div>
-          <div class="cl-item"><span class="cl-tag change">تغيير</span> complete_pack لا يُرسل/يُخزّن editCount — عمود edit_count محفوظ في D1 للتوافق مع السجلات القديمة فقط</div>
+          <div class="cl-item"><span class="cl-tag fix">إصلاح</span> complete_pack لا يرسل editCount نهائياً ليتوافق مع Worker v1.3.0</div>
+          <div class="cl-item"><span class="cl-tag fix">إصلاح</span> حقل "مُغلَّف بواسطة" ثابت على الموظف الذي سجّل الدخول</div>
         </div>
       </div>
       <div class="cl-entry">
         <div class="cl-version">v1.2.0</div>
-        <div class="cl-date">23-05-2026</div>
+        <div class="cl-date">19-05-2026</div>
         <div class="cl-items">
           <div class="cl-item"><span class="cl-tag new">جديد</span> كشف تغييرات الأوردر — إذا تم تعديل المنتجات بعد التغليف تُفتح نافذة إعادة التغليف تلقائياً</div>
           <div class="cl-item"><span class="cl-tag new">جديد</span> لوحة Override — اختيار سبب إعادة التغليف من 3 خيارات</div>
           <div class="cl-item"><span class="cl-tag new">جديد</span> نافذة تأكيد إرجاع المخزون قبل السماح بإعادة التغليف</div>
-          <div class="cl-item"><span class="cl-tag new">جديد</span> أعمدة D1 جديدة: stage, item_count, items, edit_reason, edit_count</div>
-          <div class="cl-item"><span class="cl-tag new">جديد</span> About modal — مرجع تقني داخل الأداة</div>
+          <div class="cl-item"><span class="cl-tag new">جديد</span> أعمدة D1 جديدة: stage, item_count, items, edit_reason</div>
+          <div class="cl-item"><span class="cl-tag fix">إصلاح</span> زر التأكيد لا يظهر للأوردرات المغلفة إلا بعد تحديد السبب</div>
+          <div class="cl-item"><span class="cl-tag change">تغيير</span> complete_pack لا يُرسل/يُخزّن editCount — عمود edit_count محفوظ في D1 للتوافق مع السجلات القديمة فقط</div>
           <div class="cl-item"><span class="cl-tag change">تغيير</span> سجل التغليف يعرض سبب الإعادة عند وجوده</div>
-          <div class="cl-item"><span class="cl-tag change">تغيير</span> تصدير Excel يشمل عمود "سبب الإعادة"</div>
-        </div>
-      </div>
-      <div class="cl-entry">
-        <div class="cl-version">v1.1.2</div>
-        <div class="cl-date">18-05-2026</div>
-        <div class="cl-items">
-          <div class="cl-item"><span class="cl-tag change">تغيير</span> تقسيم input الأوردر إلى مربعين منفصلين: سكانر (تلقائي) + إدخال يدوي</div>
-        </div>
-      </div>
-      <div class="cl-entry">
-        <div class="cl-version">v1.1.1</div>
-        <div class="cl-date">18-05-2026</div>
-        <div class="cl-items">
-          <div class="cl-item"><span class="cl-tag fix">إصلاح</span> حقل "مُعبَّأ بواسطة" ثابت على الموظف الذي سجّل الدخول</div>
+          <div class="cl-item"><span class="cl-tag change">تغيير</span> تصدير Excel يضيف عمود سبب الإعادة</div>
         </div>
       </div>
       <div class="cl-entry">
         <div class="cl-version">v1.1.0</div>
         <div class="cl-date">18-05-2026</div>
         <div class="cl-items">
-          <div class="cl-item"><span class="cl-tag change">تغيير</span> إعادة بناء منطق تحديد المرحلة — 3 signals مستقلة</div>
-          <div class="cl-item"><span class="cl-tag new">جديد</span> لوحة عرض تفاصيل المرحلة S1/S2 ولوحة تعارض</div>
+          <div class="cl-item"><span class="cl-tag fix">إصلاح</span> الاعتماد على stage من الـ Worker بدلاً من حسابها في الواجهة</div>
+          <div class="cl-item"><span class="cl-tag fix">إصلاح</span> دعم S2 بناءً على status_2_r_e من Shopify</div>
         </div>
       </div>
       <div class="cl-entry">
@@ -447,90 +477,74 @@ details[open]>.about-summary{border-radius:8px 8px 0 0}
       <details open style="margin-top:16px">
         <summary class="about-summary">📋 وصف الأداة</summary>
         <div class="about-body">
-          <p class="about-desc">أداة التحقق من تعبئة الطلبات — تتيح للموظف سكان الأوردر والتحقق من منتجاته قبل الشحن، مع كتابة ميتافيلد التغليف وتسجيل الحدث في D1.</p>
+          <p class="about-desc">أداة التحقق من تغليف الطلبات — تتيح للموظف سكان الأوردر والتحقق من منتجاته قبل الشحن، مع كتابة ميتافيلد التغليف وتسجيل الحدث في D1.</p>
           <div class="about-label">المستخدمون</div>
           <p>موظفو التغليف — يستخدمون السكانر أو الإدخال اليدوي لفحص الأوردرات</p>
           <div class="about-label">كيف تعمل</div>
           <div class="about-steps">
             <div class="about-step"><span class="about-num">1</span><span>سكان باركود الأوردر أو إدخال رقمه → Worker يجلب بيانات الأوردر من Shopify</span></div>
-            <div class="about-step"><span class="about-num">2</span><span>الأداة تحدد المرحلة (S1/S2) بناءً على 3 signals: Return نشط + manual_status + status_2_r_e</span></div>
-            <div class="about-step"><span class="about-num">3</span><span>لو الأوردر مُغلَّف مسبقاً: يبني fingerprint من SKU+qty للـ items الحالية ويقارنها بالمخزّن في D1 — إذا اختلفت يفتح نافذة Override</span></div>
+            <div class="about-step"><span class="about-num">2</span><span>الأداة تحدد المرحلة (S1/S2) بناءً على 3 signals: هل يوجد طلب استبدال في الأوردر؟ + حالة الأوردر الأساسي (S1) + حالة الأوردر الاستبدال (S2)</span></div>
+            <div class="about-step"><span class="about-num">3</span><span>لو الأوردر مُغلَّف مسبقاً: يبني fingerprint من SKU+qty للـ items الحالية ويقارنها بالنسخة المخزنة</span></div>
             <div class="about-step"><span class="about-num">4</span><span>Override: الموظف يختار السبب، يؤكد إرجاع المخزون، ثم يُعيد التغليف</span></div>
-            <div class="about-step"><span class="about-num">5</span><span>سكان منتجات الأوردر واحداً بالباركود/SKU → عند اكتمالها → زرار "تأكيد اكتمال التعبئة"</span></div>
+            <div class="about-step"><span class="about-num">5</span><span>سكان منتجات الأوردر واحداً بالباركود/SKU → عند اكتمالها → زرار "تأكيد اكتمال التغليف"</span></div>
             <div class="about-step"><span class="about-num">6</span><span>Worker يكتب metafields التغليف في Shopify، يضيف tag، ويسجل في D1 مع items summary للمقارنة المستقبلية</span></div>
           </div>
-          <div class="about-label">الـ Endpoints الرئيسية</div>
-          <div class="about-endpoints">
-            <div class="about-ep"><code>get_order</code><span>جلب بيانات الأوردر + تحليل المرحلة + كشف التغيير بالـ fingerprint</span></div>
-            <div class="about-ep"><code>complete_pack</code><span>كتابة metafields + tag + تسجيل D1 مع items summary</span></div>
-            <div class="about-ep"><code>get_logs / get_logs_count / get_logs_export</code><span>استعراض وتصدير سجل التغليف</span></div>
+          <div class="about-label">ماذا يحدث عند إعادة التغليف؟</div>
+          <p class="about-note">لا يتم عمل تعديل مخزون آلي من هذه الواجهة. تظهر نافذة تأكيد فقط لإلزام الموظف بإرجاع القطع الصحيحة للمخزون قبل السماح بإعادة التغليف.</p>
+        </div>
+      </details>
+
+      <details style="margin-top:8px">
+        <summary class="about-summary">🔌 Worker Endpoints المستخدمة</summary>
+        <div class="about-body">
+          <div class="about-grid">
+            <div class="about-endpoint"><code>get_employees</code><span>تحميل الموظفين من Universal D1 Auth</span></div>
+            <div class="about-endpoint"><code>check_employee</code><span>فحص هل الموظف لديه PIN</span></div>
+            <div class="about-endpoint"><code>verify_employee</code><span>تسجيل الدخول بالـ PIN</span></div>
+            <div class="about-endpoint"><code>register_pin</code><span>إنشاء PIN لأول مرة</span></div>
+            <div class="about-endpoint"><code>log_logout</code><span>تسجيل الخروج في D1</span></div>
+            <div class="about-endpoint"><code>get_order</code><span>جلب وتحليل الأوردر من Shopify + كشف التغليف السابق والتعديلات</span></div>
+            <div class="about-endpoint"><code>complete_pack</code><span>حفظ التغليف وكتابة Shopify metafields/tags وتسجيل D1</span></div>
+            <div class="about-endpoint"><code>get_logs / get_logs_count / get_logs_export</code><span>استعراض وتصدير سجل التغليف</span></div>
           </div>
         </div>
       </details>
 
       <details style="margin-top:8px">
-        <summary class="about-summary">🔧 تشريح الكود</summary>
+        <summary class="about-summary">🧩 البيانات التي تتعامل معها الأداة</summary>
         <div class="about-body">
-          <pre class="about-code">FEATURE MAP
-──────────────────────────────────────────────────────────────────────────
-Feature                        │ File    │ §Section   │ fn / action
-──────────────────────────────────────────────────────────────────────────
-Stage detection (3 signals)    │ Worker  │ §PACK      │ analyzeStage()
-Items fingerprint (change det) │ Worker  │ §PACK      │ buildFingerprint()
-                               │         │            │ parseSavedItemsString()
-Change detection (fingerprint) │ Worker  │ §PACK      │ get_order
-Already-packed override panel  │ HTML    │ §TOOL-JS   │ renderAlreadyPackedOverride()
-Reason selection (3 options)   │ HTML    │ §TOOL-JS   │ showReasonSelection()
-Stock return confirm modal      │ HTML    │ §TOOL-JS   │ showStockReturnModal()
-Write pack metafields           │ Worker  │ §PACK      │ complete_pack
-Write D1 columns (incl. items) │ Worker  │ §PACK      │ complete_pack (UPDATE after writeLog)
-Log: show edit_reason           │ HTML    │ §LOG-JS    │ renderLog()
-XLSX export (edit_reason col)   │ HTML    │ §LOG-JS    │ exportLogXLSX()
-──────────────────────────────────────────────────────────────────────────
-
-KEY VARIABLES (HTML)
-LS_URL        = 'pack_checker_worker_url'
-LS_SECRET     = 'pack_checker_worker_secret'
-LS_ADMIN_URL  = 'admin_worker_url'
-currentEmployee          ← JS memory only (username, displayName)
-currentAlreadyPackedData ← JS memory (packedBy, storedItems, stage)
-currentEditReason        ← JS memory (text of selected reason)
-
-KEY VARIABLES (Worker)
-buildFingerprint(items)        → JSON.stringify(["SKU:qty",...].sort())
-parseSavedItemsString(str)     → parses "SKU ×qty, ..." back to [{sku,quantity}]
-changeDetected                 → currentFP !== storedFP  (true if no stored log)
-
-NOTES
-- lineItemsEditCount مش موجود في Shopify Order type — تم استبداله بـ fingerprint
-- NULL في عمود items → changeDetected=true دائماً (safe default)
-- edit_count column محفوظ في D1 schema للتوافق — لكن لا يُكتب في v1.3.0+
-- clone+addEventListener في showStockReturnModal (لا pendingAction variable)
-- items fingerprint: يقارن SKU (أو title لو مافيش SKU) + quantity فقط
-- D1 migration (ALTER TABLE) إلزامي قبل deploy v1.2.0 — مش مطلوب لـ v1.3.0</pre>
+          <div class="about-label">من Shopify</div>
+          <p>Order name/id، line items، SKU/barcode/image/options، note، returns، وmetafields الخاصة بتحديد S1/S2 وحالة التغليف.</p>
+          <div class="about-label">إلى Shopify</div>
+          <p>Metafields التغليف + tag/notes حسب منطق الـ Worker.</p>
+          <div class="about-label">إلى D1</div>
+          <p>سجل العملية: الموظف، الأوردر، المرحلة، عدد القطع، ملخص المنتجات، سبب إعادة التغليف إن وجد، والوقت.</p>
+          <p class="about-muted">الأسرار لا تُخزن في الكود؛ تُقرأ من إعدادات المتصفح وترسل كـ Authorization Bearer للـ Worker.</p>
         </div>
       </details>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-ghost" onclick="closeAbout()">إغلاق</button>
+
     </div>
   </div>
 </div>
 
 <!-- Stock Return Confirm Modal -->
 <div class="modal-overlay hidden stock-return-modal" id="stockReturnModal">
-  <div class="modal-box" style="max-width:420px">
+  <div class="modal-box">
     <div class="modal-header">
-      <span class="modal-title">📦 تأكيد إرجاع المخزون</span>
+      <span class="modal-title">⚠️ تأكيد إرجاع المخزون</span>
+      <button class="modal-close" onclick="document.getElementById('stockReturnModal').classList.add('hidden')">×</button>
     </div>
-    <div class="modal-body" style="align-items:center;text-align:center">
-      <div class="stock-return-icon">🔄</div>
-      <div class="stock-return-msg">هل قمت بالفعل بإرجاع الأوردر المغلَّف مسبقاً إلى المخزن؟</div>
+    <div class="modal-body">
+      <div class="stock-return-icon">📦↩️</div>
+      <div class="stock-return-title">قبل إعادة التغليف</div>
+      <div class="stock-return-text">
+        تأكد أن كل منتجات التغليف السابق تم إرجاعها فعلياً إلى المخزون/المكان الصحيح قبل استكمال إعادة التغليف.
+      </div>
       <div class="stock-return-items" id="stockReturnItemsText"></div>
     </div>
-    <div class="modal-footer centered">
+    <div class="modal-footer">
+      <button class="btn-danger" id="stockReturnConfirmBtn">نعم، تم إرجاع المخزون</button>
       <button class="btn-ghost" id="stockReturnCancelBtn">إلغاء</button>
-      <button class="btn-green" id="stockReturnConfirmBtn">✓ نعم، تم الإرجاع</button>
     </div>
   </div>
 </div>
@@ -548,37 +562,28 @@ NOTES
     </div>
     <div class="login-body">
       <div class="login-field">
-        <label for="loginSelect">الموظف</label>
-        <select id="loginSelect" onchange="handleEmployeeChange()" disabled>
+        <label for="employeeSelect">الموظف</label>
+        <select id="employeeSelect" onchange="handleEmployeeChange()">
           <option value="">— اختر —</option>
         </select>
-        <div class="login-status warn" id="loginStatus">الإعدادات غير مكتملة — افتح الإعدادات أولًا.</div>
+        <div class="login-status" id="employeeStatus"></div>
       </div>
       <div class="pin-zone" id="pinZone">
-        <div class="pin-label" id="pinLabel">أدخل الـ PIN</div>
+        <div class="pin-label" id="pinLabel">PIN</div>
         <div class="pin-slots" id="pinSlots">
-          <div class="pin-slot empty" id="pinSlot0"></div>
-          <div class="pin-slot empty" id="pinSlot1"></div>
-          <div class="pin-slot empty" id="pinSlot2"></div>
-          <div class="pin-slot empty" id="pinSlot3"></div>
+          <div class="pin-slot empty"></div><div class="pin-slot empty"></div><div class="pin-slot empty"></div><div class="pin-slot empty"></div>
         </div>
         <div class="pin-keypad" id="pinKeypad">
-          <button class="pin-key" onclick="pressPinKey('1')">1</button>
-          <button class="pin-key" onclick="pressPinKey('2')">2</button>
-          <button class="pin-key" onclick="pressPinKey('3')">3</button>
-          <button class="pin-key" onclick="pressPinKey('4')">4</button>
-          <button class="pin-key" onclick="pressPinKey('5')">5</button>
-          <button class="pin-key" onclick="pressPinKey('6')">6</button>
-          <button class="pin-key" onclick="pressPinKey('7')">7</button>
-          <button class="pin-key" onclick="pressPinKey('8')">8</button>
-          <button class="pin-key" onclick="pressPinKey('9')">9</button>
-          <button class="pin-key utility" onclick="pressPinKey('clear')">مسح</button>
-          <button class="pin-key" onclick="pressPinKey('0')">0</button>
-          <button class="pin-key utility" onclick="pressPinKey('back')">←</button>
+          <button class="pin-key" onclick="pinDigit('1')">1</button><button class="pin-key" onclick="pinDigit('2')">2</button><button class="pin-key" onclick="pinDigit('3')">3</button>
+          <button class="pin-key" onclick="pinDigit('4')">4</button><button class="pin-key" onclick="pinDigit('5')">5</button><button class="pin-key" onclick="pinDigit('6')">6</button>
+          <button class="pin-key" onclick="pinDigit('7')">7</button><button class="pin-key" onclick="pinDigit('8')">8</button><button class="pin-key" onclick="pinDigit('9')">9</button>
+          <button class="pin-key utility" onclick="pinClear()">مسح</button><button class="pin-key" onclick="pinDigit('0')">0</button><button class="pin-key utility" onclick="pinBack()">←</button>
         </div>
-        <div class="login-alert" id="loginAlert"></div>
-        <button class="login-primary visible" id="loginPrimaryBtn" onclick="handlePrimaryLoginAction()" disabled>دخول</button>
-        <button class="login-secondary" id="loginSecondaryBtn" onclick="restartNewPinFlow()">الرجوع لإدخال PIN جديد</button>
+      </div>
+      <div class="login-alert" id="loginAlert"></div>
+      <div class="login-actions">
+        <button class="login-primary-btn" id="loginPrimaryBtn" onclick="loginPrimaryAction()" disabled>دخول</button>
+        <button class="login-secondary-btn" id="loginSecondaryBtn" onclick="backToEmployeeSelect()">تغيير الموظف</button>
       </div>
     </div>
   </div>
@@ -623,103 +628,135 @@ NOTES
     <!-- Check Sub-screen -->
     <div id="subscreenCheck" style="display:none">
 
-      <!-- Order Header -->
-      <div class="order-header-card">
-        <div class="order-header-top">
-          <div style="display:flex;align-items:center;gap:10px">
-            <span class="order-name" id="checkOrderName"></span>
-            <span class="stage-badge-sm" id="checkStageBadge"></span>
-          </div>
-          <button class="btn-ghost" style="font-size:12px;padding:6px 12px" onclick="resetToEntry()">← أوردر جديد</button>
-        </div>
-        <div class="order-note" id="checkOrderNote"></div>
-      </div>
+      <div class="check-layout">
 
-      <!-- Stage Indicator -->
-      <div class="stage-indicator-card" id="stageCard">
-        <div class="stage-badge-xl" id="stageBadgeXl"></div>
-        <div class="stage-indicator-info">
-          <div class="stage-indicator-title" id="stageTitle"></div>
-          <div class="stage-signals" id="stageSignals"></div>
-        </div>
-      </div>
-
-      <!-- Unclear Warning -->
-      <div class="unclear-warning" id="unclearWarn">
-        ⚠️ لم يتم تحديد manual_status أو status_2_r_e — يُعامَل الأوردر كـ S1 افتراضياً. تأكد من صحة هذا قبل التعبئة.
-      </div>
-
-      <!-- Conflict Panel -->
-      <div class="conflict-panel" id="conflictPanel" style="display:none">
-        <div class="conflict-header">
-          <div class="conflict-icon-big">🚫</div>
-          <div>
-            <div class="conflict-title">تعارض في بيانات الأوردر</div>
-            <div class="conflict-subtitle">لا يمكن المتابعة — يرجى تصحيح البيانات في Shopify أولاً ثم إعادة سكان الأوردر</div>
+        <aside class="order-side-panel">
+          <!-- Order Header -->
+          <div class="order-header-card">
+            <div class="order-header-top">
+              <div style="display:flex;align-items:center;gap:10px">
+                <span class="order-name" id="checkOrderName"></span>
+                <span class="stage-badge-sm" id="checkStageBadge"></span>
+              </div>
+              <button class="btn-ghost" style="font-size:12px;padding:6px 12px" onclick="resetToEntry()">← أوردر جديد</button>
+            </div>
+            <div class="order-note" id="checkOrderNote"></div>
           </div>
-        </div>
-        <div class="conflict-data" id="conflictData"></div>
-        <div class="conflict-reason" id="conflictReason"></div>
-        <div class="conflict-actions">
-          <a id="shopifyLink" href="#" target="_blank" class="btn-shopify">فتح الأوردر في Shopify ↗</a>
-          <button class="btn-ghost" onclick="resetToEntry()">← أوردر آخر</button>
-        </div>
-      </div>
 
-      <!-- Already Packed Override Panel -->
-      <div class="ap-panel" id="alreadyPackedPanel" style="display:none">
-        <div class="ap-header">
-          <div class="ap-icon">⚠️</div>
-          <div class="ap-header-info">
-            <div class="ap-title">تم تغليف مسبقاً — تعديل مكتشف</div>
-            <div class="ap-subtitle">تم اكتشاف تغيير على منتجات الأوردر منذ آخر تغليف</div>
+          <!-- Stage Indicator -->
+          <div class="stage-indicator-card" id="stageCard">
+            <div class="stage-badge-xl" id="stageBadgeXl"></div>
+            <div class="stage-indicator-info">
+              <div class="stage-indicator-title" id="stageTitle"></div>
+              <div class="stage-signals" id="stageSignals"></div>
+            </div>
           </div>
-        </div>
-        <div class="ap-data" id="apData"></div>
-        <div class="ap-change-note" id="apChangeNote">🔄 تم اكتشاف تعديل على الأوردر — يمكن إعادة التغليف بعد تحديد السبب</div>
-        <button class="btn-override" id="btnOverridePack" onclick="showReasonSelection()">
-          🔄 إعادة تغليف — تعديل حصل
-        </button>
-        <!-- Reason Selection -->
-        <div class="reason-section" id="reasonSection">
-          <div class="reason-title">اختر سبب إعادة التغليف:</div>
-          <div class="reason-options">
-            <label class="reason-option selected" id="reason0">
-              <input type="radio" name="packReason" value="تعديل الأوردر من المتجر (تغيير منتج/كمية)" checked>
-              <span class="reason-option-text">تعديل الأوردر من المتجر (تغيير منتج/كمية)</span>
-            </label>
-            <label class="reason-option" id="reason1">
-              <input type="radio" name="packReason" value="خطأ في التغليف السابق">
-              <span class="reason-option-text">خطأ في التغليف السابق</span>
-            </label>
-            <label class="reason-option" id="reason2">
-              <input type="radio" name="packReason" value="طلب إدارة / سبب آخر">
-              <span class="reason-option-text">طلب إدارة / سبب آخر</span>
-            </label>
+
+          <!-- Unclear Warning -->
+          <div class="unclear-warning" id="unclearWarn">
+            ⚠️ لم يتم تحديد حالة الأوردر الأساسي (S1) أو حالة الأوردر الاستبدال (S2) — يُعامَل الأوردر كـ S1 افتراضياً. تأكد من صحة هذا قبل التغليف.
           </div>
-          <button class="btn-reason-confirm" id="btnReasonConfirm" onclick="confirmReasonAndShowModal()">
-            متابعة — تأكيد إرجاع المخزون
+
+          <!-- Conflict Panel -->
+          <div class="conflict-panel" id="conflictPanel" style="display:none">
+            <div class="conflict-header">
+              <div class="conflict-icon-big">🚫</div>
+              <div>
+                <div class="conflict-title">تعارض في بيانات الأوردر</div>
+                <div class="conflict-subtitle">لا يمكن المتابعة — يرجى تصحيح البيانات في Shopify أولاً ثم إعادة سكان الأوردر</div>
+              </div>
+            </div>
+            <div class="conflict-data" id="conflictData"></div>
+            <div class="conflict-reason" id="conflictReason"></div>
+            <div class="conflict-actions">
+              <a id="shopifyLink" href="#" target="_blank" class="btn-shopify">فتح الأوردر في Shopify ↗</a>
+              <button class="btn-ghost" onclick="resetToEntry()">← أوردر آخر</button>
+            </div>
+          </div>
+
+          <!-- Already Packed Override Panel -->
+          <div class="ap-panel" id="alreadyPackedPanel" style="display:none">
+            <div class="ap-header">
+              <div class="ap-icon">⚠️</div>
+              <div class="ap-header-info">
+                <div class="ap-title">تم تغليف مسبقاً — تعديل مكتشف</div>
+                <div class="ap-subtitle">تم اكتشاف تغيير على منتجات الأوردر منذ آخر تغليف</div>
+              </div>
+            </div>
+            <div class="ap-data" id="apData"></div>
+            <div class="ap-change-note" id="apChangeNote">🔄 تم اكتشاف تعديل على الأوردر — يمكن إعادة التغليف بعد تحديد السبب</div>
+            <button class="btn-override" id="btnOverridePack" onclick="showReasonSelection()">
+              🔄 إعادة تغليف — تعديل حصل
+            </button>
+            <!-- Reason Selection -->
+            <div class="reason-section" id="reasonSection">
+              <div class="reason-title">اختر سبب إعادة التغليف:</div>
+              <div class="reason-options">
+                <label class="reason-option selected" id="reason0">
+                  <input type="radio" name="packReason" value="تعديل الأوردر من المتجر (تغيير منتج/كمية)" checked>
+                  <span class="reason-option-text">تعديل الأوردر من المتجر (تغيير منتج/كمية)</span>
+                </label>
+                <label class="reason-option" id="reason1">
+                  <input type="radio" name="packReason" value="خطأ في التغليف السابق">
+                  <span class="reason-option-text">خطأ في التغليف السابق</span>
+                </label>
+                <label class="reason-option" id="reason2">
+                  <input type="radio" name="packReason" value="طلب إدارة / سبب آخر">
+                  <span class="reason-option-text">طلب إدارة / سبب آخر</span>
+                </label>
+              </div>
+              <button class="btn-reason-confirm" id="btnReasonConfirm" onclick="confirmReasonAndShowModal()">
+                متابعة — تأكيد إرجاع المخزون
+              </button>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Packing Content -->
+        <section class="packing-main" id="packingContent">
+          <div class="employee-bar">
+            <label>مُغلَّف بواسطة:</label>
+            <span class="employee-bar-name" id="packedByName"></span>
+          </div>
+          <div class="scan-banner" id="scanBanner"></div>
+          <input type="text" class="barcode-input" id="barcodeScanInput"
+                 placeholder="سكان باركود المنتج..." autocomplete="off" inputmode="text">
+          <div class="summary-bar">
+            <span class="summary-label">إجمالي القطع</span>
+            <span class="summary-val" id="summaryTotal">0 / 0</span>
+          </div>
+          <div class="progress-card" id="scanProgressCard">
+            <div class="progress-head">
+              <div>
+                <div class="progress-title">تقدم السكان</div>
+                <div class="progress-sub" id="progressText">تم سكان 0 من 0 — المتبقي 0</div>
+              </div>
+              <div class="progress-percent" id="progressPct">0%</div>
+            </div>
+            <div class="progress-track" aria-hidden="true">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-stats">
+              <div class="progress-stat">
+                <div class="progress-stat-label">تم السكان</div>
+                <div class="progress-stat-val" id="progressScanned">0</div>
+              </div>
+              <div class="progress-stat">
+                <div class="progress-stat-label">المتبقي</div>
+                <div class="progress-stat-val" id="progressRemaining">0</div>
+              </div>
+              <div class="progress-stat">
+                <div class="progress-stat-label">الإجمالي</div>
+                <div class="progress-stat-val" id="progressTotal">0</div>
+              </div>
+            </div>
+          </div>
+          <div class="items-list" id="itemsList"></div>
+          <button class="btn-complete" id="btnComplete" onclick="completePack()" disabled>
+            ✅ تأكيد اكتمال التغليف
           </button>
-        </div>
-      </div>
+        </section>
 
-      <!-- Packing Content -->
-      <div id="packingContent">
-        <div class="employee-bar">
-          <label>مُعبَّأ بواسطة:</label>
-          <span class="employee-bar-name" id="packedByName"></span>
-        </div>
-        <div class="scan-banner" id="scanBanner"></div>
-        <input type="text" class="barcode-input" id="barcodeScanInput"
-               placeholder="سكان باركود المنتج..." autocomplete="off" inputmode="text">
-        <div class="summary-bar">
-          <span class="summary-label">إجمالي القطع</span>
-          <span class="summary-val" id="summaryTotal">0 / 0</span>
-        </div>
-        <div class="items-list" id="itemsList"></div>
-        <button class="btn-complete" id="btnComplete" onclick="completePack()" disabled>
-          ✅ تأكيد اكتمال التعبئة
-        </button>
       </div>
 
     </div>
@@ -759,92 +796,320 @@ const LS_SECRET    = 'pack_checker_worker_secret';
 const LS_ADMIN_URL = 'admin_worker_url';
 
 function normalizeUrl(v) { return String(v || '').trim().replace(/\/$/, ''); }
-function isValidHttpUrl(v) {
-  try { const u = new URL(String(v||'').trim()); return u.protocol==='http:'||u.protocol==='https:'; }
-  catch(_){ return false; }
-}
+function isValidHttpUrl(v) { return /^https?:\/\//i.test(String(v || '').trim()); }
 function getConfig() {
   return {
-    url:      normalizeUrl(localStorage.getItem(LS_URL) || ''),
-    secret:   localStorage.getItem(LS_SECRET) || '',
-    adminUrl: normalizeUrl(localStorage.getItem(LS_ADMIN_URL) || ''),
+    workerUrl:    localStorage.getItem(LS_URL)       || '',
+    workerSecret: localStorage.getItem(LS_SECRET)    || '',
+    adminUrl:     localStorage.getItem(LS_ADMIN_URL) || '',
   };
 }
 function isConfigured() {
-  const { url, secret } = getConfig();
-  return isValidHttpUrl(url) && !!secret.trim();
+  const c = getConfig();
+  return isValidHttpUrl(c.workerUrl) && c.workerSecret.trim().length > 0;
 }
-
+function getWorkerUrl() {
+  const url = normalizeUrl(localStorage.getItem(LS_URL));
+  if (!url) throw new Error('WORKER URL غير محفوظ');
+  return url;
+}
+function getWorkerSecret() {
+  const s = localStorage.getItem(LS_SECRET) || '';
+  if (!s) throw new Error('WORKER SECRET غير محفوظ');
+  return s;
+}
 async function apiPost(action, body = {}) {
-  const { url, secret } = getConfig();
-  if (!url || !secret) throw new Error('يرجى ضبط إعدادات الـ Worker أولاً');
-  const res = await fetch(`${url}?action=${action}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${secret}` },
-    body: JSON.stringify(body),
+  const resp = await fetch(getWorkerUrl(), {
+    method:'POST',
+    headers:{ 'Content-Type':'application/json', 'Authorization':`Bearer ${getWorkerSecret()}` },
+    body:JSON.stringify({ action, ...body })
   });
-  return res.json();
+  const data = await resp.json().catch(() => ({}));
+  if (!resp.ok) throw new Error(data.error || `HTTP ${resp.status}`);
+  return data;
 }
 async function apiGet(action, params = {}) {
-  const { url, secret } = getConfig();
-  if (!url || !secret) throw new Error('يرجى ضبط إعدادات الـ Worker أولاً');
-  const qs  = new URLSearchParams({ action, ...params }).toString();
-  const res = await fetch(`${url}?${qs}`, { headers: { 'Authorization': `Bearer ${secret}` } });
-  return res.json();
+  const url = new URL(getWorkerUrl());
+  url.searchParams.set('action', action);
+  Object.entries(params).forEach(([k,v]) => { if (v !== null && v !== undefined && v !== '') url.searchParams.set(k, v); });
+  const resp = await fetch(url.toString(), { headers:{ 'Authorization':`Bearer ${getWorkerSecret()}` } });
+  const data = await resp.json().catch(() => ({}));
+  if (!resp.ok) throw new Error(data.error || `HTTP ${resp.status}`);
+  return data;
 }
 
-// ══════════════════════════════════════════════════════════════
-// §SHELL-JS
-// ══════════════════════════════════════════════════════════════
-function showToast(msg, type = 'neutral', dur = 3000) {
-  const t = document.createElement('div');
-  t.className = `toast toast-${type}`;
-  t.textContent = msg;
-  document.getElementById('toastContainer').appendChild(t);
-  setTimeout(() => t.remove(), dur);
-}
-function toCairo(iso) { return new Date(new Date(iso).getTime() + 3 * 3600000); }
+// ── Cairo time helpers ────────────────────────────────────────
+function toCairo(iso) { return new Date(new Date(iso).getTime() + 3 * 60 * 60 * 1000); }
 function fmtDT(iso) {
-  const d = toCairo(iso), p = n => String(n).padStart(2, '0');
+  if (!iso) return '—';
+  const d = toCairo(iso), pad = n => String(n).padStart(2,'0');
   let h = d.getUTCHours();
   const ampm = h >= 12 ? 'مساءً' : 'صباحاً';
   h = h % 12 || 12;
-  return `${p(d.getUTCDate())}-${p(d.getUTCMonth()+1)}-${d.getUTCFullYear()} ${p(h)}:${p(d.getUTCMinutes())} ${ampm}`;
+  return `${pad(d.getUTCDate())}-${pad(d.getUTCMonth()+1)}-${d.getUTCFullYear()} ${pad(h)}:${pad(d.getUTCMinutes())} ${ampm}`;
+}
+
+// ── Shell helpers ─────────────────────────────────────────────
+function showToast(msg, type='neutral', ms=3000) {
+  const el = document.createElement('div');
+  el.className = `toast toast-${type}`;
+  el.textContent = msg;
+  document.getElementById('toastContainer').appendChild(el);
+  setTimeout(() => el.remove(), ms);
 }
 function updateSettingsButtonsState() {
-  const configured = isConfigured();
-  const headerBtn = document.getElementById('headerSettingsBtn');
-  const loginBtn  = document.getElementById('loginSettingsBtn');
-  if (headerBtn) { headerBtn.classList.toggle('settings-ready', configured); headerBtn.classList.toggle('settings-missing', !configured); }
-  if (loginBtn)  { loginBtn.classList.toggle('ready', configured);           loginBtn.classList.toggle('missing', !configured); }
+  const ready = isConfigured();
+  const btn = document.getElementById('settingsBtn');
+  btn.classList.toggle('settings-ready', ready);
+  btn.classList.toggle('settings-missing', !ready);
+  const lbtn = document.getElementById('loginSettingsBtn');
+  lbtn.classList.toggle('ready', ready);
+  lbtn.classList.toggle('missing', !ready);
 }
 function openSettings() {
   const c = getConfig();
-  document.getElementById('settingUrl').value      = c.url;
-  document.getElementById('settingSecret').value   = c.secret;
-  document.getElementById('settingAdminUrl').value = c.adminUrl;
+  document.getElementById('cfgWorkerUrl').value = c.workerUrl;
+  document.getElementById('cfgWorkerSecret').value = c.workerSecret;
+  document.getElementById('cfgAdminUrl').value = c.adminUrl;
   document.getElementById('settingsModal').classList.remove('hidden');
 }
 function closeSettings() { document.getElementById('settingsModal').classList.add('hidden'); }
-async function saveSettings() {
-  const url      = normalizeUrl(document.getElementById('settingUrl').value);
-  const secret   = document.getElementById('settingSecret').value.trim();
-  const adminUrl = normalizeUrl(document.getElementById('settingAdminUrl').value);
-  if (!isValidHttpUrl(url))              { showToast('أدخل WORKER URL صحيحًا', 'error'); return; }
-  if (!secret)                           { showToast('أدخل WORKER SECRET', 'error'); return; }
-  if (adminUrl && !isValidHttpUrl(adminUrl)) { showToast('ADMIN WORKER URL غير صحيح', 'error'); return; }
+function saveSettings() {
+  const url    = normalizeUrl(document.getElementById('cfgWorkerUrl').value);
+  const secret = document.getElementById('cfgWorkerSecret').value.trim();
+  const admin  = normalizeUrl(document.getElementById('cfgAdminUrl').value);
+  if (!isValidHttpUrl(url)) { showToast('WORKER URL غير صحيح', 'error'); return; }
+  if (!secret) { showToast('WORKER SECRET مطلوب', 'error'); return; }
   localStorage.setItem(LS_URL, url);
   localStorage.setItem(LS_SECRET, secret);
-  localStorage.setItem(LS_ADMIN_URL, adminUrl);
+  localStorage.setItem(LS_ADMIN_URL, admin);
   closeSettings();
   updateSettingsButtonsState();
   showToast('تم حفظ الإعدادات', 'success');
-  await loadEmployeesList();
+  loadEmployeesList();
 }
-function openChangelog()  { document.getElementById('changelogModal').classList.remove('hidden'); }
+function openChangelog() { document.getElementById('changelogModal').classList.remove('hidden'); }
 function closeChangelog() { document.getElementById('changelogModal').classList.add('hidden'); }
-function openAbout()      { document.getElementById('aboutModal').classList.remove('hidden'); }
-function closeAbout()     { document.getElementById('aboutModal').classList.add('hidden'); }
+function openAbout() { document.getElementById('aboutModal').classList.remove('hidden'); }
+function closeAbout() { document.getElementById('aboutModal').classList.add('hidden'); }
+
+// ══════════════════════════════════════════════════════════════
+// §LOGIN-JS
+// ══════════════════════════════════════════════════════════════
+let currentEmployee = null;
+let employees = [];
+let selectedEmployee = null;
+let loginMode = 'employee'; // employee | existing | create | confirm | checking | verifying
+let pinValue = '';
+let newPinFirst = '';
+let autoTimer = null;
+let loginBusy = false;
+
+const loginCopy = {
+  employee: 'اختر اسمك للمتابعة',
+  checking: 'جارٍ التحقق من الحساب...',
+  existing: 'أدخل الـ PIN',
+  create: 'أول مرة؟ أنشئ PIN من 4 أرقام',
+  confirm: 'أعد إدخال الـ PIN للتأكيد',
+};
+
+function setLoginAlert(msg = '') {
+  const el = document.getElementById('loginAlert');
+  if (!msg) { el.textContent = ''; el.classList.remove('visible'); return; }
+  el.textContent = msg;
+  el.classList.add('visible');
+}
+function setEmployeeStatus(msg = '', cls = '') {
+  const el = document.getElementById('employeeStatus');
+  el.textContent = msg;
+  el.className = `login-status ${cls}`.trim();
+}
+function renderPinSlots(error=false) {
+  const slots = [...document.querySelectorAll('.pin-slot')];
+  slots.forEach((s, i) => {
+    s.className = 'pin-slot ' + (pinValue.length > i ? 'filled' : 'empty') + (error ? ' error' : '');
+  });
+}
+function shakePin() {
+  const el = document.getElementById('pinSlots');
+  el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake');
+  renderPinSlots(true);
+  setTimeout(() => renderPinSlots(false), 500);
+}
+function renderLoginMode(mode) {
+  loginMode = mode;
+  clearTimeout(autoTimer);
+  const sub = document.getElementById('loginSub');
+  const pinZone = document.getElementById('pinZone');
+  const primary = document.getElementById('loginPrimaryBtn');
+  const secondary = document.getElementById('loginSecondaryBtn');
+  sub.textContent = loginCopy[mode] || loginCopy.employee;
+  pinZone.classList.toggle('visible', ['existing','create','confirm','verifying'].includes(mode));
+  secondary.classList.toggle('visible', ['existing','create','confirm'].includes(mode));
+
+  let text = 'دخول', disabled = true;
+  if (mode === 'employee') { text = 'دخول'; disabled = true; pinValue=''; }
+  if (mode === 'checking') { text = '⏳ جارٍ التحقق...'; disabled = true; }
+  if (mode === 'existing') { text = 'دخول'; disabled = pinValue.length !== 4 || loginBusy; }
+  if (mode === 'create') { text = 'متابعة'; disabled = pinValue.length !== 4 || loginBusy; }
+  if (mode === 'confirm') { text = 'تأكيد وتسجيل الدخول'; disabled = pinValue.length !== 4 || loginBusy; }
+  if (mode === 'verifying') { text = '⏳ جاري التحقق...'; disabled = true; }
+  primary.textContent = text;
+  primary.disabled = disabled;
+  renderPinSlots();
+}
+
+async function loadEmployeesList() {
+  const sel = document.getElementById('employeeSelect');
+  updateSettingsButtonsState();
+  if (!isConfigured()) {
+    sel.innerHTML = '<option value="">— اختر —</option>';
+    setEmployeeStatus('الإعدادات غير مكتملة — افتح الإعدادات أولًا.', 'warn');
+    return;
+  }
+  setEmployeeStatus('جارٍ تحميل الموظفين...', 'info');
+  try {
+    const data = await apiGet('get_employees');
+    employees = data.employees || [];
+    sel.innerHTML = '<option value="">— اختر —</option>' + employees.map(e =>
+      `<option value="${e.username}">${e.display_name || e.username}</option>`
+    ).join('');
+    setEmployeeStatus('', '');
+  } catch (err) {
+    setEmployeeStatus('تعذّر تحميل قائمة الموظفين.', 'error');
+  }
+}
+
+async function handleEmployeeChange() {
+  const username = document.getElementById('employeeSelect').value;
+  selectedEmployee = employees.find(e => e.username === username) || null;
+  pinValue = ''; newPinFirst = ''; setLoginAlert('');
+  if (!selectedEmployee) { renderLoginMode('employee'); return; }
+  if (!isConfigured()) { setLoginAlert('الإعدادات غير مكتملة — افتح الإعدادات أولًا.'); renderLoginMode('employee'); return; }
+  renderLoginMode('checking');
+  setEmployeeStatus('جارٍ التحقق من الحساب...', 'info');
+  try {
+    const data = await apiPost('check_employee', { username });
+    if (!data.ok) throw new Error(data.error || 'المستخدم غير موجود');
+    setEmployeeStatus('', '');
+    pinValue = '';
+    renderLoginMode(data.hasPin ? 'existing' : 'create');
+  } catch (err) {
+    selectedEmployee = null;
+    setEmployeeStatus(err.message || 'المستخدم غير موجود', 'error');
+    setLoginAlert(err.message || 'المستخدم غير موجود');
+    playLoginTone('error');
+    renderLoginMode('employee');
+  }
+}
+function pinDigit(d) {
+  if (!['existing','create','confirm'].includes(loginMode) || loginBusy) return;
+  if (pinValue.length >= 4) return;
+  pinValue += d;
+  setLoginAlert(''); renderLoginMode(loginMode);
+  if (pinValue.length === 4) autoTimer = setTimeout(() => loginPrimaryAction(), 120);
+}
+function pinBack() { if (loginBusy) return; pinValue = pinValue.slice(0,-1); setLoginAlert(''); renderLoginMode(loginMode); }
+function pinClear() { if (loginBusy) return; pinValue = ''; setLoginAlert(''); renderLoginMode(loginMode); }
+function backToEmployeeSelect() {
+  if (loginBusy) return;
+  pinValue = ''; newPinFirst = ''; selectedEmployee = null;
+  document.getElementById('employeeSelect').value = '';
+  setEmployeeStatus(''); setLoginAlert(''); renderLoginMode('employee');
+}
+async function loginPrimaryAction() {
+  if (!selectedEmployee) { setLoginAlert('اختر الموظف أولاً'); return; }
+  if (loginBusy) return;
+  if (loginMode === 'create') {
+    if (pinValue.length !== 4) return;
+    newPinFirst = pinValue;
+    pinValue = '';
+    renderLoginMode('confirm');
+    return;
+  }
+  if (loginMode === 'confirm') {
+    if (pinValue.length !== 4) return;
+    if (pinValue !== newPinFirst) {
+      setLoginAlert('الـ PIN غير متطابق — حاول مرة أخرى');
+      playLoginTone('error'); shakePin(); pinValue = '';
+      setTimeout(() => renderLoginMode('confirm'), 200);
+      return;
+    }
+    await registerAndVerify();
+    return;
+  }
+  if (loginMode === 'existing') {
+    if (pinValue.length !== 4) return;
+    await verifyLogin();
+  }
+}
+async function verifyLogin() {
+  loginBusy = true; renderLoginMode('verifying');
+  try {
+    const data = await apiPost('verify_employee', { username:selectedEmployee.username, pin:pinValue });
+    if (!data.ok) throw new Error(data.error || 'PIN خطأ — حاول مرة أخرى');
+    finishLogin(data.employee || { username:selectedEmployee.username, displayName:selectedEmployee.display_name || selectedEmployee.username });
+  } catch (err) {
+    setLoginAlert(err.message || 'PIN خطأ — حاول مرة أخرى');
+    playLoginTone('error'); shakePin(); pinValue = '';
+    loginBusy = false; setTimeout(() => renderLoginMode('existing'), 250);
+  }
+}
+async function registerAndVerify() {
+  loginBusy = true; renderLoginMode('verifying');
+  try {
+    const r = await apiPost('register_pin', { username:selectedEmployee.username, pin:pinValue });
+    if (!r.ok) throw new Error(r.error || 'تعذّر تسجيل PIN');
+    const v = await apiPost('verify_employee', { username:selectedEmployee.username, pin:pinValue });
+    if (!v.ok) throw new Error(v.error || 'تعذّر تسجيل الدخول');
+    finishLogin(v.employee || { username:selectedEmployee.username, displayName:selectedEmployee.display_name || selectedEmployee.username });
+  } catch (err) {
+    setLoginAlert(err.message || 'تعذّر تسجيل الدخول');
+    playLoginTone('error'); shakePin(); pinValue = '';
+    loginBusy = false; setTimeout(() => renderLoginMode('create'), 250);
+  }
+}
+function finishLogin(emp) {
+  currentEmployee = {
+    username: emp.username,
+    displayName: emp.displayName || emp.display_name || emp.username,
+  };
+  document.getElementById('activeUserBtn').style.display = '';
+  document.getElementById('activeUserBtn').textContent = `👤 ${currentEmployee.displayName}`;
+  document.getElementById('packedByName').textContent = currentEmployee.displayName;
+  document.getElementById('loginOverlay').classList.add('hidden');
+  loginBusy = false; pinValue = ''; newPinFirst = '';
+  playLoginTone('success');
+  setTimeout(() => orderInput.focus(), 100);
+}
+async function logout() {
+  const emp = currentEmployee;
+  currentEmployee = null;
+  document.getElementById('activeUserBtn').style.display = 'none';
+  document.getElementById('loginOverlay').classList.remove('hidden');
+  resetToEntry();
+  backToEmployeeSelect();
+  if (emp) { try { await apiPost('log_logout', { employee: emp.username }); } catch {} }
+}
+
+// Login keyboard support
+window.addEventListener('keydown', (e) => {
+  if (document.getElementById('loginOverlay').classList.contains('hidden')) return;
+  if (/^\d$/.test(e.key)) { e.preventDefault(); pinDigit(e.key); }
+  else if (e.key === 'Backspace') { e.preventDefault(); pinBack(); }
+  else if (e.key === 'Delete' || e.key === 'Escape') { e.preventDefault(); pinClear(); }
+  else if (e.key === 'Enter' && !document.getElementById('loginPrimaryBtn').disabled) { e.preventDefault(); loginPrimaryAction(); }
+});
+function playLoginTone(type) { playBeep(type === 'success' ? 'success' : 'error'); }
+
+// ══════════════════════════════════════════════════════════════
+// §TOOL-JS
+// ══════════════════════════════════════════════════════════════
+let currentOrder = null;
+let currentItems = [];
+let currentAnalysis = null;
+let currentAlreadyPackedData = null;
+let currentEditReason = null;
 
 function switchTab(tab) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -854,231 +1119,41 @@ function switchTab(tab) {
   if (tab === 'log') fetchLog();
 }
 
-// ══════════════════════════════════════════════════════════════
-// §AUTH-JS — Unified Login UI v1.0
-// ══════════════════════════════════════════════════════════════
-let currentEmployee = null;
-let allEmployees = [];
-let selectedUsername = '';
-let selectedDisplayName = '';
-let loginMode = 'employee';
-let pinDigits = [];
-let pendingNewPin = '';
-let isLoginBusy = false;
-let autoLoginTimer = null;
-
-async function loadEmployeesList() {
-  const sel = document.getElementById('loginSelect');
-  const status = document.getElementById('loginStatus');
-  clearLoginAlert();
-  sel.innerHTML = '<option value="">— اختر —</option>';
-  sel.disabled = true;
-  if (!isConfigured()) {
-    status.className = 'login-status warn';
-    status.textContent = 'الإعدادات غير مكتملة — افتح الإعدادات أولًا.';
-    renderLoginMode('employee');
-    return;
-  }
-  status.className = 'login-status info';
-  status.textContent = 'جارٍ تحميل قائمة الموظفين...';
-  try {
-    const data = await apiGet('get_employees');
-    const employees = data.employees || [];
-    employees.forEach(e => {
-      const o = document.createElement('option');
-      o.value = e.username; o.textContent = e.display_name;
-      sel.appendChild(o);
-    });
-    sel.disabled = false;
-    status.className = employees.length ? 'login-status info' : 'login-status warn';
-    status.textContent = employees.length ? 'اختر الموظف للمتابعة.' : 'لا يوجد موظفون نشطون.';
-  } catch (err) {
-    status.className = 'login-status error';
-    status.textContent = 'تعذّر تحميل قائمة الموظفين.';
-    showLoginAlert(err.message || 'تعذّر تحميل قائمة الموظفين.');
-  }
-}
-
-async function handleEmployeeChange() {
-  if (isLoginBusy) return;
-  clearTimeout(autoLoginTimer);
-  clearLoginAlert();
-  resetPinState();
-  const sel = document.getElementById('loginSelect');
-  selectedUsername = sel.value || '';
-  selectedDisplayName = sel.options[sel.selectedIndex]?.textContent || '';
-  if (!selectedUsername) { renderLoginMode('employee'); return; }
-  renderLoginMode('employee');
-  document.getElementById('loginSub').textContent = 'جارٍ التحقق من الحساب...';
-  try {
-    const data = await apiGet('check_employee', { username: selectedUsername });
-    if (!data.exists)   { showLoginAlert('المستخدم غير موجود'); selectedUsername=''; sel.value=''; renderLoginMode('employee'); playBeep('error'); return; }
-    if (!data.isActive) { showLoginAlert('الحساب موقوف — تواصل مع المسؤول'); selectedUsername=''; sel.value=''; renderLoginMode('employee'); playBeep('error'); return; }
-    renderLoginMode(data.hasPin ? 'existing' : 'new');
-  } catch (err) {
-    showLoginAlert(err.message || 'تعذّر التحقق من الحساب');
-    selectedUsername=''; sel.value=''; renderLoginMode('employee'); playBeep('error');
-  }
-}
-
-function renderLoginMode(mode) {
-  loginMode = mode;
-  const pinZone = document.getElementById('pinZone');
-  const pinLabel = document.getElementById('pinLabel');
-  const primary = document.getElementById('loginPrimaryBtn');
-  const secondary = document.getElementById('loginSecondaryBtn');
-  pinZone.classList.toggle('visible', mode !== 'employee');
-  primary.classList.toggle('visible', mode !== 'employee');
-  secondary.classList.toggle('visible', mode === 'confirm');
-  resetPinState(false);
-  clearLoginAlert();
-  if (mode === 'employee') { document.getElementById('loginSub').textContent = 'اختر اسمك للمتابعة'; pinLabel.textContent = 'أدخل الـ PIN'; primary.textContent = 'دخول'; primary.disabled = true; return; }
-  if (mode === 'existing') { document.getElementById('loginSub').textContent = 'أدخل الـ PIN'; pinLabel.textContent = 'أدخل الـ PIN'; primary.textContent = 'دخول'; primary.disabled = true; return; }
-  if (mode === 'new')      { document.getElementById('loginSub').textContent = 'أول مرة؟ أنشئ PIN من 4 أرقام'; pinLabel.textContent = 'أنشئ PIN جديد'; primary.textContent = 'متابعة'; primary.disabled = true; return; }
-  if (mode === 'confirm')  { document.getElementById('loginSub').textContent = 'أعد إدخال الـ PIN للتأكيد'; pinLabel.textContent = 'تأكيد الـ PIN'; primary.textContent = 'تأكيد وتسجيل الدخول'; primary.disabled = true; }
-}
-function restartNewPinFlow() { pendingNewPin = ''; renderLoginMode('new'); }
-function pressPinKey(key) {
-  if (isLoginBusy || loginMode === 'employee') return;
-  clearTimeout(autoLoginTimer);
-  if (key === 'clear')                             pinDigits = [];
-  else if (key === 'back')                         pinDigits.pop();
-  else if (/^\d$/.test(key) && pinDigits.length < 4) pinDigits.push(key);
-  clearLoginAlert(); renderPinSlots(); updatePrimaryLoginState();
-  if (pinDigits.length === 4) autoLoginTimer = setTimeout(() => handlePrimaryLoginAction(), 140);
-}
-function renderPinSlots() {
-  for (let i = 0; i < 4; i++) {
-    const slot = document.getElementById(`pinSlot${i}`);
-    slot.classList.remove('empty','filled','error');
-    slot.classList.add(i < pinDigits.length ? 'filled' : 'empty');
-  }
-}
-function resetPinState(clearPending = true) {
-  pinDigits = [];
-  if (clearPending && loginMode !== 'confirm') pendingNewPin = '';
-  renderPinSlots(); updatePrimaryLoginState();
-}
-function updatePrimaryLoginState() {
-  document.getElementById('loginPrimaryBtn').disabled = loginMode==='employee' || pinDigits.length!==4 || isLoginBusy;
-}
-async function handlePrimaryLoginAction() {
-  if (isLoginBusy || loginMode==='employee' || pinDigits.length!==4) return;
-  if (loginMode==='existing') { await verifyExistingPin(); return; }
-  if (loginMode==='new')      { pendingNewPin = pinDigits.join(''); renderLoginMode('confirm'); return; }
-  if (loginMode==='confirm')  { await registerNewPinAndLogin(); }
-}
-async function verifyExistingPin() {
-  const pin = pinDigits.join('');
-  setLoginBusy(true, '⏳ جاري التحقق...');
-  try {
-    const data = await apiPost('verify_employee', { username: selectedUsername, pin });
-    if (!data.ok) { await presentLoginPinError('PIN خطأ — حاول مرة أخرى'); return; }
-    await finishLogin(selectedUsername, data.displayName || selectedDisplayName);
-  } catch (err) { await presentLoginPinError(err.message || 'PIN خطأ'); }
-  finally { setLoginBusy(false); }
-}
-async function registerNewPinAndLogin() {
-  const confirmPin = pinDigits.join('');
-  if (confirmPin !== pendingNewPin) { await presentLoginPinError('الـ PIN غير متطابق — حاول مرة أخرى'); pendingNewPin=''; renderLoginMode('new'); return; }
-  setLoginBusy(true, '⏳ جاري التسجيل...');
-  try {
-    const reg = await apiPost('register_pin', { username: selectedUsername, pin: pendingNewPin });
-    if (reg && reg.ok === false) { await presentLoginPinError(reg.error || 'تعذّر تسجيل الـ PIN'); return; }
-    const data = await apiPost('verify_employee', { username: selectedUsername, pin: pendingNewPin });
-    if (!data.ok) { await presentLoginPinError(data.error || 'تعذّر تسجيل الدخول'); return; }
-    await finishLogin(selectedUsername, data.displayName || selectedDisplayName);
-  } catch (err) { await presentLoginPinError(err.message || 'تعذّر تسجيل الـ PIN'); }
-  finally { setLoginBusy(false); }
-}
-function setLoginBusy(active, text = '') {
-  isLoginBusy = active;
-  const primary = document.getElementById('loginPrimaryBtn');
-  document.querySelectorAll('#pinKeypad .pin-key').forEach(b => b.disabled = active);
-  document.getElementById('loginSelect').disabled = active || !isConfigured();
-  if (active) { primary.dataset.prevText = primary.textContent; primary.textContent = text || primary.textContent; primary.disabled = true; }
-  else { primary.textContent = primary.dataset.prevText || primary.textContent; delete primary.dataset.prevText; updatePrimaryLoginState(); }
-}
-async function presentLoginPinError(message) {
-  playBeep('error'); showLoginAlert(message);
-  const slots = document.getElementById('pinSlots');
-  slots.classList.add('shake');
-  for (let i = 0; i < 4; i++) document.getElementById(`pinSlot${i}`).classList.add('error');
-  await new Promise(r => setTimeout(r, 760));
-  slots.classList.remove('shake'); pinDigits = []; renderPinSlots(); updatePrimaryLoginState();
-}
-function showLoginAlert(msg) { const a=document.getElementById('loginAlert'); a.textContent=msg; a.classList.add('visible'); }
-function clearLoginAlert()   { const a=document.getElementById('loginAlert'); a.textContent=''; a.classList.remove('visible'); }
-
-document.addEventListener('keydown', e => {
-  const loginOverlay = document.getElementById('loginOverlay');
-  const settingsOpen = !document.getElementById('settingsModal').classList.contains('hidden');
-  if (loginOverlay.classList.contains('hidden') || settingsOpen || isLoginBusy) return;
-  if (/^\d$/.test(e.key))                     { e.preventDefault(); pressPinKey(e.key); return; }
-  if (e.key === 'Backspace')                  { e.preventDefault(); pressPinKey('back'); return; }
-  if (e.key === 'Delete' || e.key === 'Escape') { e.preventDefault(); pressPinKey('clear'); return; }
-  if (e.key === 'Enter')                      { e.preventDefault(); handlePrimaryLoginAction(); }
-});
-
-async function finishLogin(username, displayName) {
-  currentEmployee = { username, displayName };
-  document.getElementById('loginOverlay').classList.add('hidden');
-  showToast(`أهلاً ${displayName} 👋`, 'success');
-  playBeep('success');
-  document.getElementById('packedByName').textContent = displayName;
-  await loadAllEmployees();
-  setTimeout(() => { if (orderInput) orderInput.focus(); }, 100);
-}
-async function loadAllEmployees() {
-  try {
-    const data = await apiGet('get_employees');
-    allEmployees = data.employees || [];
-    const logSel = document.getElementById('logFilterEmployee');
-    logSel.innerHTML = '<option value="">كل الموظفين</option>';
-    allEmployees.forEach(e => {
-      const o = document.createElement('option');
-      o.value = e.username; o.textContent = e.display_name;
-      logSel.appendChild(o);
-    });
-  } catch {}
-}
-
-// ══════════════════════════════════════════════════════════════
-// §SCAN — Scanner Gun Input
-// ══════════════════════════════════════════════════════════════
-let currentOrder    = null;
-let currentItems    = [];
-let currentAnalysis = null;
-let currentAlreadyPackedData = null;
-let currentEditReason = null;
-
+// ── Order scan ────────────────────────────────────────────────
 const orderInput = document.getElementById('orderScanInput');
-let orderScanTimer;
+const orderManualInput = document.getElementById('orderManualInput');
+let scanTimer, lastInputTime = 0;
 orderInput.addEventListener('input', () => {
-  clearTimeout(orderScanTimer);
-  orderScanTimer = setTimeout(handleOrderScan, 150);
+  clearTimeout(scanTimer);
+  const now = Date.now();
+  const gap = now - lastInputTime;
+  lastInputTime = now;
+  scanTimer = setTimeout(handleOrderScan, gap < 80 ? 150 : 400);
 });
+orderInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') { clearTimeout(scanTimer); handleOrderScan(); }
+});
+orderManualInput.addEventListener('keydown', e => { if (e.key === 'Enter') submitManualLookup(); });
 function handleOrderScan() {
   const val = orderInput.value.trim();
   orderInput.value = ''; orderInput.focus();
   if (!val) return;
   lookupOrder(val);
 }
-
-const orderManualInput = document.getElementById('orderManualInput');
-orderManualInput.addEventListener('keydown', e => { if (e.key === 'Enter') submitManualLookup(); });
 function submitManualLookup() {
   const val = orderManualInput.value.trim();
   if (!val) return;
   orderManualInput.value = '';
   lookupOrder(val);
 }
-
-// ══════════════════════════════════════════════════════════════
-// §TOOL-JS
-// ══════════════════════════════════════════════════════════════
-
+function cleanOrderInput(v) {
+  const s = String(v || '').trim();
+  const m = s.match(/#?\d+/);
+  return m ? (m[0].startsWith('#') ? m[0] : `#${m[0]}`) : s;
+}
 async function lookupOrder(raw) {
+  if (!currentEmployee) { showToast('يجب تسجيل الدخول أولاً', 'error'); return; }
+  raw = cleanOrderInput(raw);
   document.getElementById('lookupLoading').style.display = '';
   document.getElementById('btnLookup').disabled = true;
   try {
@@ -1134,7 +1209,6 @@ async function lookupOrder(raw) {
     document.getElementById('btnLookup').disabled = false;
   }
 }
-
 function resetToEntry() {
   currentOrder = null; currentItems = []; currentAnalysis = null;
   currentAlreadyPackedData = null; currentEditReason = null;
@@ -1147,7 +1221,7 @@ function resetToEntry() {
   setTimeout(() => orderInput.focus(), 100);
 }
 
-// ── Already Packed Override Panel ─────────────────────────────
+// ── Already Packed Override ───────────────────────────────────
 function renderAlreadyPackedOverride() {
   const ap = currentAlreadyPackedData;
 
@@ -1318,9 +1392,9 @@ function renderStageIndicator(sa, stage) {
   title.textContent = titleText;
   if (!s) { sigs.innerHTML = ''; return; }
   sigs.innerHTML = [
-    { label: 'Return نشط', on: s.hasActiveReturn, val: s.hasActiveReturn ? `${s.activeReturnCount} return(s)` : 'لا يوجد' },
-    { label: 'manual_status', on: s.s1Signal,    val: s.manualStatus || 'غير محدد' },
-    { label: 'status_2_r_e',  on: s.s2MetaSignal, val: s.status2re  || 'غير محدد' },
+    { label: 'هل يوجد طلب استبدال في الأوردر؟', on: s.hasActiveReturn, val: s.hasActiveReturn ? `يوجد (${s.activeReturnCount})` : 'لا يوجد' },
+    { label: 'حالة الأوردر الأساسي (S1)', on: s.s1Signal,    val: s.manualStatus || 'غير محدد' },
+    { label: 'حالة الأوردر الاستبدال (S2)',  on: s.s2MetaSignal, val: s.status2re  || 'غير محدد' },
   ].map(r => `
     <div class="stage-signal-row">
       <div class="sig-dot ${r.on ? 'on' : 'off'}"></div>
@@ -1335,9 +1409,9 @@ function renderConflictPanel(sa) {
   document.getElementById('shopifyLink').href =
     `https://admin.shopify.com/store/6c7e1a-53/orders/${currentOrder.id}`;
   document.getElementById('conflictData').innerHTML = `
-    <div class="conflict-row"><span class="conflict-label">Return نشط:</span><span class="conflict-val ${s.hasActiveReturn?'set':'unset'}">${s.hasActiveReturn?`✅ يوجد (${s.activeReturnCount})`:'❌ لا يوجد'}</span></div>
-    <div class="conflict-row"><span class="conflict-label">manual_status:</span><span class="conflict-val ${s.manualStatus?'set':'unset'}">${s.manualStatus||'غير محدد'}</span></div>
-    <div class="conflict-row"><span class="conflict-label">status_2_r_e:</span><span class="conflict-val ${s.status2re?'set':'unset'}">${s.status2re||'غير محدد'}</span></div>
+    <div class="conflict-row"><span class="conflict-label">هل يوجد طلب استبدال في الأوردر؟:</span><span class="conflict-val ${s.hasActiveReturn?'set':'unset'}">${s.hasActiveReturn?`✅ يوجد (${s.activeReturnCount})`:'❌ لا يوجد'}</span></div>
+    <div class="conflict-row"><span class="conflict-label">حالة الأوردر الأساسي (S1):</span><span class="conflict-val ${s.manualStatus?'set':'unset'}">${s.manualStatus||'غير محدد'}</span></div>
+    <div class="conflict-row"><span class="conflict-label">حالة الأوردر الاستبدال (S2):</span><span class="conflict-val ${s.status2re?'set':'unset'}">${s.status2re||'غير محدد'}</span></div>
   `;
   document.getElementById('conflictReason').textContent = sa.conflictType || 'يوجد تعارض في البيانات';
 }
@@ -1408,7 +1482,24 @@ document.addEventListener('keydown', (e) => {
 function updateSummary() {
   const scanned = currentItems.reduce((s, i) => s + i.scanned, 0);
   const total   = currentItems.reduce((s, i) => s + i.quantity, 0);
+  const remaining = Math.max(total - scanned, 0);
+  const pct = total ? Math.round((scanned / total) * 100) : 0;
+
   document.getElementById('summaryTotal').textContent = `${scanned} / ${total}`;
+
+  const scannedEl   = document.getElementById('progressScanned');
+  const remainingEl = document.getElementById('progressRemaining');
+  const totalEl     = document.getElementById('progressTotal');
+  const pctEl       = document.getElementById('progressPct');
+  const fillEl      = document.getElementById('progressFill');
+  const textEl      = document.getElementById('progressText');
+
+  if (scannedEl)   scannedEl.textContent = scanned.toLocaleString('en-US');
+  if (remainingEl) remainingEl.textContent = remaining.toLocaleString('en-US');
+  if (totalEl)     totalEl.textContent = total.toLocaleString('en-US');
+  if (pctEl)       pctEl.textContent = `${pct.toLocaleString('en-US')}%`;
+  if (fillEl)      fillEl.style.width = `${pct}%`;
+  if (textEl)      textEl.textContent = `تم سكان ${scanned.toLocaleString('en-US')} من ${total.toLocaleString('en-US')} — المتبقي ${remaining.toLocaleString('en-US')}`;
 }
 function updateCompleteBtn() {
   const allDone = currentItems.length > 0 && currentItems.every(i => i.scanned >= i.quantity);
@@ -1504,16 +1595,16 @@ async function completePack() {
     });
     if (!data.ok) {
       showToast(data.error || 'خطأ في الحفظ', 'error');
-      btn.disabled = false; btn.textContent = '✅ تأكيد اكتمال التعبئة';
+      btn.disabled = false; btn.textContent = '✅ تأكيد اكتمال التغليف';
       return;
     }
     const overrideNote = currentEditReason ? ` (إعادة تغليف)` : '';
-    showToast(`✅ تم حفظ تعبئة ${currentOrder.name} بنجاح${overrideNote}`, 'success', 4000);
+    showToast(`✅ تم حفظ تغليف ${currentOrder.name} بنجاح${overrideNote}`, 'success', 4000);
     playBeep('success');
     setTimeout(() => resetToEntry(), 1500);
   } catch (err) {
     showToast(err.message || 'خطأ في الاتصال', 'error');
-    btn.disabled = false; btn.textContent = '✅ تأكيد اكتمال التعبئة';
+    btn.disabled = false; btn.textContent = '✅ تأكيد اكتمال التغليف';
   }
 }
 
@@ -1569,14 +1660,14 @@ function renderLog(entries) {
     div.className = 'log-entry';
     div.innerHTML = `
       <div class="log-top">
-        <span class="log-badge">مُعبَّأ</span>
+        <span class="log-badge">مُغلَّف</span>
         <span class="log-order">${e.order_name || '—'}</span>
         <span class="stage-badge-sm ${stageCls}" style="padding:2px 7px;font-size:11px">${extra.stage || e.stage || ''}</span>
         <span class="log-meta" style="margin-right:auto">${fmtDT(e.timestamp)}</span>
       </div>
       <div class="log-meta">
         بواسطة: ${e.employee || '—'}
-        ${extra.packedBy ? ` ← مُعبَّأ بواسطة: ${extra.packedBy}` : ''}
+        ${extra.packedBy ? ` ← مُغلَّف بواسطة: ${extra.packedBy}` : ''}
         ${e.item_count ? ` | ${e.item_count} قطعة` : ''}
       </div>
       ${editReason ? `<div class="log-edit-reason">🔄 إعادة تغليف: ${editReason}</div>` : ''}
@@ -1621,7 +1712,7 @@ async function exportLogXLSX() {
       { header: 'الأوردر',         key: 'order',        width: 12 },
       { header: 'المرحلة',         key: 'stage',        width: 8  },
       { header: 'الموظف',          key: 'employee',     width: 16 },
-      { header: 'مُعبَّأ بواسطة',  key: 'packed_by',    width: 16 },
+      { header: 'مُغلَّف بواسطة',  key: 'packed_by',    width: 16 },
       { header: 'عدد القطع',        key: 'item_count',   width: 10 },
       { header: 'المنتجات',         key: 'items',        width: 40 },
       { header: 'سبب الإعادة',      key: 'edit_reason',  width: 32 },
