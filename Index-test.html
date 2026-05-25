@@ -1,0 +1,1134 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pack Checker — EcomModa</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+
+<!-- ══════════════════════════════════════════════════════════════
+     §STYLES
+     ══════════════════════════════════════════════════════════════ -->
+<style>
+:root {
+  --bg:#f3f4f6; --surface:#fff; --surface-2:#f9fafb;
+  --border:#e5e7eb; --border-strong:#d1d5db;
+  --text-primary:#111827; --text-secondary:#6b7280; --text-muted:#6b7280;
+  --accent:#2563eb; --accent-light:#eff6ff; --accent-dark:#1d4ed8;
+  --green:#16a34a; --green-light:#f0fdf4; --green-border:#86efac;
+  --red:#dc2626; --red-light:#fef2f2; --red-border:#fca5a5;
+  --amber:#d97706; --amber-light:#fffbeb; --amber-border:#fcd34d;
+  --purple:#7c3aed; --purple-light:#f5f3ff; --purple-border:#c4b5fd;
+  --orange:#ea580c; --orange-light:#fff7ed; --orange-border:#fed7aa;
+  --radius:12px; --radius-sm:8px;
+  --shadow:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
+  --font:'Noto Sans Arabic',-apple-system,sans-serif;
+  --mono:'IBM Plex Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg);color:var(--text-primary);min-height:100vh;direction:rtl}
+
+/* ── Header ── */
+.app-header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:var(--shadow)}
+.header-left{display:flex;align-items:center;gap:10px}
+.header-icon{font-size:22px}
+.header-title{font-size:15px;font-weight:700}
+.header-desc{font-size:12px;color:var(--text-muted)}
+.header-right{display:flex;align-items:center;gap:8px}
+.hbtn{padding:6px 12px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;color:var(--text-primary);transition:background .15s;display:flex;align-items:center;gap:5px}
+.hbtn:hover{background:var(--bg)}
+.hbtn-version{font-family:var(--mono);color:var(--text-muted);font-size:11px}
+
+/* ── Toast ── */
+.toast-container{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast{padding:10px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;color:#fff;box-shadow:0 4px 12px rgba(0,0,0,.2);animation:toastIn .3s ease;max-width:320px}
+.toast-success{background:var(--green)}.toast-error{background:var(--red)}.toast-neutral{background:#1a1d27}
+@keyframes toastIn{from{transform:translateX(100%);opacity:0}to{transform:none;opacity:1}}
+
+/* ── Modals ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.hidden{display:none}
+.modal-box{background:var(--surface);border-radius:var(--radius);box-shadow:0 20px 60px rgba(0,0,0,.2);width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
+.modal-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-size:15px;font-weight:700}
+.modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-muted);line-height:1}
+.modal-body{padding:20px;display:flex;flex-direction:column;gap:14px}
+.modal-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:8px}
+.settings-field label{display:block;font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
+.settings-field input{width:100%;padding:9px 11px;border:1.5px solid var(--border-strong);border-radius:var(--radius-sm);font-family:var(--mono);font-size:12px;background:var(--surface);outline:none;direction:ltr;transition:border-color .15s}
+.settings-field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.08)}
+.btn-primary{padding:9px 18px;border-radius:var(--radius-sm);border:none;background:var(--accent);color:#fff;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;transition:background .15s}
+.btn-primary:hover{background:var(--accent-dark)}.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-ghost{padding:9px 18px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);color:var(--text-primary);font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;transition:background .15s}
+.btn-ghost:hover{background:var(--bg)}
+.btn-green{padding:9px 18px;border-radius:var(--radius-sm);border:none;background:var(--green);color:#fff;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;transition:background .15s}
+.btn-green:hover{background:#15803d}
+.cl-entry{padding:10px 0;border-bottom:1px solid var(--border)}.cl-entry:last-child{border-bottom:none}
+.cl-version{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--accent);margin-bottom:2px}
+.cl-date{font-size:11px;color:var(--text-muted);margin-bottom:6px}
+.cl-items{display:flex;flex-direction:column;gap:4px}
+.cl-item{display:flex;align-items:flex-start;gap:6px;font-size:13px}
+.cl-tag{font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;flex-shrink:0;margin-top:1px}
+.cl-tag.new{background:#dcfce7;color:#15803d}.cl-tag.fix{background:#fef9c3;color:#854d0e}.cl-tag.change{background:#e0e7ff;color:#3730a3}
+
+/* ── Settings button states ── */
+.hbtn.settings-ready{border-color:var(--green);color:var(--green);background:var(--green-light)}
+.hbtn.settings-missing{border-color:var(--red);color:var(--red);background:var(--red-light)}
+.hbtn.settings-ready:hover,.hbtn.settings-missing:hover{background:inherit}
+
+/* ── Login ── */
+.login-overlay{position:fixed;inset:0;background:var(--bg);z-index:400;display:flex;align-items:center;justify-content:center;padding:20px}
+.login-overlay.hidden{display:none}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:0 22px 70px rgba(0,0,0,.22);width:100%;max-width:420px;padding:28px 26px 24px;position:relative;animation:loginIn .18s ease}
+@keyframes loginIn{from{transform:translateY(6px) scale(.985);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
+.login-settings-btn{position:absolute;top:16px;left:16px;display:inline-flex;align-items:center;gap:5px;min-height:38px;padding:8px 12px;border-radius:9px;border:1.5px solid;background:var(--surface);font-family:var(--font);font-size:12px;font-weight:800;cursor:pointer;transition:all .15s;white-space:nowrap}
+.login-settings-btn.ready{border-color:var(--green);color:var(--green);background:var(--green-light)}
+.login-settings-btn.missing{border-color:var(--red);color:var(--red);background:var(--red-light)}
+.login-settings-btn:hover{transform:translateY(-1px)}
+.login-top{padding-top:12px;display:flex;flex-direction:column;align-items:center;text-align:center}
+.login-icon{font-size:34px;line-height:1;margin-bottom:14px}
+.login-title{font-size:19px;line-height:1.35;font-weight:900;text-align:center;letter-spacing:-.1px}
+.login-sub{min-height:22px;margin-top:7px;color:var(--text-secondary);font-size:13px;font-weight:600;text-align:center;line-height:1.7}
+.login-body{margin-top:22px;display:flex;flex-direction:column;gap:14px}
+.login-field{display:flex;flex-direction:column;gap:7px}
+.login-field label{display:block;font-size:11px;font-weight:800;color:var(--text-secondary);letter-spacing:.3px}
+.login-field select{width:100%;height:58px;border:1.5px solid var(--border-strong);border-radius:10px;background:var(--surface);color:var(--text-primary);font-family:var(--font);font-size:14px;font-weight:600;outline:none;padding:0 14px;transition:border-color .15s,box-shadow .15s}
+.login-field select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.08)}
+.login-field select:disabled{opacity:.68;cursor:not-allowed;background:var(--surface-2)}
+.login-status{min-height:18px;font-size:12px;font-weight:700;color:var(--text-muted);line-height:1.5}
+.login-status.info{color:var(--accent)}.login-status.warn{color:var(--amber)}.login-status.error{color:var(--red)}
+.pin-zone{display:none;flex-direction:column;gap:12px}
+.pin-zone.visible{display:flex}
+.pin-title{font-size:13px;font-weight:900;text-align:center;color:var(--text-primary)}
+.pin-helper{font-size:12px;font-weight:600;text-align:center;color:var(--text-secondary);line-height:1.6;min-height:20px}
+.pin-dots{display:flex;justify-content:center;gap:9px;direction:ltr;margin:2px 0}
+.pin-dot{width:13px;height:13px;border-radius:50%;border:2px solid var(--border-strong);background:transparent;transition:all .12s}
+.pin-dot.filled{background:var(--accent);border-color:var(--accent);transform:scale(1.08)}
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;direction:ltr}
+.pin-key{height:48px;border:1px solid var(--border);border-radius:10px;background:var(--surface-2);font-family:var(--mono);font-size:18px;font-weight:900;cursor:pointer;color:var(--text-primary);transition:all .12s}
+.pin-key:hover{background:var(--accent-light);border-color:var(--accent);color:var(--accent)}
+.pin-key:active{transform:translateY(1px)}
+.pin-key.pin-clear{font-family:var(--font);font-size:13px;color:var(--red)}
+.login-error{display:none;border:1px solid var(--red-border);background:var(--red-light);color:var(--red);border-radius:10px;padding:10px 12px;font-size:12px;font-weight:800;line-height:1.6;text-align:center}
+.login-error.visible{display:block}
+.login-actions{display:flex;flex-direction:column;gap:9px;margin-top:2px}
+.login-primary{height:48px;border:none;border-radius:10px;background:var(--accent);color:#fff;font-family:var(--font);font-size:14px;font-weight:900;cursor:pointer;transition:background .15s,opacity .15s}
+.login-primary:hover:not(:disabled){background:var(--accent-dark)}
+.login-primary:disabled{opacity:.5;cursor:not-allowed}
+.login-secondary{height:42px;border:1px solid var(--border-strong);border-radius:10px;background:var(--surface);color:var(--text-secondary);font-family:var(--font);font-size:13px;font-weight:800;cursor:pointer;display:none}
+.login-secondary.visible{display:block}
+.login-secondary:hover{background:var(--bg);color:var(--text-primary)}
+
+/* ── Main ── */
+.main-content{padding:20px;max-width:920px;margin:0 auto}
+.tab-bar{display:flex;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:4px;margin-bottom:20px;box-shadow:var(--shadow)}
+.tab-btn{flex:1;padding:8px 12px;border:none;border-radius:var(--radius-sm);background:none;font-family:var(--font);font-size:13px;font-weight:600;color:var(--text-muted);cursor:pointer;transition:all .15s}
+.tab-btn.active{background:var(--accent);color:#fff}
+.screen{display:none}.screen.active{display:block}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin-bottom:16px}
+.card-title{font-size:13px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px}
+
+/* ── Stage Indicator ── */
+.stage-indicator-card{border-radius:var(--radius);padding:14px 18px;margin-bottom:14px;display:flex;align-items:flex-start;gap:14px}
+.stage-indicator-card.s1{background:var(--accent-light);border:2px solid #bfdbfe}
+.stage-indicator-card.s2{background:var(--purple-light);border:2px solid var(--purple-border)}
+.stage-indicator-card.conflict{background:#fff5f5;border:2px solid var(--red-border)}
+.stage-indicator-card.unclear{background:var(--amber-light);border:2px solid var(--amber-border)}
+.stage-badge{font-family:var(--mono);font-size:16px;font-weight:800;padding:4px 10px;border-radius:8px;color:#fff;flex-shrink:0}
+.stage-badge.s1{background:var(--accent)}.stage-badge.s2{background:var(--purple)}.stage-badge.conflict{background:var(--red)}.stage-badge.unclear{background:var(--amber)}
+.stage-content{flex:1}.stage-title{font-size:15px;font-weight:800;margin-bottom:4px}.stage-sub{font-size:12px;color:var(--text-secondary)}
+.stage-details{margin-top:8px;display:flex;flex-direction:column;gap:4px}
+.stage-detail{font-size:12px;display:flex;align-items:center;gap:5px}.stage-detail .dot{width:8px;height:8px;border-radius:50%;background:var(--border-strong)}.stage-detail.active .dot{background:var(--green)}
+
+/* ── Order ── */
+.order-input-wrap{display:flex;gap:8px;margin-bottom:14px}
+.order-input{flex:1;padding:11px 14px;border:1.5px solid var(--border-strong);border-radius:var(--radius-sm);font-family:var(--mono);font-size:16px;font-weight:600;outline:none;direction:ltr;text-align:center}
+.order-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.08)}
+.order-load-btn{padding:0 20px;border:none;border-radius:var(--radius-sm);background:var(--accent);color:#fff;font-family:var(--font);font-weight:700;cursor:pointer}
+.order-load-btn:hover{background:var(--accent-dark)}
+.order-load-btn:disabled{opacity:.5;cursor:not-allowed}
+.order-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.order-name{font-family:var(--mono);font-size:22px;font-weight:800}.order-stage-chip{font-family:var(--mono);font-size:12px;font-weight:700;padding:3px 8px;border-radius:20px;background:var(--accent-light);color:var(--accent)}
+.btn-new-order{padding:7px 13px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer}
+.btn-new-order:hover{background:var(--bg)}
+
+/* ── Alert Cards ── */
+.alert-card{border-radius:var(--radius);padding:16px;margin-bottom:14px}
+.alert-card.conflict{background:var(--red-light);border:2px solid var(--red-border)}
+.alert-card.unclear{background:var(--amber-light);border:2px solid var(--amber-border)}
+.alert-title{font-size:15px;font-weight:800;margin-bottom:8px;color:var(--red)}.alert-card.unclear .alert-title{color:var(--amber)}
+.alert-text{font-size:13px;color:var(--text-secondary);line-height:1.6;margin-bottom:12px}
+.conflict-details{background:rgba(255,255,255,.6);border-radius:var(--radius-sm);padding:10px;margin-bottom:12px}
+.conflict-row{display:flex;align-items:center;gap:8px;font-size:12px;margin-bottom:4px}.conflict-row:last-child{margin-bottom:0}
+.conflict-label{font-family:var(--mono);color:var(--text-muted);min-width:110px}.conflict-val{font-weight:700}.conflict-val.set{color:var(--green)}.conflict-val.unset{color:var(--text-muted)}
+.alert-actions{display:flex;gap:8px}
+.btn-alert{padding:9px 14px;border-radius:var(--radius-sm);border:none;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer}
+.btn-alert.primary{background:var(--accent);color:#fff}.btn-alert.ghost{background:var(--surface);color:var(--text-primary);border:1px solid var(--border)}
+
+/* ── Return Reason ── */
+.reason-box{background:var(--surface);border:2px solid var(--orange-border);border-radius:var(--radius);padding:16px;margin-bottom:14px}
+.reason-title{font-size:15px;font-weight:800;color:var(--orange);margin-bottom:6px}.reason-text{font-size:13px;color:var(--text-secondary);margin-bottom:14px}
+.reason-options{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px}
+.reason-option{display:flex;align-items:center;gap:8px;padding:10px;border:1.5px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:all .15s}
+.reason-option:hover{border-color:var(--orange);background:var(--orange-light)}
+.reason-option input{width:16px;height:16px;accent-color:var(--orange)}
+.reason-option:has(input:checked){border-color:var(--orange);background:var(--orange-light)}
+.reason-option-text{font-size:13px;font-weight:600}
+.btn-reason-confirm{width:100%;padding:11px;border:none;border-radius:var(--radius-sm);background:var(--orange);color:#fff;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer}
+.btn-reason-confirm:hover{background:#c2410c}
+
+/* ── Scan inputs ── */
+.scan-input-wrap{display:flex;gap:8px}
+.scan-input{flex:1;padding:12px 14px;border:2px solid var(--accent);border-radius:var(--radius-sm);font-family:var(--mono);font-size:16px;font-weight:600;outline:none;direction:ltr;text-align:center}
+.scan-btn{padding:0 18px;border:none;border-radius:var(--radius-sm);background:var(--accent);color:#fff;font-family:var(--font);font-weight:700;cursor:pointer}
+.scan-input:focus{box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.manual-mode-toggle{font-size:12px;color:var(--accent);background:none;border:none;cursor:pointer;margin-top:8px}
+.scan-hint{font-size:12px;color:var(--text-muted);margin-top:8px;text-align:center}
+.scan-result{border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;font-weight:600;display:none;align-items:center;gap:8px;margin-bottom:12px}
+.scan-result.ok{background:var(--green-light);border:1px solid var(--green-border);color:var(--green);display:flex}
+.scan-result.err{background:var(--red-light);border:1px solid var(--red-border);color:var(--red);display:flex}
+.scan-result.warn{background:var(--amber-light);border:1px solid var(--amber-border);color:var(--amber);display:flex}
+
+/* ── Modal stock restore ── */
+.modal-warning{background:var(--amber-light);border:1px solid var(--amber-border);border-radius:var(--radius-sm);padding:12px;font-size:13px;color:#92400e;line-height:1.6;margin-bottom:14px}
+.scan-confirm-box{border:2px dashed var(--orange-border);border-radius:var(--radius);padding:16px;text-align:center;margin-bottom:14px}
+.scan-confirm-title{font-size:14px;font-weight:700;color:var(--orange);margin-bottom:10px}
+.stock-scan-input{width:100%;padding:12px;border:2px solid var(--orange);border-radius:var(--radius-sm);font-family:var(--mono);font-size:16px;text-align:center;direction:ltr;outline:none}
+.stock-scan-input:focus{box-shadow:0 0 0 3px rgba(234,88,12,.12)}
+.stock-items-list{display:flex;flex-direction:column;gap:8px;max-height:240px;overflow-y:auto;margin-bottom:14px}
+.stock-item{display:flex;align-items:center;gap:10px;padding:10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface-2)}
+.stock-item.done{background:var(--green-light);border-color:var(--green-border)}
+.stock-item-img{width:44px;height:44px;object-fit:cover;border-radius:6px;background:#fff}
+.stock-item-info{flex:1;min-width:0}.stock-item-title{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.stock-item-sku{font-family:var(--mono);font-size:11px;color:var(--text-muted)}
+.stock-item-count{font-family:var(--mono);font-size:15px;font-weight:700}.stock-item-count.done{color:var(--green)}
+
+/* ── Packing ── */
+.employee-bar{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:8px;justify-content:flex-start}
+.employee-bar label{font-size:12px;color:var(--text-muted)}.employee-bar-name{font-weight:700;font-size:13px}
+.barcode-input{width:100%;padding:12px 14px;border:2px solid var(--accent);border-radius:var(--radius-sm);font-family:var(--mono);font-size:16px;font-weight:600;outline:none;direction:ltr;text-align:center;margin-bottom:12px}
+.barcode-input:focus{box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.scan-banner{border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;font-weight:600;display:none;align-items:center;gap:8px;margin-bottom:12px}
+.scan-banner.ok{background:var(--green-light);border:1px solid var(--green-border);color:var(--green);display:flex}
+.scan-banner.err{background:var(--red-light);border:1px solid var(--red-border);color:var(--red);display:flex}
+.scan-banner.warn{background:var(--amber-light);border:1px solid var(--amber-border);color:var(--amber);display:flex}
+.summary-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;box-shadow:var(--shadow)}
+.summary-label{font-size:13px;color:var(--text-muted)}.summary-val{font-family:var(--mono);font-size:15px;font-weight:700}
+.items-list{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+  margin-bottom:16px;
+  direction:ltr;
+}
+.item-card{
+  background:var(--surface);
+  border:2px solid var(--border);
+  border-radius:var(--radius);
+  padding:14px;
+  min-height:292px;
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  gap:10px;
+  transition:all .2s;
+  direction:rtl;
+  position:relative;
+}
+.item-card.has-image{cursor:zoom-in}
+.item-card.has-image:hover{border-color:#bfdbfe;box-shadow:0 8px 20px rgba(37,99,235,.10);transform:translateY(-1px)}
+.item-card.done{background:var(--green-light);border-color:var(--green-border)}
+.item-card.partial{background:var(--amber-light);border-color:var(--amber-border)}
+.item-img{
+  width:100%;
+  height:165px;
+  object-fit:contain;
+  border-radius:var(--radius-sm);
+  border:1px solid var(--border);
+  flex-shrink:0;
+  background:#fff;
+  padding:8px;
+}
+.item-placeholder{
+  width:100%;
+  height:165px;
+  border-radius:var(--radius-sm);
+  border:1px solid var(--border);
+  background:var(--bg);
+  flex-shrink:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:42px;
+}
+.item-info{min-width:0;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px}
+.item-title{
+  font-size:14px;
+  font-weight:800;
+  line-height:1.45;
+  margin-bottom:0;
+  white-space:normal;
+  overflow:hidden;
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+}
+.item-sku{font-family:var(--mono);font-size:12px;color:var(--text-muted);margin-bottom:0;direction:ltr;text-align:center}
+.item-opts{font-size:12px;color:var(--text-secondary);direction:ltr;text-align:center}
+.item-count-wrap{
+  margin-top:auto;
+  padding-top:10px;
+  border-top:1px solid var(--border);
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:8px;
+  flex-shrink:0;
+  text-align:right;
+}
+.item-count{font-family:var(--mono);font-size:24px;font-weight:800;line-height:1}
+.item-count.done{color:var(--green)}.item-count.partial{color:var(--amber)}.item-count.pending{color:var(--text-muted)}
+.item-count-sub{font-size:11px;color:var(--text-muted);margin-top:0}
+.image-popup-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(17,24,39,.88);
+  z-index:1200;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:28px;
+  cursor:zoom-out;
+}
+.image-popup-overlay.hidden{display:none}
+.image-popup-box{
+  max-width:min(92vw,1180px);
+  max-height:92vh;
+  background:#fff;
+  border-radius:18px;
+  padding:18px;
+  box-shadow:0 24px 80px rgba(0,0,0,.35);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.image-popup-box img{
+  max-width:100%;
+  max-height:calc(92vh - 36px);
+  object-fit:contain;
+  display:block;
+  border-radius:12px;
+}
+.btn-complete{width:100%;padding:14px;background:var(--green);color:#fff;border:none;border-radius:var(--radius-sm);font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer;transition:background .15s}
+.btn-complete:hover:not(:disabled){background:#15803d}
+.btn-complete:disabled{opacity:.4;cursor:not-allowed}
+
+/* ── Log ── */
+.log-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+.log-sel,.log-search{padding:7px 10px;border:1.5px solid var(--border-strong);border-radius:var(--radius-sm);font-family:var(--font);font-size:13px;background:var(--surface);outline:none}
+.log-sel{min-width:160px}.log-search{flex:1;min-width:180px}
+.log-sel:focus,.log-search:focus{border-color:var(--accent)}
+.log-export{padding:7px 14px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer}
+.log-export:hover{background:var(--bg)}
+.log-list{display:flex;flex-direction:column;gap:8px}
+.log-entry{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px}
+.log-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px}
+.log-badge{font-size:11px;font-weight:700;padding:2px 7px;border-radius:4px;font-family:var(--mono);background:var(--green-light);color:var(--green)}
+.log-order{font-family:var(--mono);font-size:13px;font-weight:600}
+.log-meta{font-family:var(--mono);font-size:11px;color:var(--text-muted)}
+.log-note{font-size:13px;color:var(--text-secondary);margin-top:6px}.log-empty{text-align:center;color:var(--text-muted);padding:30px;font-size:13px}
+
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<!-- ══════════════════════════════════════════════════════════════
+     §HEADER
+     ══════════════════════════════════════════════════════════════ -->
+<header class="app-header">
+  <div class="header-left">
+    <span class="header-icon">📦</span>
+    <div>
+      <div class="header-title">Pack Checker</div>
+      <div class="header-desc">التحقق من تعبئة الطلبات</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <button class="hbtn" id="activeUserBtn" onclick="logout()" style="display:none">👤 <span id="activeUserName"></span></button>
+    <button class="hbtn hbtn-version" onclick="openChangelog()">📋 v1.3.0</button>
+    <button class="hbtn" id="settingsBtn" onclick="openSettings()">⚙️ الإعدادات</button>
+  </div>
+</header>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Product Image Fullscreen Popup -->
+<div class="image-popup-overlay hidden" id="imagePopup" onclick="closeImagePopup()" aria-hidden="true">
+  <div class="image-popup-box" onclick="event.stopPropagation()">
+    <img id="imagePopupImg" src="" alt="">
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     §LOGIN
+     ══════════════════════════════════════════════════════════════ -->
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <button class="login-settings-btn" id="loginSettingsBtn" onclick="openSettings()">⚙️ الإعدادات</button>
+
+    <div class="login-top">
+      <div class="login-icon">📦</div>
+      <div class="login-title">Pack Checker</div>
+      <div class="login-sub">اختر اسمك ثم أدخل الرقم السري</div>
+    </div>
+
+    <div class="login-body">
+      <div class="login-field">
+        <label>الموظف</label>
+        <select id="employeeSelect" onchange="onEmployeeSelected()">
+          <option value="">جاري تحميل الموظفين...</option>
+        </select>
+      </div>
+      <div class="login-status" id="loginStatus"></div>
+
+      <div class="pin-zone" id="pinZone">
+        <div class="pin-title" id="pinTitle">أدخل الرقم السري</div>
+        <div class="pin-helper" id="pinHelper">الرقم السري مكوّن من 4 أرقام</div>
+        <div class="pin-dots" id="pinDots">
+          <span class="pin-dot"></span><span class="pin-dot"></span><span class="pin-dot"></span><span class="pin-dot"></span>
+        </div>
+        <div class="pin-pad">
+          <button class="pin-key" onclick="pinPress('1')">1</button>
+          <button class="pin-key" onclick="pinPress('2')">2</button>
+          <button class="pin-key" onclick="pinPress('3')">3</button>
+          <button class="pin-key" onclick="pinPress('4')">4</button>
+          <button class="pin-key" onclick="pinPress('5')">5</button>
+          <button class="pin-key" onclick="pinPress('6')">6</button>
+          <button class="pin-key" onclick="pinPress('7')">7</button>
+          <button class="pin-key" onclick="pinPress('8')">8</button>
+          <button class="pin-key" onclick="pinPress('9')">9</button>
+          <button class="pin-key pin-clear" onclick="pinBackspace()">⌫</button>
+          <button class="pin-key" onclick="pinPress('0')">0</button>
+          <button class="pin-key pin-clear" onclick="pinClear()">مسح</button>
+        </div>
+      </div>
+
+      <div class="login-error" id="loginError"></div>
+
+      <div class="login-actions">
+        <button class="login-primary" id="loginPrimaryBtn" onclick="loginPrimaryAction()" disabled>متابعة</button>
+        <button class="login-secondary" id="loginSecondaryBtn" onclick="loginSecondaryAction()">رجوع</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     §SETTINGS MODAL
+     ══════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay hidden" id="settingsModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title">⚙️ الإعدادات</div>
+      <button class="modal-close" onclick="closeSettings()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="settings-field">
+        <label>WORKER URL</label>
+        <input type="text" id="settingWorkerUrl" dir="ltr">
+      </div>
+      <div class="settings-field">
+        <label>WORKER SECRET</label>
+        <input type="password" id="settingWorkerSecret" dir="ltr">
+      </div>
+      <div class="settings-field">
+        <label>ADMIN WORKER URL</label>
+        <input type="text" id="settingAdminUrl" dir="ltr">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-primary" onclick="saveSettings()">حفظ</button>
+      <button class="btn-ghost" onclick="closeSettings()">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     §CHANGELOG MODAL
+     ══════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay hidden" id="changelogModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title">📋 سجل التحديثات</div>
+      <button class="modal-close" onclick="closeChangelog()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="cl-entry">
+        <div class="cl-version">v1.3.0</div>
+        <div class="cl-date">2026-05-18</div>
+        <div class="cl-items">
+          <div class="cl-item"><span class="cl-tag new">جديد</span><span>Login screen موحد حسب معيار EcomModa</span></div>
+          <div class="cl-item"><span class="cl-tag change">تغيير</span><span>Universal D1 Auth بدون session tokens</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     §CONFIRM STOCK RESTORE MODAL
+     ══════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay hidden" id="stockRestoreModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title">⚠️ تأكيد إرجاع المخزون</div>
+      <button class="modal-close" onclick="closeStockRestoreModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-warning">
+        هذا الأوردر يحتاج إرجاع منتجات للمخزون. يرجى مسح باركود كل منتج للتأكيد قبل المتابعة.
+      </div>
+      <div class="scan-confirm-box">
+        <div class="scan-confirm-title">امسح باركود المنتج</div>
+        <input type="text" class="stock-scan-input" id="stockScanInput" autocomplete="off" inputmode="text" dir="ltr">
+      </div>
+      <div class="stock-items-list" id="stockItemsList"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-green" id="btnConfirmStockRestore" onclick="confirmStockRestore()" disabled>تأكيد إرجاع المخزون</button>
+      <button class="btn-ghost" onclick="closeStockRestoreModal()">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     §MAIN APP
+     ══════════════════════════════════════════════════════════════ -->
+<main class="main-content" id="mainContent" style="display:none">
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tabScan" onclick="switchTab('scan')">🔍 فحص أوردر</button>
+    <button class="tab-btn" id="tabLog" onclick="switchTab('log')">📋 السجل</button>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       §SCAN ORDER
+       ══════════════════════════════════════════════════════════ -->
+  <div class="screen active" id="screen-scan">
+
+    <!-- Initial Order Input -->
+    <div class="card" id="orderInputCard">
+      <div class="card-title">إدخال رقم الأوردر</div>
+      <div class="order-input-wrap">
+        <input type="text" class="order-input" id="orderInput" placeholder="#12345" dir="ltr">
+        <button class="order-load-btn" id="btnLoadOrder" onclick="loadOrder()">تحميل</button>
+      </div>
+    </div>
+
+    <!-- Order Work Area -->
+    <div id="orderWorkArea" class="hidden">
+      <div class="card">
+        <div class="order-header">
+          <button class="btn-new-order" onclick="resetOrder()">← أوردر جديد</button>
+          <div>
+            <span class="order-stage-chip" id="orderStageChip">S1</span>
+            <span class="order-name" id="orderName">#0000</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="stageIndicator"></div>
+      <div id="alertContainer"></div>
+
+      <!-- S2 Return Reason -->
+      <div id="returnReasonBox" class="hidden">
+        <div class="reason-box">
+          <div class="reason-title">↩️ سبب إرجاع المخزون</div>
+          <div class="reason-text">اختر سبب إرجاع المنتجات للمخزون قبل التأكيد.</div>
+          <div class="reason-options">
+            <label class="reason-option">
+              <input type="radio" name="returnReason" value="استرجاع / مرتجع">
+              <span class="reason-option-text">استرجاع / مرتجع</span>
+            </label>
+            <label class="reason-option">
+              <input type="radio" name="returnReason" value="استبدال / تبديل">
+              <span class="reason-option-text">استبدال / تبديل</span>
+            </label>
+            <label class="reason-option">
+              <input type="radio" name="returnReason" value="رفض استلام">
+              <span class="reason-option-text">رفض استلام</span>
+            </label>
+            <label class="reason-option">
+              <input type="radio" name="returnReason" value="طلب إدارة / سبب آخر">
+              <span class="reason-option-text">طلب إدارة / سبب آخر</span>
+            </label>
+          </div>
+          <button class="btn-reason-confirm" id="btnReasonConfirm" onclick="confirmReasonAndShowModal()">
+            متابعة — تأكيد إرجاع المخزون
+          </button>
+        </div>
+      </div>
+
+      <!-- Packing Content -->
+      <div id="packingContent">
+        <div class="employee-bar">
+          <label>مُعبَّأ بواسطة:</label>
+          <span class="employee-bar-name" id="packedByName"></span>
+        </div>
+        <div class="scan-banner" id="scanBanner"></div>
+        <input type="text" class="barcode-input" id="barcodeScanInput"
+               placeholder="سكان باركود المنتج..." autocomplete="off" inputmode="text">
+        <div class="summary-bar">
+          <span class="summary-label">إجمالي القطع</span>
+          <span class="summary-val" id="summaryTotal">0 / 0</span>
+        </div>
+        <div class="items-list" id="itemsList"></div>
+        <button class="btn-complete" id="btnComplete" onclick="completePack()" disabled>
+          ✅ تأكيد اكتمال التعبئة
+        </button>
+      </div>
+
+    </div>
+  </div><!-- /screen-scan -->
+
+  <!-- ══════════════════════════════════════════════════════════
+       §LOG
+       ══════════════════════════════════════════════════════════ -->
+  <div class="screen" id="screen-log">
+    <div class="card">
+      <div class="log-toolbar">
+        <select class="log-sel" id="logFilterEmployee" onchange="fetchLog()">
+          <option value="">كل الموظفين</option>
+        </select>
+        <select class="log-sel" id="logFilterType" onchange="renderLog()">
+          <option value="">كل العمليات</option>
+          <option value="pack_confirmed">تأكيد تعبئة</option>
+          <option value="stock_restored">إرجاع مخزون</option>
+          <option value="conflict_detected">تعارض</option>
+        </select>
+        <input type="text" class="log-search" id="logSearch" placeholder="بحث..." oninput="renderLog()">
+        <button class="log-export" onclick="exportLogXLSX()">📥 تصدير</button>
+      </div>
+      <div class="log-list" id="logList"></div>
+    </div>
+  </div>
+</main>
+
+<script>
+// ════════════════════════════════════════════════════════════════
+// §CONFIG / STATE
+// ════════════════════════════════════════════════════════════════
+const TOOL = 'pack_checker';
+const LS_URL       = 'pack_checker_worker_url';
+const LS_SECRET    = 'pack_checker_worker_secret';
+const LS_ADMIN_URL = 'admin_worker_url';
+
+let currentEmployee = null; // memory only
+let employees = [];
+let selectedEmployee = null;
+let loginMode = 'employee'; // employee | pin | create_pin | confirm_pin
+let pinBuffer = '';
+let firstPin = '';
+
+let currentOrder = null;
+let currentItems = [];
+let currentStageAnalysis = null;
+let pendingReturnReason = '';
+let stockRestoreItems = [];
+let scannerTimer = null;
+let stockScannerTimer = null;
+let logRows = [];
+
+// ════════════════════════════════════════════════════════════════
+// §UTILS
+// ════════════════════════════════════════════════════════════════
+function getWorkerUrl(){return (localStorage.getItem(LS_URL)||'').replace(/\/$/,'');}
+function getWorkerSecret(){return localStorage.getItem(LS_SECRET)||'';}
+function getAdminUrl(){return (localStorage.getItem(LS_ADMIN_URL)||'').replace(/\/$/,'');}
+function hasSettings(){return !!(getWorkerUrl() && getWorkerSecret());}
+function authHeaders(){return {'Content-Type':'application/json','Authorization':`Bearer ${getWorkerSecret()}`};}
+function showToast(msg,type='neutral'){
+  const c=document.getElementById('toastContainer');
+  const d=document.createElement('div');
+  d.className=`toast toast-${type}`; d.textContent=msg; c.appendChild(d);
+  setTimeout(()=>d.remove(),3500);
+}
+function playOk(){try{new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=').play().catch(()=>{});}catch(e){}}
+function playErr(){try{new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=').play().catch(()=>{});}catch(e){}}
+function toCairo(iso){
+  if(!iso)return'';
+  const d=new Date(iso);
+  const c=new Date(d.getTime()+2*60*60*1000);
+  return `${c.getUTCFullYear()}-${String(c.getUTCMonth()+1).padStart(2,'0')}-${String(c.getUTCDate()).padStart(2,'0')} ${String(c.getUTCHours()).padStart(2,'0')}:${String(c.getUTCMinutes()).padStart(2,'0')}`;
+}
+function normalizeOrderName(v){
+  v=String(v||'').trim(); if(!v)return''; return v.startsWith('#')?v:'#'+v.replace(/^#+/,'');
+}
+
+// ════════════════════════════════════════════════════════════════
+// §SETTINGS
+// ════════════════════════════════════════════════════════════════
+function updateSettingsButtonsState(){
+  const ok=hasSettings();
+  const s=document.getElementById('settingsBtn');
+  const l=document.getElementById('loginSettingsBtn');
+  [s,l].forEach(b=>{if(!b)return;b.classList.toggle('settings-ready',ok);b.classList.toggle('settings-missing',!ok);b.classList.toggle('ready',ok);b.classList.toggle('missing',!ok);});
+}
+function openSettings(){
+  document.getElementById('settingWorkerUrl').value=getWorkerUrl();
+  document.getElementById('settingWorkerSecret').value=getWorkerSecret();
+  document.getElementById('settingAdminUrl').value=getAdminUrl();
+  document.getElementById('settingsModal').classList.remove('hidden');
+}
+function closeSettings(){document.getElementById('settingsModal').classList.add('hidden');}
+async function saveSettings(){
+  const url=document.getElementById('settingWorkerUrl').value.trim().replace(/\/$/,'');
+  const sec=document.getElementById('settingWorkerSecret').value.trim();
+  const adm=document.getElementById('settingAdminUrl').value.trim().replace(/\/$/,'');
+  if(!url||!sec){showToast('أدخل Worker URL و Worker Secret','error');return;}
+  localStorage.setItem(LS_URL,url); localStorage.setItem(LS_SECRET,sec); localStorage.setItem(LS_ADMIN_URL,adm);
+  updateSettingsButtonsState(); closeSettings(); showToast('تم حفظ الإعدادات','success');
+  await loadEmployeesList();
+}
+function openChangelog(){document.getElementById('changelogModal').classList.remove('hidden');}
+function closeChangelog(){document.getElementById('changelogModal').classList.add('hidden');}
+
+// ════════════════════════════════════════════════════════════════
+// §LOGIN / AUTH
+// ════════════════════════════════════════════════════════════════
+async function adminCall(action,payload={}){
+  const url=getAdminUrl() || getWorkerUrl();
+  if(!url)throw new Error('Worker URL غير مضبوط');
+  const r=await fetch(url,{method:'POST',headers:authHeaders(),body:JSON.stringify({action,...payload})});
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok||j.ok===false)throw new Error(j.error||`HTTP ${r.status}`);
+  return j;
+}
+async function workerCall(action,payload={}){
+  const url=getWorkerUrl();
+  if(!url)throw new Error('Worker URL غير مضبوط');
+  const r=await fetch(url,{method:'POST',headers:authHeaders(),body:JSON.stringify({action,...payload})});
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok||j.ok===false)throw new Error(j.error||`HTTP ${r.status}`);
+  return j;
+}
+async function loadEmployeesList(){
+  updateSettingsButtonsState();
+  const sel=document.getElementById('employeeSelect');
+  if(!hasSettings()){
+    sel.innerHTML='<option value="">اضبط الإعدادات أولاً</option>';
+    setLoginStatus('يرجى ضبط الإعدادات أولاً','warn');
+    return;
+  }
+  try{
+    setLoginStatus('جاري تحميل الموظفين...','info');
+    const j=await adminCall('list_employees',{});
+    employees = j.employees || j.data || [];
+    sel.innerHTML='<option value="">اختر الموظف</option>' + employees.map(e=>`<option value="${e.id}">${e.name}</option>`).join('');
+    setLoginStatus('اختر اسمك للمتابعة','');
+    populateEmployeeFilter();
+  }catch(e){
+    sel.innerHTML='<option value="">تعذر تحميل الموظفين</option>';
+    setLoginStatus(e.message||'تعذر تحميل الموظفين','error');
+  }
+}
+function setLoginStatus(msg,cls=''){
+  const el=document.getElementById('loginStatus'); el.textContent=msg||''; el.className='login-status '+cls;
+}
+function renderLoginMode(mode){
+  loginMode=mode; pinBuffer=''; updatePinDots(); clearLoginError();
+  const pinZone=document.getElementById('pinZone');
+  const primary=document.getElementById('loginPrimaryBtn');
+  const secondary=document.getElementById('loginSecondaryBtn');
+  const title=document.getElementById('pinTitle');
+  const helper=document.getElementById('pinHelper');
+  pinZone.classList.toggle('visible',mode!=='employee');
+  secondary.classList.toggle('visible',mode!=='employee');
+  if(mode==='employee'){
+    primary.textContent='متابعة'; primary.disabled=!selectedEmployee;
+  }else if(mode==='pin'){
+    title.textContent='أدخل الرقم السري'; helper.textContent='الرقم السري مكوّن من 4 أرقام'; primary.textContent='دخول'; primary.disabled=true;
+  }else if(mode==='create_pin'){
+    title.textContent='إنشاء رقم سري'; helper.textContent='اختر 4 أرقام لاستخدامها في الدخول'; primary.textContent='متابعة'; primary.disabled=true;
+  }else if(mode==='confirm_pin'){
+    title.textContent='تأكيد الرقم السري'; helper.textContent='أعد إدخال نفس الرقم السري للتأكيد'; primary.textContent='حفظ ودخول'; primary.disabled=true;
+  }
+}
+function onEmployeeSelected(){
+  const id=document.getElementById('employeeSelect').value;
+  selectedEmployee=employees.find(e=>String(e.id)===String(id))||null;
+  document.getElementById('loginPrimaryBtn').disabled=!selectedEmployee;
+  clearLoginError();
+}
+function pinPress(n){
+  if(loginMode==='employee'||pinBuffer.length>=4)return;
+  pinBuffer+=String(n); updatePinDots();
+  document.getElementById('loginPrimaryBtn').disabled=pinBuffer.length!==4;
+}
+function pinBackspace(){pinBuffer=pinBuffer.slice(0,-1);updatePinDots();document.getElementById('loginPrimaryBtn').disabled=pinBuffer.length!==4;}
+function pinClear(){pinBuffer='';updatePinDots();document.getElementById('loginPrimaryBtn').disabled=true;}
+function updatePinDots(){
+  document.querySelectorAll('.pin-dot').forEach((d,i)=>d.classList.toggle('filled',i<pinBuffer.length));
+}
+function showLoginError(msg){const e=document.getElementById('loginError');e.textContent=msg;e.classList.add('visible');playErr();}
+function clearLoginError(){const e=document.getElementById('loginError');e.textContent='';e.classList.remove('visible');}
+async function loginPrimaryAction(){
+  try{
+    clearLoginError();
+    if(loginMode==='employee'){
+      if(!selectedEmployee)return;
+      if(selectedEmployee.has_pin || selectedEmployee.pin_set || selectedEmployee.hasPin){renderLoginMode('pin');}
+      else{renderLoginMode('create_pin');}
+      return;
+    }
+    if(pinBuffer.length!==4)return;
+    if(loginMode==='pin'){
+      const j=await adminCall('login_employee',{employee_id:selectedEmployee.id,pin:pinBuffer,tool:TOOL});
+      currentEmployee=j.employee||selectedEmployee; finishLogin();
+    }else if(loginMode==='create_pin'){
+      firstPin=pinBuffer; renderLoginMode('confirm_pin');
+    }else if(loginMode==='confirm_pin'){
+      if(pinBuffer!==firstPin){showLoginError('الرقم السري غير متطابق');renderLoginMode('create_pin');return;}
+      const j=await adminCall('set_employee_pin',{employee_id:selectedEmployee.id,pin:pinBuffer,tool:TOOL});
+      currentEmployee=j.employee||selectedEmployee; finishLogin();
+    }
+  }catch(e){showLoginError(e.message||'فشل الدخول');pinClear();}
+}
+function loginSecondaryAction(){renderLoginMode('employee');}
+function finishLogin(){
+  document.getElementById('loginOverlay').classList.add('hidden');
+  document.getElementById('mainContent').style.display='block';
+  document.getElementById('activeUserBtn').style.display='flex';
+  document.getElementById('activeUserName').textContent=currentEmployee.name;
+  document.getElementById('packedByName').textContent=currentEmployee.name;
+  playOk(); showToast('تم تسجيل الدخول','success');
+  setTimeout(()=>document.getElementById('orderInput').focus(),100);
+}
+function logout(){
+  currentEmployee=null; selectedEmployee=null; document.getElementById('mainContent').style.display='none';
+  document.getElementById('activeUserBtn').style.display='none'; document.getElementById('loginOverlay').classList.remove('hidden');
+  document.getElementById('employeeSelect').value=''; renderLoginMode('employee'); showToast('تم تسجيل الخروج','neutral');
+}
+document.addEventListener('keydown',e=>{
+  const loginVisible=!document.getElementById('loginOverlay').classList.contains('hidden');
+  if(!loginVisible)return;
+  if(/^\d$/.test(e.key))pinPress(e.key);
+  else if(e.key==='Backspace')pinBackspace();
+  else if(e.key==='Enter')loginPrimaryAction();
+});
+
+// ════════════════════════════════════════════════════════════════
+// §TABS
+// ════════════════════════════════════════════════════════════════
+function switchTab(tab){
+  document.getElementById('tabScan').classList.toggle('active',tab==='scan');
+  document.getElementById('tabLog').classList.toggle('active',tab==='log');
+  document.getElementById('screen-scan').classList.toggle('active',tab==='scan');
+  document.getElementById('screen-log').classList.toggle('active',tab==='log');
+  if(tab==='log')fetchLog();
+}
+
+// ════════════════════════════════════════════════════════════════
+// §ORDER LOADING / STAGE
+// ════════════════════════════════════════════════════════════════
+async function loadOrder(){
+  const name=normalizeOrderName(document.getElementById('orderInput').value);
+  if(!name){showToast('أدخل رقم الأوردر','error');return;}
+  const btn=document.getElementById('btnLoadOrder'); btn.disabled=true; btn.textContent='جاري التحميل...';
+  try{
+    const j=await workerCall('get_order',{order_name:name,employee:currentEmployee?.name});
+    currentOrder=j.order; currentItems=(j.items||[]).map(i=>({...i,scanned:0,quantity:i.quantity||i.currentQuantity||1}));
+    currentStageAnalysis=j.stage_analysis||j.stageAnalysis||analyzeStageFallback(j.order);
+    renderOrder(); playOk();
+  }catch(e){showToast(e.message||'تعذر تحميل الأوردر','error');playErr();}
+  finally{btn.disabled=false;btn.textContent='تحميل';}
+}
+function analyzeStageFallback(order){
+  return {stage:'S1',canPack:true,needsReturn:false,hasConflict:false,unclear:false,status:{}};
+}
+function renderOrder(){
+  document.getElementById('orderInputCard').classList.add('hidden');
+  document.getElementById('orderWorkArea').classList.remove('hidden');
+  document.getElementById('orderName').textContent=currentOrder.name||currentOrder.order_name||'';
+  const stage=currentStageAnalysis.stage||'S1';
+  document.getElementById('orderStageChip').textContent=stage;
+  renderStageIndicator(); renderAlerts(); renderItemsList(); updateSummary();
+  const shouldPack=currentStageAnalysis.canPack!==false && !currentStageAnalysis.hasConflict && !currentStageAnalysis.unclear && !currentStageAnalysis.needsReturn;
+  document.getElementById('packingContent').classList.toggle('hidden',!shouldPack);
+  document.getElementById('returnReasonBox').classList.toggle('hidden',!currentStageAnalysis.needsReturn);
+  if(shouldPack)setTimeout(()=>document.getElementById('barcodeScanInput').focus(),100);
+}
+function renderStageIndicator(){
+  const el=document.getElementById('stageIndicator');
+  const sa=currentStageAnalysis||{}; const s=sa.stage||'S1';
+  let cls=s.toLowerCase(); let title='S1 — أوردر عادي';
+  if(sa.hasConflict){cls='conflict';title='تعارض في حالة الأوردر';}
+  else if(sa.unclear){cls='unclear';title='حالة غير واضحة';}
+  else if(s==='S2'){cls='s2';title='S2 — أوردر استرجاع/استبدال';}
+  el.innerHTML=`
+    <div class="stage-indicator-card ${cls}">
+      <div class="stage-badge ${cls}">${sa.hasConflict?'!':s}</div>
+      <div class="stage-content">
+        <div class="stage-title">${title}</div>
+        <div class="stage-details">
+          <div class="stage-detail ${sa.status?.hasActiveReturn?'active':''}"><span class="dot"></span>Return نشط: ${sa.status?.hasActiveReturn?'نعم':'لا يوجد'}</div>
+          <div class="stage-detail ${sa.status?.manualStatus?'active':''}"><span class="dot"></span>manual_status: ${sa.status?.manualStatus||'غير محدد'}</div>
+          <div class="stage-detail ${sa.status?.status2re?'active':''}"><span class="dot"></span>status_2_r_e: ${sa.status?.status2re||'غير محدد'}</div>
+        </div>
+      </div>
+    </div>`;
+}
+function renderAlerts(){
+  const c=document.getElementById('alertContainer'); c.innerHTML='';
+  const sa=currentStageAnalysis||{};
+  if(sa.hasConflict){
+    c.innerHTML=`<div class="alert-card conflict"><div class="alert-title">⚠️ تعارض في بيانات الأوردر</div><div class="alert-text" id="conflictReason"></div><div class="conflict-details" id="conflictDetails"></div></div>`;
+    renderConflictDetails();
+  }else if(sa.unclear){
+    c.innerHTML=`<div class="alert-card unclear"><div class="alert-title">⚠️ حالة غير واضحة</div><div class="alert-text">لا يمكن تحديد هل الأوردر عادي أم يحتاج إرجاع مخزون. راجع بيانات الأوردر في Shopify.</div></div>`;
+  }
+}
+function renderConflictDetails(){
+  const sa=currentStageAnalysis||{}; const s=sa.status||{};
+  document.getElementById('conflictDetails').innerHTML=`
+    <div class="conflict-row"><span class="conflict-label">Return:</span><span class="conflict-val ${s.hasActiveReturn?'set':'unset'}">${s.hasActiveReturn?`✅ يوجد (${s.activeReturnCount})`:'❌ لا يوجد'}</span></div>
+    <div class="conflict-row"><span class="conflict-label">manual_status:</span><span class="conflict-val ${s.manualStatus?'set':'unset'}">${s.manualStatus||'غير محدد'}</span></div>
+    <div class="conflict-row"><span class="conflict-label">status_2_r_e:</span><span class="conflict-val ${s.status2re?'set':'unset'}">${s.status2re||'غير محدد'}</span></div>
+  `;
+  document.getElementById('conflictReason').textContent = sa.conflictType || 'يوجد تعارض في البيانات';
+}
+
+// ── Items ──────────────────────────────────────────────────────
+function renderItemsList() {
+  const container = document.getElementById('itemsList');
+  container.innerHTML = '';
+  currentItems.forEach((item, idx) => {
+    const isDone  = item.scanned >= item.quantity;
+    const isP     = item.scanned > 0 && !isDone;
+    const cls     = isDone ? 'done' : isP ? 'partial' : '';
+    const cntCls  = isDone ? 'done' : isP ? 'partial' : 'pending';
+    const opts    = (item.options || []).map(o => o.value).join(' / ');
+    const div     = document.createElement('div');
+    div.className = `item-card ${cls}${item.image ? ' has-image' : ''}`;
+    div.id        = `ic-${idx}`;
+    if (item.image) {
+      div.addEventListener('click', () => openImagePopup(item.image));
+      div.setAttribute('title', 'اضغط لعرض صورة المنتج بحجم كامل');
+    }
+    div.innerHTML = `
+      ${item.image ? `<img class="item-img" src="${item.image}" alt="" loading="lazy">` : `<div class="item-placeholder">👟</div>`}
+      <div class="item-info">
+        <div class="item-title">${item.title}</div>
+        <div class="item-sku">${item.sku || '—'}</div>
+        ${opts ? `<div class="item-opts">${opts}</div>` : ''}
+      </div>
+      <div class="item-count-wrap">
+        <div class="item-count ${cntCls}" id="cnt-${idx}">${item.scanned}/${item.quantity}</div>
+        <div class="item-count-sub">قطعة</div>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+function updateItemCard(idx) {
+  const item   = currentItems[idx];
+  const isDone = item.scanned >= item.quantity;
+  const isP    = item.scanned > 0 && !isDone;
+  const cls    = isDone ? 'done' : isP ? 'partial' : '';
+  const cntCls = isDone ? 'done' : isP ? 'partial' : 'pending';
+  const card   = document.getElementById(`ic-${idx}`);
+  const cnt    = document.getElementById(`cnt-${idx}`);
+  if (card) card.className  = `item-card ${cls}${item.image ? ' has-image' : ''}`;
+  if (cnt)  { cnt.className = `item-count ${cntCls}`; cnt.textContent = `${item.scanned}/${item.quantity}`; }
+}
+function openImagePopup(src) {
+  if (!src) return;
+  const overlay = document.getElementById('imagePopup');
+  const img = document.getElementById('imagePopupImg');
+  if (!overlay || !img) return;
+  img.src = src;
+  overlay.classList.remove('hidden');
+  overlay.setAttribute('aria-hidden', 'false');
+}
+
+function closeImagePopup() {
+  const overlay = document.getElementById('imagePopup');
+  const img = document.getElementById('imagePopupImg');
+  if (!overlay || !img) return;
+  overlay.classList.add('hidden');
+  overlay.setAttribute('aria-hidden', 'true');
+  img.src = '';
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeImagePopup();
+});
+
+function updateSummary() {
+  const scanned = currentItems.reduce((s, i) => s + i.scanned, 0);
+  const total   = currentItems.reduce((s, i) => s + i.quantity, 0);
+  document.getElementById('summaryTotal').textContent = `${scanned} / ${total}`;
+  document.getElementById('btnComplete').disabled = scanned < total || total === 0;
+}
+
+// ── Scanner gun pattern ────────────────────────────────────────
+document.addEventListener('input', e=>{
+  if(e.target.id==='barcodeScanInput'){
+    clearTimeout(scannerTimer);
+    scannerTimer=setTimeout(handleBarcodeScan,80);
+  }
+  if(e.target.id==='stockScanInput'){
+    clearTimeout(stockScannerTimer);
+    stockScannerTimer=setTimeout(handleStockScan,80);
+  }
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter' && e.target.id==='orderInput')loadOrder();
+  if(e.key==='Enter' && e.target.id==='barcodeScanInput')handleBarcodeScan();
+  if(e.key==='Enter' && e.target.id==='stockScanInput')handleStockScan();
+});
+function normalizeCode(v){return String(v||'').trim().toLowerCase();}
+function itemCodes(item){
+  return [item.sku,item.barcode,item.variantBarcode,item.productBarcode,item.variant_id,item.variantId].filter(Boolean).map(normalizeCode);
+}
+function handleBarcodeScan(){
+  const input=document.getElementById('barcodeScanInput');
+  const code=normalizeCode(input.value); input.value='';
+  if(!code)return;
+  const idx=currentItems.findIndex(i=>i.scanned<i.quantity && itemCodes(i).includes(code));
+  if(idx<0){showScanBanner('❌ باركود غير مطابق لأي منتج مطلوب','err');playErr();return;}
+  currentItems[idx].scanned += 1;
+  updateItemCard(idx); updateSummary();
+  showScanBanner(`✅ تم فحص: ${currentItems[idx].title}`,'ok'); playOk();
+}
+function showScanBanner(msg,type){
+  const b=document.getElementById('scanBanner'); b.textContent=msg; b.className=`scan-banner ${type}`;
+  setTimeout(()=>{b.className='scan-banner';b.textContent='';},2500);
+}
+
+// ── Complete Pack ──────────────────────────────────────────────
+async function completePack(){
+  const total=currentItems.reduce((s,i)=>s+i.quantity,0);
+  const scanned=currentItems.reduce((s,i)=>s+i.scanned,0);
+  if(scanned<total){showToast('لم يتم فحص كل القطع','error');return;}
+  const btn=document.getElementById('btnComplete'); btn.disabled=true; btn.textContent='جاري التأكيد...';
+  try{
+    await workerCall('complete_pack',{order_id:currentOrder.id,order_name:currentOrder.name,employee:currentEmployee.name,items:currentItems});
+    showToast('تم تأكيد اكتمال التعبئة','success'); playOk(); resetOrder();
+  }catch(e){showToast(e.message||'فشل التأكيد','error');playErr();btn.disabled=false;btn.textContent='✅ تأكيد اكتمال التعبئة';}
+}
+function resetOrder(){
+  currentOrder=null; currentItems=[]; currentStageAnalysis=null; pendingReturnReason='';
+  document.getElementById('orderInputCard').classList.remove('hidden');
+  document.getElementById('orderWorkArea').classList.add('hidden');
+  document.getElementById('orderInput').value=''; document.getElementById('btnComplete').textContent='✅ تأكيد اكتمال التعبئة';
+  setTimeout(()=>document.getElementById('orderInput').focus(),100);
+}
+
+// ════════════════════════════════════════════════════════════════
+// §S2 STOCK RESTORE
+// ════════════════════════════════════════════════════════════════
+function confirmReasonAndShowModal(){
+  const r=document.querySelector('input[name="returnReason"]:checked');
+  if(!r){showToast('اختر سبب الإرجاع','error');return;}
+  pendingReturnReason=r.value;
+  stockRestoreItems=currentItems.map(i=>({...i,scanned:0}));
+  renderStockItems();
+  document.getElementById('stockRestoreModal').classList.remove('hidden');
+  setTimeout(()=>document.getElementById('stockScanInput').focus(),100);
+}
+function closeStockRestoreModal(){document.getElementById('stockRestoreModal').classList.add('hidden');}
+function renderStockItems(){
+  const c=document.getElementById('stockItemsList'); c.innerHTML='';
+  stockRestoreItems.forEach((item,idx)=>{
+    const done=item.scanned>=item.quantity;
+    const d=document.createElement('div'); d.className=`stock-item ${done?'done':''}`; d.id=`stock-${idx}`;
+    d.innerHTML=`${item.image?`<img class="stock-item-img" src="${item.image}">`:'<div class="stock-item-img"></div>'}
+      <div class="stock-item-info"><div class="stock-item-title">${item.title}</div><div class="stock-item-sku">${item.sku||'—'}</div></div>
+      <div class="stock-item-count ${done?'done':''}" id="stockCnt-${idx}">${item.scanned}/${item.quantity}</div>`;
+    c.appendChild(d);
+  });
+  updateStockButton();
+}
+function updateStockItem(idx){
+  const item=stockRestoreItems[idx]; const done=item.scanned>=item.quantity;
+  const row=document.getElementById(`stock-${idx}`); const cnt=document.getElementById(`stockCnt-${idx}`);
+  if(row)row.className=`stock-item ${done?'done':''}`;
+  if(cnt){cnt.className=`stock-item-count ${done?'done':''}`;cnt.textContent=`${item.scanned}/${item.quantity}`;}
+  updateStockButton();
+}
+function handleStockScan(){
+  const input=document.getElementById('stockScanInput'); const code=normalizeCode(input.value); input.value='';
+  if(!code)return;
+  const idx=stockRestoreItems.findIndex(i=>i.scanned<i.quantity && itemCodes(i).includes(code));
+  if(idx<0){showToast('باركود غير مطابق أو تم فحصه بالكامل','error');playErr();return;}
+  stockRestoreItems[idx].scanned++; updateStockItem(idx); showToast('تم فحص المنتج','success'); playOk();
+}
+function updateStockButton(){
+  const total=stockRestoreItems.reduce((s,i)=>s+i.quantity,0);
+  const scanned=stockRestoreItems.reduce((s,i)=>s+i.scanned,0);
+  document.getElementById('btnConfirmStockRestore').disabled=scanned<total||total===0;
+}
+async function confirmStockRestore(){
+  const btn=document.getElementById('btnConfirmStockRestore'); btn.disabled=true; btn.textContent='جاري التنفيذ...';
+  try{
+    await workerCall('restore_stock',{order_id:currentOrder.id,order_name:currentOrder.name,employee:currentEmployee.name,reason:pendingReturnReason,items:stockRestoreItems});
+    showToast('تم إرجاع المخزون وتسجيل العملية','success'); closeStockRestoreModal(); resetOrder(); playOk();
+  }catch(e){showToast(e.message||'فشل إرجاع المخزون','error');playErr();btn.disabled=false;btn.textContent='تأكيد إرجاع المخزون';}
+}
+
+// ════════════════════════════════════════════════════════════════
+// §LOG
+// ════════════════════════════════════════════════════════════════
+function populateEmployeeFilter(){
+  const sel=document.getElementById('logFilterEmployee');
+  if(!sel)return;
+  sel.innerHTML='<option value="">كل الموظفين</option>'+employees.map(e=>`<option value="${e.name}">${e.name}</option>`).join('');
+}
+async function fetchLog(){
+  try{
+    const emp=document.getElementById('logFilterEmployee')?.value||'';
+    const j=await workerCall('get_logs',{tool:TOOL,employee:emp,limit:500});
+    logRows=j.logs||j.rows||[]; renderLog();
+  }catch(e){document.getElementById('logList').innerHTML=`<div class="log-empty">${e.message||'تعذر تحميل السجل'}</div>`;}
+}
+function renderLog(){
+  const type=document.getElementById('logFilterType').value;
+  const q=(document.getElementById('logSearch').value||'').toLowerCase();
+  let rows=logRows.filter(r=>!['login','logout'].includes(r.type||r.action||''));
+  if(type)rows=rows.filter(r=>(r.type||r.action)===type);
+  if(q)rows=rows.filter(r=>JSON.stringify(r).toLowerCase().includes(q));
+  const c=document.getElementById('logList');
+  if(!rows.length){c.innerHTML='<div class="log-empty">لا توجد سجلات</div>';return;}
+  c.innerHTML=rows.map(r=>{
+    const t=r.type||r.action||'';
+    const meta=[]; if(r.employee)meta.push(r.employee); if(r.created_at)meta.push(toCairo(r.created_at));
+    return `<div class="log-entry"><div class="log-top"><span class="log-badge">${t}</span><span class="log-order">${r.order_name||r.order||''}</span><span class="log-meta">${meta.join(' • ')}</span></div>${r.note?`<div class="log-note">${r.note}</div>`:''}</div>`;
+  }).join('');
+}
+async function exportLogXLSX(){
+  try{
+    const wb=new ExcelJS.Workbook(); const ws=wb.addWorksheet('Pack Log');
+    ws.columns=[{header:'Date',key:'date',width:20},{header:'Employee',key:'employee',width:24},{header:'Type',key:'type',width:22},{header:'Order',key:'order',width:14},{header:'Note',key:'note',width:50}];
+    logRows.forEach(r=>ws.addRow({date:toCairo(r.created_at),employee:r.employee||'',type:r.type||r.action||'',order:r.order_name||r.order||'',note:r.note||''}));
+    const buf=await wb.xlsx.writeBuffer(); const blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    const link=document.createElement('a'); link.href=URL.createObjectURL(blob);
+    link.download=`pack-log-${new Date().toISOString().slice(0,10)}.xlsx`;
+    link.click();
+    showToast('تم تصدير السجل', 'success');
+  } catch (err) {
+    showToast(err.message || 'خطأ في التصدير', 'error');
+  }
+}
+
+// ── Init ───────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', async () => {
+  updateSettingsButtonsState();
+  await loadEmployeesList();
+  renderLoginMode('employee');
+});
+</script>
+</body>
+</html>
