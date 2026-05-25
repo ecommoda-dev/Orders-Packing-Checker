@@ -141,14 +141,13 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);min-
 .card-title{font-size:13px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px}
 
 /* ── Desktop Check Layout ── */
-.check-layout{display:grid;grid-template-columns:minmax(0,1fr) 370px;gap:18px;align-items:start}
-.order-side-panel{grid-column:2;position:sticky;top:76px;display:flex;flex-direction:column;gap:12px;min-width:0}
-.packing-main{grid-column:1;min-width:0}
-.order-side-panel .order-header-card,.order-side-panel .stage-indicator-card,.order-side-panel .unclear-warning,.order-side-panel .conflict-panel,.order-side-panel .ap-panel{margin-bottom:0}
+.check-layout{display:grid;grid-template-columns:minmax(360px,400px) minmax(0,1fr);gap:18px;align-items:start;direction:rtl}
+.order-side-panel{grid-column:1;position:sticky;top:74px;display:flex;flex-direction:column;gap:12px;min-width:0;direction:rtl}
+.packing-main{grid-column:2;min-width:0;direction:rtl}
+.order-side-panel .order-header-card,.order-side-panel .stage-indicator-card,.order-side-panel .employee-bar,.order-side-panel .unclear-warning,.order-side-panel .conflict-panel,.order-side-panel .ap-panel{margin-bottom:0}
 .order-side-panel .conflict-panel,.order-side-panel .ap-panel{box-shadow:var(--shadow)}
-.packing-main .employee-bar{margin-bottom:12px}
 @media (min-width:1600px){
-  .check-layout{grid-template-columns:minmax(0,1fr) 400px}
+  .check-layout{grid-template-columns:minmax(370px,430px) minmax(0,1fr)}
 }
 @media (max-width:1100px){
   .main-content{padding:16px;max-width:760px}
@@ -265,16 +264,17 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);min-
 .employee-bar-name{font-size:14px;font-weight:700;color:var(--text-primary)}
 
 /* ── Summary + Items ── */
-.summary-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;box-shadow:var(--shadow)}
+.summary-bar{display:none}
 .summary-label{font-size:13px;color:var(--text-muted)}.summary-val{font-family:var(--mono);font-size:15px;font-weight:700}
-.progress-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px;box-shadow:var(--shadow)}
-.progress-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
-.progress-title{font-size:13px;font-weight:800;color:var(--text-primary)}
+.progress-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;margin-bottom:12px;box-shadow:var(--shadow)}
+.progress-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+.progress-title{font-size:13px;font-weight:800;color:var(--text-primary);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.progress-inline-count{font-family:var(--mono);font-size:15px;font-weight:900;color:var(--text-primary);direction:ltr;display:inline-block;unicode-bidi:isolate}
 .progress-sub{font-size:12px;color:var(--text-muted);margin-top:2px}
-.progress-percent{font-family:var(--mono);font-size:19px;font-weight:800;color:var(--accent);direction:ltr;white-space:nowrap}
-.progress-track{height:12px;border-radius:999px;background:var(--surface-2);border:1px solid var(--border);overflow:hidden}
+.progress-percent{font-family:var(--mono);font-size:19px;font-weight:800;color:var(--accent);direction:ltr;white-space:nowrap;unicode-bidi:isolate}
+.progress-track{height:10px;border-radius:999px;background:var(--surface-2);border:1px solid var(--border);overflow:hidden}
 .progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--green));border-radius:999px;transition:width .2s ease}
-.progress-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.progress-stats{display:none}
 .progress-stat{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:8px;text-align:center}
 .progress-stat-label{font-size:11px;color:var(--text-muted);margin-bottom:2px}
 .progress-stat-val{font-family:var(--mono);font-size:14px;font-weight:800;color:var(--text-primary)}
@@ -699,6 +699,11 @@ NOTES
             ⚠️ لم يتم تحديد حالة الأوردر الأساسي (S1) أو حالة الأوردر الاستبدال (S2) — يُعامَل الأوردر كـ S1 افتراضياً. تأكد من صحة هذا قبل التغليف.
           </div>
 
+          <div class="employee-bar order-employee-bar">
+            <label>مُغلَّف بواسطة:</label>
+            <span class="employee-bar-name" id="packedByName"></span>
+          </div>
+
           <!-- Conflict Panel -->
           <div class="conflict-panel" id="conflictPanel" style="display:none">
             <div class="conflict-header">
@@ -756,41 +761,19 @@ NOTES
 
         <!-- Packing Content -->
         <section class="packing-main" id="packingContent">
-          <div class="employee-bar">
-            <label>مُغلَّف بواسطة:</label>
-            <span class="employee-bar-name" id="packedByName"></span>
-          </div>
           <div class="scan-banner" id="scanBanner"></div>
           <input type="text" class="barcode-input" id="barcodeScanInput"
                  placeholder="سكان باركود المنتج..." autocomplete="off" inputmode="text">
-          <div class="summary-bar">
-            <span class="summary-label">إجمالي القطع</span>
-            <span class="summary-val" id="summaryTotal">0 / 0</span>
-          </div>
           <div class="progress-card" id="scanProgressCard">
             <div class="progress-head">
               <div>
-                <div class="progress-title">تقدم السكان</div>
+                <div class="progress-title">تقدم السكان <span class="progress-inline-count" id="summaryTotal">0 / 0</span></div>
                 <div class="progress-sub" id="progressText">تم سكان 0 من 0 — المتبقي 0</div>
               </div>
               <div class="progress-percent" id="progressPct">0%</div>
             </div>
             <div class="progress-track" aria-hidden="true">
               <div class="progress-fill" id="progressFill"></div>
-            </div>
-            <div class="progress-stats">
-              <div class="progress-stat">
-                <div class="progress-stat-label">تم السكان</div>
-                <div class="progress-stat-val" id="progressScanned">0</div>
-              </div>
-              <div class="progress-stat">
-                <div class="progress-stat-label">المتبقي</div>
-                <div class="progress-stat-val" id="progressRemaining">0</div>
-              </div>
-              <div class="progress-stat">
-                <div class="progress-stat-label">الإجمالي</div>
-                <div class="progress-stat-val" id="progressTotal">0</div>
-              </div>
             </div>
           </div>
           <div class="items-list" id="itemsList"></div>
@@ -1491,7 +1474,8 @@ function updateSummary() {
   const remaining = Math.max(total - scanned, 0);
   const pct = total ? Math.round((scanned / total) * 100) : 0;
 
-  document.getElementById('summaryTotal').textContent = `${scanned} / ${total}`;
+  const summaryEl = document.getElementById('summaryTotal');
+  if (summaryEl) summaryEl.textContent = `${scanned} / ${total}`;
 
   const scannedEl   = document.getElementById('progressScanned');
   const remainingEl = document.getElementById('progressRemaining');
