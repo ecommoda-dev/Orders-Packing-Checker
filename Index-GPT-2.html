@@ -278,10 +278,10 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);min-
 .progress-stat.remaining{border-color:var(--amber-border);background:var(--amber-light)}
 .progress-stat-label{font-size:11px;color:var(--text-muted);margin-bottom:4px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .progress-stat-val{font-family:var(--mono);font-size:20px;font-weight:900;color:var(--text-primary);direction:ltr;unicode-bidi:isolate}
-.progress-track{position:relative;height:14px;border-radius:999px;background:var(--surface-2);border:1px solid var(--border);overflow:visible;direction:ltr}
-.progress-fill{position:absolute;inset:0 auto 0 0;width:0%;background:linear-gradient(90deg,var(--accent),var(--green));border-radius:999px;transition:width .2s ease}
-.progress-checkpoints{position:absolute;inset:-5px 6px;pointer-events:none;direction:ltr}
-.progress-checkpoint{position:absolute;top:50%;width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid var(--border-strong);transform:translate(-50%,-50%);box-shadow:0 1px 3px rgba(0,0,0,.14);transition:all .18s ease}
+.progress-track{position:relative;height:14px;border-radius:999px;background:var(--surface-2);border:1px solid var(--border);overflow:visible;direction:rtl}
+.progress-fill{position:absolute;inset:0 0 0 auto;width:0%;background:linear-gradient(270deg,var(--accent),var(--green));border-radius:999px;transition:width .2s ease}
+.progress-checkpoints{position:absolute;inset:-5px 6px;pointer-events:none;direction:rtl}
+.progress-checkpoint{position:absolute;top:50%;width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid var(--border-strong);transform:translate(50%,-50%);box-shadow:0 1px 3px rgba(0,0,0,.14);transition:all .18s ease}
 .progress-checkpoint.done{background:var(--green);border-color:var(--green)}
 .progress-checkpoint.current{border-color:var(--accent);box-shadow:0 0 0 4px rgba(37,99,235,.12)}
 .progress-checkpoint.done::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--font);font-size:10px;font-weight:900;line-height:1}
@@ -380,7 +380,7 @@ details[open]>.about-summary{border-radius:8px 8px 0 0}
   </div>
   <div class="header-right">
     <button class="hbtn" onclick="openAbout()">ℹ️ عن الأداة</button>
-    <button class="hbtn hbtn-version" onclick="openChangelog()">v1.3.0 📋</button>
+    <button class="hbtn hbtn-version" onclick="openChangelog()">v1.5.0 📋</button>
     <button class="hbtn settings-missing" id="headerSettingsBtn" onclick="openSettings()">⚙️ الإعدادات</button>
   </div>
 </header>
@@ -431,6 +431,15 @@ details[open]>.about-summary{border-radius:8px 8px 0 0}
       <button class="modal-close" onclick="closeChangelog()">×</button>
     </div>
     <div class="modal-body">
+      <div class="cl-entry">
+        <div class="cl-version">v1.5.0</div>
+        <div class="cl-date">27-05-2026</div>
+        <div class="cl-items">
+          <div class="cl-item"><span class="cl-tag change">تغيير</span> شريط التقدم أصبح من اليمين لليسار ليتوافق مع RTL</div>
+          <div class="cl-item"><span class="cl-tag change">تغيير</span> عدد الـ Checkpoints الآن يساوي إجمالي القطع، وكل قطعة مكتملة تفعّل Checkpoint واحدة</div>
+          <div class="cl-item"><span class="cl-tag change">تغيير</span> عكس ترتيب ملحوظات الأوردر وموظف التغليف داخل بطاقة الأوردر</div>
+        </div>
+      </div>
       <div class="cl-entry">
         <div class="cl-version">v1.3.0</div>
         <div class="cl-date">23-05-2026</div>
@@ -689,11 +698,11 @@ NOTES
               </div>
               <button class="btn-ghost btn-cancel-pack" onclick="resetToEntry()">❌ إلغاء التغليف</button>
             </div>
+            <div class="order-note" id="checkOrderNote"></div>
             <div class="employee-bar order-employee-bar">
               <label>التغليف بواسطة:</label>
               <span class="employee-bar-name" id="packedByName"></span>
             </div>
-            <div class="order-note" id="checkOrderNote"></div>
           </div>
 
           <!-- Stage Indicator -->
@@ -1505,19 +1514,17 @@ function updateProgressCheckpoints(total, scanned) {
   wrap.innerHTML = '';
   if (!total) return;
 
-  const maxExactDots = 30;
-  const count = total <= maxExactDots ? total : 10;
-  const currentStep = total <= maxExactDots
-    ? Math.min(scanned + 1, total)
-    : Math.min(Math.ceil((scanned / total) * count) + 1, count);
+  const count = total;
+  const currentStep = Math.min(scanned + 1, total);
 
   for (let i = 1; i <= count; i++) {
-    const checkpointValue = total <= maxExactDots ? i : Math.ceil((i / count) * total);
     const dot = document.createElement('span');
     dot.className = 'progress-checkpoint';
-    if (scanned >= checkpointValue) dot.classList.add('done');
+    if (scanned >= i) dot.classList.add('done');
     else if (i === currentStep) dot.classList.add('current');
-    dot.style.left = count === 1 ? '50%' : `${((i - 1) / (count - 1)) * 100}%`;
+
+    // RTL progress: first item/checkpoint starts from the right.
+    dot.style.right = count === 1 ? '50%' : `${((i - 1) / (count - 1)) * 100}%`;
     wrap.appendChild(dot);
   }
 }
