@@ -175,7 +175,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);min-
 .stage-signal-row{display:flex;align-items:center;gap:8px;font-size:12px}
 .sig-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .sig-dot.on{background:var(--green)}.sig-dot.off{background:var(--border-strong)}
-.sig-label{color:var(--text-muted)}.sig-value{font-family:var(--mono);font-weight:600}
+.sig-label{color:var(--text-muted)}.sig-value{font-weight:600}
 
 /* ── Conflict Panel ── */
 .conflict-panel{background:#fff5f5;border:2px solid var(--red);border-radius:var(--radius);padding:20px;margin-bottom:16px}
@@ -186,7 +186,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);min-
 .conflict-data{background:#fff;border:1px solid var(--red-border);border-radius:var(--radius-sm);padding:14px;margin-bottom:12px;display:flex;flex-direction:column;gap:9px}
 .conflict-row{display:flex;align-items:flex-start;gap:10px;font-size:13px}
 .conflict-label{font-weight:700;color:var(--text-muted);min-width:130px;flex-shrink:0}
-.conflict-val{font-family:var(--mono);font-weight:600}
+.conflict-val{font-weight:600}
 .conflict-val.set{color:var(--red)}.conflict-val.unset{color:var(--text-muted);font-family:var(--font);font-style:italic}
 .conflict-reason{background:#fef2f2;border-right:4px solid var(--red);border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;color:#b91c1c;font-weight:600;margin-bottom:14px}
 .conflict-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
@@ -201,7 +201,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);min-
 .pack-info-card{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;display:flex;flex-direction:column;gap:10px}
 .pack-info-row{display:flex;align-items:baseline;gap:10px;font-size:13px}
 .pack-info-label{font-weight:700;color:var(--text-muted);min-width:155px;flex-shrink:0;font-size:12px;text-transform:uppercase;letter-spacing:.3px}
-.pack-info-val{font-family:var(--mono);font-weight:600;color:var(--text-primary);word-break:break-word}
+.pack-info-val{font-weight:600;color:var(--text-primary);word-break:break-word}
 
 /* ── Pack Items Table (used in modals) ── */
 .pack-table-title{font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px}
@@ -321,7 +321,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);min-
 .log-list{display:flex;flex-direction:column;gap:8px}
 .log-entry{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px}
 .log-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px}
-.log-badge{font-size:11px;font-weight:700;padding:2px 7px;border-radius:4px;font-family:var(--mono);background:var(--green-light);color:var(--green)}
+.log-badge{font-size:11px;font-weight:700;padding:2px 7px;border-radius:4px;background:var(--green-light);color:var(--green)}
 .log-order{font-family:var(--mono);font-size:13px;font-weight:600}
 .log-meta{font-family:var(--mono);font-size:11px;color:var(--text-muted)}
 .log-note{font-size:13px;color:var(--text-secondary);margin-top:4px}
@@ -368,7 +368,7 @@ details[open]>.about-summary{border-radius:8px 8px 0 0}
   </div>
   <div class="header-right">
     <button class="hbtn" onclick="openAbout()">ℹ️ عن الأداة</button>
-    <button class="hbtn hbtn-version" onclick="openChangelog()">v1.7.0 📋</button>
+    <button class="hbtn hbtn-version" onclick="openChangelog()">v1.7.1 📋</button>
     <button class="hbtn settings-missing" id="headerSettingsBtn" onclick="openSettings()">⚙️ الإعدادات</button>
   </div>
 </header>
@@ -418,6 +418,14 @@ details[open]>.about-summary{border-radius:8px 8px 0 0}
       <button class="modal-close" onclick="closeChangelog()">×</button>
     </div>
     <div class="modal-body">
+      <div class="cl-entry">
+        <div class="cl-version">v1.7.1</div>
+        <div class="cl-date">28-05-2026</div>
+        <div class="cl-items">
+          <div class="cl-item"><span class="cl-tag fix">إصلاح</span> حذف IBM Plex Mono من قيم النصوص العربية في النوافذ المنبثقة (.pack-info-val، .sig-value، .conflict-val)</div>
+          <div class="cl-item"><span class="cl-tag fix">إصلاح</span> صف "لا توجد بيانات منتجات" في جدول المنتجات أصبح يستخدم Noto Sans Arabic بدلاً من IBM Plex Mono</div>
+        </div>
+      </div>
       <div class="cl-entry">
         <div class="cl-version">v1.7.0</div>
         <div class="cl-date">28-05-2026</div>
@@ -1206,7 +1214,7 @@ function buildPrevPackInfo(ap) {
 function buildItemsTableRows(storedItems) {
   const items = parseStoredItemsString(storedItems);
   if (!items.length) {
-    return `<tr><td colspan="2" style="text-align:center;color:var(--text-muted);padding:16px">لا توجد بيانات منتجات</td></tr>`;
+    return `<tr><td colspan="2" style="text-align:center;color:var(--text-muted);padding:16px;font-family:var(--font)">لا توجد بيانات منتجات</td></tr>`;
   }
   return items.map(i => `
     <tr>
