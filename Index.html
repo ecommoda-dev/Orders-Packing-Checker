@@ -131,13 +131,32 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);min-
 .login-secondary:hover{border-color:var(--accent);background:var(--accent-light);color:var(--accent)}
 
 /* ── Main ── */
-.main-content{padding:20px;max-width:700px;margin:0 auto}
-.tab-bar{display:flex;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:4px;margin-bottom:20px;box-shadow:var(--shadow)}
+.main-content{padding:18px clamp(18px,2vw,34px);max-width:1540px;margin:0 auto}
+.tab-bar{display:flex;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:4px;margin:0 auto 20px;box-shadow:var(--shadow);max-width:980px}
 .tab-btn{flex:1;padding:8px 12px;border:none;border-radius:var(--radius-sm);background:none;font-family:var(--font);font-size:13px;font-weight:600;color:var(--text-muted);cursor:pointer;transition:all .15s}
 .tab-btn.active{background:var(--accent);color:#fff}
 .screen{display:none}.screen.active{display:block}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin-bottom:16px}
 .card-title{font-size:13px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px}
+
+/* ── Desktop Check Layout ── */
+.check-layout{display:grid;grid-template-columns:minmax(360px,400px) minmax(0,1fr);gap:18px;align-items:start;direction:rtl}
+.order-side-panel{grid-column:1;position:sticky;top:74px;display:flex;flex-direction:column;gap:12px;min-width:0;direction:rtl}
+.packing-main{grid-column:2;min-width:0;direction:rtl}
+@media (min-width:1600px){
+  .check-layout{grid-template-columns:minmax(370px,430px) minmax(0,1fr)}
+}
+@media (max-width:1100px){
+  .main-content{padding:16px;max-width:760px}
+  .tab-bar{max-width:none}
+  .check-layout{display:block}
+  .order-side-panel{position:static;display:flex;flex-direction:column;gap:12px;margin-bottom:14px}
+  .packing-main{min-width:0}
+}
+@media (max-width:640px){
+  .main-content{padding:12px}
+  .scan-input-wrap{flex-direction:column}
+}
 
 /* ── Stage Indicator ── */
 .stage-indicator-card{border-radius:var(--radius);padding:14px 18px;margin-bottom:14px;display:flex;align-items:flex-start;gap:14px}
@@ -156,7 +175,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);min-
 .stage-signal-row{display:flex;align-items:center;gap:8px;font-size:12px}
 .sig-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .sig-dot.on{background:var(--green)}.sig-dot.off{background:var(--border-strong)}
-.sig-label{color:var(--text-muted)}.sig-value{font-family:var(--mono);font-weight:600}
+.sig-label{color:var(--text-muted)}.sig-value{font-weight:600}
 
 /* ── Conflict Panel ── */
 .conflict-panel{background:#fff5f5;border:2px solid var(--red);border-radius:var(--radius);padding:20px;margin-bottom:16px}
@@ -167,7 +186,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);min-
 .conflict-data{background:#fff;border:1px solid var(--red-border);border-radius:var(--radius-sm);padding:14px;margin-bottom:12px;display:flex;flex-direction:column;gap:9px}
 .conflict-row{display:flex;align-items:flex-start;gap:10px;font-size:13px}
 .conflict-label{font-weight:700;color:var(--text-muted);min-width:130px;flex-shrink:0}
-.conflict-val{font-family:var(--mono);font-weight:600}
+.conflict-val{font-weight:600}
 .conflict-val.set{color:var(--red)}.conflict-val.unset{color:var(--text-muted);font-family:var(--font);font-style:italic}
 .conflict-reason{background:#fef2f2;border-right:4px solid var(--red);border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;color:#b91c1c;font-weight:600;margin-bottom:14px}
 .conflict-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
@@ -178,50 +197,47 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);min-
 .unclear-warning{background:var(--amber-light);border-right:4px solid var(--amber);border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;color:#92400e;font-weight:600;margin-bottom:14px;display:none}
 .unclear-warning.show{display:block}
 
-/* ── Already Packed Override Panel ── */
-.ap-panel{background:var(--orange-light);border:2px solid var(--orange-border);border-radius:var(--radius);padding:20px;margin-bottom:16px}
-.ap-header{display:flex;align-items:flex-start;gap:12px;margin-bottom:16px}
-.ap-icon{font-size:28px;flex-shrink:0}
-.ap-header-info{flex:1}
-.ap-title{font-size:16px;font-weight:800;color:var(--orange);margin-bottom:4px}
-.ap-subtitle{font-size:13px;color:#9a3412}
-.ap-data{background:#fff;border:1px solid var(--orange-border);border-radius:var(--radius-sm);padding:14px;margin-bottom:14px;display:flex;flex-direction:column;gap:9px}
-.ap-row{display:flex;align-items:flex-start;gap:10px;font-size:13px}
-.ap-label{font-weight:700;color:var(--text-muted);min-width:130px;flex-shrink:0}
-.ap-val{font-family:var(--mono);font-weight:600;color:var(--text-primary);word-break:break-word}
-.ap-change-note{background:var(--amber-light);border-right:4px solid var(--amber);border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;color:#92400e;font-weight:600;margin-bottom:16px}
-.btn-override{width:100%;padding:13px;border:none;border-radius:var(--radius-sm);background:var(--orange);color:#fff;font-family:var(--font);font-size:14px;font-weight:800;cursor:pointer;transition:background .15s}
-.btn-override:hover{background:#c2410c}
+/* ── Pack Info Card (used in modals) ── */
+.pack-info-card{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;display:flex;flex-direction:column;gap:10px}
+.pack-info-row{display:flex;align-items:baseline;gap:10px;font-size:13px}
+.pack-info-label{font-weight:700;color:var(--text-muted);min-width:155px;flex-shrink:0;font-size:12px;text-transform:uppercase;letter-spacing:.3px}
+.pack-info-val{font-weight:600;color:var(--text-primary);word-break:break-word}
 
-/* ── Reason Selection ── */
-.reason-section{display:none;margin-top:14px;border-top:1px solid var(--orange-border);padding-top:14px}
-.reason-section.visible{display:block}
-.reason-title{font-size:13px;font-weight:700;color:var(--text-primary);margin-bottom:10px}
-.reason-options{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
-.reason-option{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--border-strong);border-radius:var(--radius-sm);cursor:pointer;transition:all .15s;background:var(--surface)}
-.reason-option:hover{border-color:var(--accent);background:var(--accent-light)}
-.reason-option.selected{border-color:var(--accent);background:var(--accent-light)}
-.reason-option input[type=radio]{accent-color:var(--accent);width:16px;height:16px;flex-shrink:0;cursor:pointer}
-.reason-option-text{font-size:13px;font-weight:600;color:var(--text-primary)}
-.btn-reason-confirm{width:100%;padding:13px;border:none;border-radius:var(--radius-sm);background:var(--accent);color:#fff;font-family:var(--font);font-size:14px;font-weight:800;cursor:pointer;transition:background .15s}
-.btn-reason-confirm:hover{background:var(--accent-dark)}
-.btn-reason-confirm:disabled{opacity:.5;cursor:not-allowed}
+/* ── Pack Items Table (used in modals) ── */
+.pack-table-title{font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px}
+.pack-table-wrap{border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden}
+.pack-items-table{width:100%;border-collapse:collapse;font-size:13px}
+.pack-items-table th{background:var(--surface-2);padding:9px 14px;text-align:right;font-weight:700;font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;border-bottom:2px solid var(--border-strong)}
+.pack-items-table td{padding:9px 14px;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:13px}
+.pack-items-table tr:last-child td{border-bottom:none}
+.pack-items-table .qty-col{text-align:center;font-weight:800;color:var(--accent);width:80px}
+.pack-items-table .sku-col{word-break:break-word}
 
-/* ── Stock Return Modal ── */
-.stock-return-modal .modal-box{max-width:420px}
-.stock-return-icon{font-size:36px;text-align:center;margin-bottom:10px}
-.stock-return-msg{font-size:14px;font-weight:600;line-height:1.75;text-align:center;color:var(--text-primary)}
-.stock-return-items{font-family:var(--mono);font-size:12px;color:var(--text-muted);text-align:center;margin-top:6px;padding:6px 10px;background:var(--surface-2);border-radius:var(--radius-sm);border:1px solid var(--border)}
-.modal-footer.centered{justify-content:center;gap:12px}
+/* ── Danger Divider ── */
+.danger-divider{background:var(--red-light);border:2px solid var(--red-border);border-radius:var(--radius-sm);padding:11px 14px;font-size:13px;font-weight:800;color:var(--red);text-align:center;line-height:1.5}
+
+/* ── Change Detected Modal header ── */
+.cd-modal-header{padding:16px 20px;border-bottom:2px solid var(--amber-border);background:var(--amber-light);border-radius:var(--radius) var(--radius) 0 0;display:flex;align-items:flex-start;gap:12px}
+.cd-modal-icon{font-size:22px;flex-shrink:0;line-height:1.2}
+.cd-modal-title{font-size:14px;font-weight:800;color:#92400e;line-height:1.5}
+
+/* ── No Change Modal header ── */
+.nc-modal-header{padding:16px 20px;border-bottom:2px solid var(--border-strong);background:var(--surface-2);border-radius:var(--radius) var(--radius) 0 0;display:flex;align-items:center;gap:10px}
+.nc-modal-title{font-size:15px;font-weight:700;color:var(--text-primary)}
+.nc-no-change-badge{background:var(--green-light);border:1px solid var(--green-border);border-radius:var(--radius-sm);padding:8px 12px;font-size:13px;font-weight:700;color:var(--green);display:flex;align-items:center;gap:7px}
 
 /* ── Order Header ── */
 .order-header-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px;box-shadow:var(--shadow)}
 .order-header-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
 .order-name{font-family:var(--mono);font-size:20px;font-weight:700}
-.stage-badge-sm{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:13px;font-weight:700;font-family:var(--mono)}
+.stage-badge-sm{display:inline-flex;align-items:center;padding:4px 11px;border-radius:20px;font-size:12px;font-weight:800;font-family:var(--font);white-space:nowrap}
 .stage-badge-sm.s1{background:var(--accent-light);color:var(--accent)}
 .stage-badge-sm.s2{background:var(--purple-light);color:var(--purple);border:1px solid var(--purple-border)}
-.order-note{font-size:13px;color:var(--text-secondary);background:var(--amber-light);border:1px solid var(--amber-border);border-radius:var(--radius-sm);padding:6px 10px;margin-top:10px;display:none}
+.btn-cancel-pack{font-size:12px!important;padding:6px 12px!important;border-color:var(--red-border)!important;color:var(--red)!important;background:var(--red-light)!important;font-weight:800!important}
+.btn-cancel-pack:hover{background:var(--red)!important;border-color:var(--red)!important;color:#fff!important}
+.order-employee-bar{margin-top:10px;margin-bottom:0;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px}
+.order-employee-bar label{font-size:12px;font-weight:800;color:var(--text-muted);white-space:nowrap}
+.order-note{font-size:14px;font-weight:900;color:#6d28d9;background:var(--purple-light);border:1.5px solid var(--purple-border);border-radius:var(--radius-sm);padding:8px 10px;margin-top:10px;display:none;line-height:1.7}
 
 /* ── Edit reason badge in log ── */
 .log-edit-reason{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:2px 7px;border-radius:4px;background:var(--orange-light);color:var(--orange);border:1px solid var(--orange-border);margin-top:4px}
@@ -242,22 +258,55 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);min-
 .employee-bar-name{font-size:14px;font-weight:700;color:var(--text-primary)}
 
 /* ── Summary + Items ── */
-.summary-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;box-shadow:var(--shadow)}
-.summary-label{font-size:13px;color:var(--text-muted)}.summary-val{font-family:var(--mono);font-size:15px;font-weight:700}
-.items-list{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
-.item-card{background:var(--surface);border:2px solid var(--border);border-radius:var(--radius);padding:14px;display:flex;align-items:center;gap:14px;transition:all .2s}
+.progress-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:12px;box-shadow:var(--shadow)}
+.progress-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:12px}
+.progress-stat{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:10px 8px;text-align:center;min-width:0}
+.progress-stat.total{border-color:#bfdbfe;background:var(--accent-light)}
+.progress-stat.done{border-color:var(--green-border);background:var(--green-light)}
+.progress-stat.remaining{border-color:var(--amber-border);background:var(--amber-light)}
+.progress-stat-label{font-size:11px;color:var(--text-muted);margin-bottom:4px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.progress-stat-val{font-family:var(--mono);font-size:20px;font-weight:900;color:var(--text-primary);direction:ltr;unicode-bidi:isolate}
+.progress-track{position:relative;height:14px;border-radius:999px;background:var(--surface-2);border:1px solid var(--border);overflow:visible;direction:rtl}
+.progress-fill{position:absolute;inset:0 0 0 auto;width:0%;background:linear-gradient(270deg,var(--accent),var(--green));border-radius:999px;transition:width .2s ease}
+.progress-checkpoints{position:absolute;inset:-5px 6px;pointer-events:none;direction:rtl}
+.progress-checkpoint{position:absolute;top:50%;width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid var(--border-strong);transform:translate(50%,-50%);box-shadow:0 1px 3px rgba(0,0,0,.14);transition:all .18s ease}
+.progress-checkpoint.done{background:var(--green);border-color:var(--green)}
+.progress-checkpoint.current{border-color:var(--accent);box-shadow:0 0 0 4px rgba(37,99,235,.12)}
+.progress-checkpoint.done::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--font);font-size:10px;font-weight:900;line-height:1}
+@media (max-width:640px){.progress-stats{grid-template-columns:1fr}.progress-stat-label{white-space:normal}}
+
+.items-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:16px;direction:ltr}
+.item-card{background:var(--surface);border:2px solid var(--border);border-radius:var(--radius);padding:12px;min-height:262px;display:flex;flex-direction:column;align-items:stretch;gap:10px;transition:all .2s;direction:rtl;position:relative}
+.item-card.has-image{cursor:zoom-in}
+.item-card.has-image:hover{border-color:#bfdbfe;box-shadow:0 8px 20px rgba(37,99,235,.10);transform:translateY(-1px)}
 .item-card.done{background:var(--green-light);border-color:var(--green-border)}
 .item-card.partial{background:var(--amber-light);border-color:var(--amber-border)}
-.item-img{width:60px;height:60px;object-fit:cover;border-radius:var(--radius-sm);border:1px solid var(--border);flex-shrink:0;background:var(--bg)}
-.item-placeholder{width:60px;height:60px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:24px}
-.item-info{flex:1;min-width:0}
-.item-title{font-size:14px;font-weight:600;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.item-sku{font-family:var(--mono);font-size:12px;color:var(--text-muted);margin-bottom:4px}
-.item-opts{font-size:12px;color:var(--text-secondary)}
-.item-count-wrap{flex-shrink:0;text-align:center}
-.item-count{font-family:var(--mono);font-size:22px;font-weight:700;line-height:1}
+.item-img{width:100%;height:140px;object-fit:contain;border-radius:var(--radius-sm);border:1px solid var(--border);flex-shrink:0;background:#fff;padding:8px}
+.item-placeholder{width:100%;height:140px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:42px}
+.item-info{min-width:0;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px}
+.item-title{font-size:14px;font-weight:800;line-height:1.45;margin-bottom:0;white-space:normal;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.item-sku{font-family:var(--mono);font-size:12px;color:var(--text-muted);margin-bottom:0;direction:ltr;text-align:center}
+.item-opts{font-size:12px;color:var(--text-secondary);direction:ltr;text-align:center}
+.item-count-wrap{margin-top:auto;padding-top:10px;border-top:1px solid var(--border);display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-shrink:0;text-align:right}
+.item-count{font-family:var(--mono);font-size:24px;font-weight:800;line-height:1}
 .item-count.done{color:var(--green)}.item-count.partial{color:var(--amber)}.item-count.pending{color:var(--text-muted)}
-.item-count-sub{font-size:11px;color:var(--text-muted);margin-top:2px}
+.item-count-sub{font-size:11px;color:var(--text-muted);margin-top:0}
+
+@media (max-width:1100px){
+  .items-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .item-card{min-height:292px;padding:14px}
+  .item-img,.item-placeholder{height:165px}
+  .item-title{font-size:14px}
+  .item-sku,.item-opts{font-size:12px}
+}
+@media (max-width:640px){
+  .items-list{grid-template-columns:1fr}
+}
+
+.image-popup-overlay{position:fixed;inset:0;background:rgba(17,24,39,.88);z-index:1200;display:flex;align-items:center;justify-content:center;padding:28px;cursor:zoom-out}
+.image-popup-overlay.hidden{display:none}
+.image-popup-box{max-width:min(92vw,1180px);max-height:92vh;background:#fff;border-radius:18px;padding:18px;box-shadow:0 24px 80px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center}
+.image-popup-box img{max-width:100%;max-height:calc(92vh - 36px);object-fit:contain;display:block;border-radius:12px}
 .btn-complete{width:100%;padding:14px;background:var(--green);color:#fff;border:none;border-radius:var(--radius-sm);font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer;transition:background .15s}
 .btn-complete:hover:not(:disabled){background:#15803d}
 .btn-complete:disabled{opacity:.4;cursor:not-allowed}
@@ -272,7 +321,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);min-
 .log-list{display:flex;flex-direction:column;gap:8px}
 .log-entry{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px}
 .log-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px}
-.log-badge{font-size:11px;font-weight:700;padding:2px 7px;border-radius:4px;font-family:var(--mono);background:var(--green-light);color:var(--green)}
+.log-badge{font-size:11px;font-weight:700;padding:2px 7px;border-radius:4px;background:var(--green-light);color:var(--green)}
 .log-order{font-family:var(--mono);font-size:13px;font-weight:600}
 .log-meta{font-family:var(--mono);font-size:11px;color:var(--text-muted)}
 .log-note{font-size:13px;color:var(--text-secondary);margin-top:4px}
@@ -301,7 +350,7 @@ details[open]>.about-summary{border-radius:8px 8px 0 0}
 .about-endpoints{display:flex;flex-direction:column;gap:6px}
 .about-ep{display:flex;gap:10px;align-items:baseline;font-size:13px}
 .about-ep code{font-family:var(--mono);font-size:12px;background:var(--surface-2);border:1px solid var(--border);border-radius:5px;padding:1px 7px;color:var(--accent);white-space:nowrap;flex-shrink:0}
-.about-code{font-family:var(--mono);font-size:12px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;overflow-x:auto;white-space:pre;direction:ltr;text-align:left;line-height:1.65;color:var(--text-primary);margin:0}
+.about-code{font-family:var(--mono);font-size:12px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;overflow-x:hidden;white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;direction:ltr;text-align:left;line-height:1.65;color:var(--text-primary);margin:0}
 </style>
 </head>
 <body>
@@ -314,17 +363,24 @@ details[open]>.about-summary{border-radius:8px 8px 0 0}
     <span class="header-icon">📦</span>
     <div>
       <div class="header-title">Pack Checker</div>
-      <div class="header-desc">التحقق من تعبئة الطلبات</div>
+      <div class="header-desc">التحقق من تغليف الطلبات</div>
     </div>
   </div>
   <div class="header-right">
     <button class="hbtn" onclick="openAbout()">ℹ️ عن الأداة</button>
-    <button class="hbtn hbtn-version" onclick="openChangelog()">v1.3.0 📋</button>
+    <button class="hbtn hbtn-version" onclick="openChangelog()">v1.7.1 📋</button>
     <button class="hbtn settings-missing" id="headerSettingsBtn" onclick="openSettings()">⚙️ الإعدادات</button>
   </div>
 </header>
 
 <div class="toast-container" id="toastContainer"></div>
+
+<!-- Product Image Fullscreen Popup -->
+<div class="image-popup-overlay hidden" id="imagePopup" onclick="closeImagePopup()" aria-hidden="true">
+  <div class="image-popup-box" onclick="event.stopPropagation()">
+    <img id="imagePopupImg" src="" alt="">
+  </div>
+</div>
 
 <!-- Settings Modal -->
 <div class="modal-overlay hidden" id="settingsModal">
@@ -363,47 +419,56 @@ details[open]>.about-summary{border-radius:8px 8px 0 0}
     </div>
     <div class="modal-body">
       <div class="cl-entry">
+        <div class="cl-version">v1.7.1</div>
+        <div class="cl-date">28-05-2026</div>
+        <div class="cl-items">
+          <div class="cl-item"><span class="cl-tag fix">إصلاح</span> حذف IBM Plex Mono من قيم النصوص العربية في النوافذ المنبثقة (.pack-info-val، .sig-value، .conflict-val)</div>
+          <div class="cl-item"><span class="cl-tag fix">إصلاح</span> صف "لا توجد بيانات منتجات" في جدول المنتجات أصبح يستخدم Noto Sans Arabic بدلاً من IBM Plex Mono</div>
+        </div>
+      </div>
+      <div class="cl-entry">
+        <div class="cl-version">v1.7.0</div>
+        <div class="cl-date">28-05-2026</div>
+        <div class="cl-items">
+          <div class="cl-item"><span class="cl-tag change">تغيير</span> دمج 3 خطوات (لوحة التعديل + اختيار السبب + تأكيد إرجاع المخزون) في نافذة منبثقة واحدة</div>
+          <div class="cl-item"><span class="cl-tag new">جديد</span> نافذة "تعديل مكتشف": تعرض بيانات التغليف السابق + جدول المنتجات + تأكيد إرجاع المخزون في خطوة واحدة</div>
+          <div class="cl-item"><span class="cl-tag change">تغيير</span> حالة "تغليف سابق بدون تعديل" أصبحت نافذة منبثقة تعرض تفاصيل التغليف السابق + جدول المنتجات بدلاً من إشعار سريع</div>
+          <div class="cl-item"><span class="cl-tag change">تغيير</span> حذف خطوة اختيار سبب إعادة التغليف — السبب يُسجَّل تلقائياً عند التأكيد</div>
+        </div>
+      </div>
+      <div class="cl-entry">
+        <div class="cl-version">v1.5.0</div>
+        <div class="cl-date">27-05-2026</div>
+        <div class="cl-items">
+          <div class="cl-item"><span class="cl-tag change">تغيير</span> شريط التقدم أصبح من اليمين لليسار ليتوافق مع RTL</div>
+          <div class="cl-item"><span class="cl-tag fix">إصلاح</span> الـ Checkpoints أصبحت تبدأ من 0 ثم نقطة لكل قطعة</div>
+          <div class="cl-item"><span class="cl-tag change">تغيير</span> ملحوظات الأوردر أصبحت بثيم Purple لتمييزها عن زر إلغاء التغليف الأحمر</div>
+          <div class="cl-item"><span class="cl-tag change">تغيير</span> عكس ترتيب ملحوظات الأوردر وموظف التغليف داخل بطاقة الأوردر</div>
+        </div>
+      </div>
+      <div class="cl-entry">
         <div class="cl-version">v1.3.0</div>
         <div class="cl-date">23-05-2026</div>
         <div class="cl-items">
-          <div class="cl-item"><span class="cl-tag fix">إصلاح</span> حذف lineItemsEditCount من GraphQL query — الحقل غير موجود في Shopify API (Field doesn't exist on type 'Order')</div>
-          <div class="cl-item"><span class="cl-tag change">تغيير</span> كشف تغيير المنتجات الآن يعتمد على مقارنة items fingerprint (SKU:qty) بدل عداد lineItemsEditCount</div>
-          <div class="cl-item"><span class="cl-tag change">تغيير</span> complete_pack لا يُرسل/يُخزّن editCount — عمود edit_count محفوظ في D1 للتوافق مع السجلات القديمة فقط</div>
+          <div class="cl-item"><span class="cl-tag fix">إصلاح</span> حذف lineItemsEditCount من GraphQL query</div>
+          <div class="cl-item"><span class="cl-tag change">تغيير</span> كشف تغيير المنتجات يعتمد على مقارنة items fingerprint (SKU:qty)</div>
+          <div class="cl-item"><span class="cl-tag change">تغيير</span> complete_pack لا يُرسل editCount — محفوظ في D1 للتوافق مع السجلات القديمة فقط</div>
         </div>
       </div>
       <div class="cl-entry">
         <div class="cl-version">v1.2.0</div>
         <div class="cl-date">23-05-2026</div>
         <div class="cl-items">
-          <div class="cl-item"><span class="cl-tag new">جديد</span> كشف تغييرات الأوردر — إذا تم تعديل المنتجات بعد التغليف تُفتح نافذة إعادة التغليف تلقائياً</div>
-          <div class="cl-item"><span class="cl-tag new">جديد</span> لوحة Override — اختيار سبب إعادة التغليف من 3 خيارات</div>
-          <div class="cl-item"><span class="cl-tag new">جديد</span> نافذة تأكيد إرجاع المخزون قبل السماح بإعادة التغليف</div>
+          <div class="cl-item"><span class="cl-tag new">جديد</span> كشف تغييرات الأوردر بالـ fingerprint</div>
           <div class="cl-item"><span class="cl-tag new">جديد</span> أعمدة D1 جديدة: stage, item_count, items, edit_reason, edit_count</div>
-          <div class="cl-item"><span class="cl-tag new">جديد</span> About modal — مرجع تقني داخل الأداة</div>
-          <div class="cl-item"><span class="cl-tag change">تغيير</span> سجل التغليف يعرض سبب الإعادة عند وجوده</div>
-          <div class="cl-item"><span class="cl-tag change">تغيير</span> تصدير Excel يشمل عمود "سبب الإعادة"</div>
+          <div class="cl-item"><span class="cl-tag new">جديد</span> About modal</div>
         </div>
       </div>
       <div class="cl-entry">
         <div class="cl-version">v1.1.2</div>
         <div class="cl-date">18-05-2026</div>
         <div class="cl-items">
-          <div class="cl-item"><span class="cl-tag change">تغيير</span> تقسيم input الأوردر إلى مربعين منفصلين: سكانر (تلقائي) + إدخال يدوي</div>
-        </div>
-      </div>
-      <div class="cl-entry">
-        <div class="cl-version">v1.1.1</div>
-        <div class="cl-date">18-05-2026</div>
-        <div class="cl-items">
-          <div class="cl-item"><span class="cl-tag fix">إصلاح</span> حقل "مُعبَّأ بواسطة" ثابت على الموظف الذي سجّل الدخول</div>
-        </div>
-      </div>
-      <div class="cl-entry">
-        <div class="cl-version">v1.1.0</div>
-        <div class="cl-date">18-05-2026</div>
-        <div class="cl-items">
-          <div class="cl-item"><span class="cl-tag change">تغيير</span> إعادة بناء منطق تحديد المرحلة — 3 signals مستقلة</div>
-          <div class="cl-item"><span class="cl-tag new">جديد</span> لوحة عرض تفاصيل المرحلة S1/S2 ولوحة تعارض</div>
+          <div class="cl-item"><span class="cl-tag change">تغيير</span> تقسيم input الأوردر إلى مربعين: سكانر + إدخال يدوي</div>
         </div>
       </div>
       <div class="cl-entry">
@@ -422,7 +487,7 @@ details[open]>.about-summary{border-radius:8px 8px 0 0}
 
 <!-- About Modal -->
 <div class="modal-overlay hidden" id="aboutModal">
-  <div class="modal-box" style="max-width:640px">
+  <div class="modal-box" style="max-width:1100px">
     <div class="modal-header">
       <span class="modal-title">ℹ️ عن الأداة — Pack Checker</span>
       <button class="modal-close" onclick="closeAbout()">×</button>
@@ -432,16 +497,16 @@ details[open]>.about-summary{border-radius:8px 8px 0 0}
       <details open style="margin-top:16px">
         <summary class="about-summary">📋 وصف الأداة</summary>
         <div class="about-body">
-          <p class="about-desc">أداة التحقق من تعبئة الطلبات — تتيح للموظف سكان الأوردر والتحقق من منتجاته قبل الشحن، مع كتابة ميتافيلد التغليف وتسجيل الحدث في D1.</p>
+          <p class="about-desc">أداة التحقق من تغليف الطلبات — تتيح للموظف سكان الأوردر والتحقق من منتجاته قبل الشحن، مع كتابة ميتافيلد التغليف وتسجيل الحدث في D1.</p>
           <div class="about-label">المستخدمون</div>
           <p>موظفو التغليف — يستخدمون السكانر أو الإدخال اليدوي لفحص الأوردرات</p>
           <div class="about-label">كيف تعمل</div>
           <div class="about-steps">
             <div class="about-step"><span class="about-num">1</span><span>سكان باركود الأوردر أو إدخال رقمه → Worker يجلب بيانات الأوردر من Shopify</span></div>
-            <div class="about-step"><span class="about-num">2</span><span>الأداة تحدد المرحلة (S1/S2) بناءً على 3 signals: Return نشط + manual_status + status_2_r_e</span></div>
-            <div class="about-step"><span class="about-num">3</span><span>لو الأوردر مُغلَّف مسبقاً: يبني fingerprint من SKU+qty للـ items الحالية ويقارنها بالمخزّن في D1 — إذا اختلفت يفتح نافذة Override</span></div>
-            <div class="about-step"><span class="about-num">4</span><span>Override: الموظف يختار السبب، يؤكد إرجاع المخزون، ثم يُعيد التغليف</span></div>
-            <div class="about-step"><span class="about-num">5</span><span>سكان منتجات الأوردر واحداً بالباركود/SKU → عند اكتمالها → زرار "تأكيد اكتمال التعبئة"</span></div>
+            <div class="about-step"><span class="about-num">2</span><span>الأداة تحدد المرحلة (S1/S2) بناءً على 3 signals: هل يوجد طلب استبدال في الأوردر؟ + حالة الأوردر الأساسي (S1) + حالة الأوردر الاستبدال (S2)</span></div>
+            <div class="about-step"><span class="about-num">3</span><span>لو الأوردر مُغلَّف مسبقاً بدون تعديل: تظهر نافذة منبثقة تعرض تفاصيل التغليف السابق (وقت، موظف، نوع الأوردر، جدول المنتجات) وتمنع التغليف</span></div>
+            <div class="about-step"><span class="about-num">4</span><span>لو الأوردر مُغلَّف مسبقاً مع تعديل مكتشف: تظهر نافذة واحدة تجمع تفاصيل التغليف السابق + تأكيد إرجاع المخزون — بعد التأكيد يكمل مباشرة</span></div>
+            <div class="about-step"><span class="about-num">5</span><span>سكان منتجات الأوردر واحداً بالباركود/SKU → عند اكتمالها → زرار "تأكيد اكتمال التغليف"</span></div>
             <div class="about-step"><span class="about-num">6</span><span>Worker يكتب metafields التغليف في Shopify، يضيف tag، ويسجل في D1 مع items summary للمقارنة المستقبلية</span></div>
           </div>
           <div class="about-label">الـ Endpoints الرئيسية</div>
@@ -458,19 +523,21 @@ details[open]>.about-summary{border-radius:8px 8px 0 0}
         <div class="about-body">
           <pre class="about-code">FEATURE MAP
 ──────────────────────────────────────────────────────────────────────────
-Feature                        │ File    │ §Section   │ fn / action
+Feature                            │ File    │ §Section   │ fn / action
 ──────────────────────────────────────────────────────────────────────────
-Stage detection (3 signals)    │ Worker  │ §PACK      │ analyzeStage()
-Items fingerprint (change det) │ Worker  │ §PACK      │ buildFingerprint()
-                               │         │            │ parseSavedItemsString()
-Change detection (fingerprint) │ Worker  │ §PACK      │ get_order
-Already-packed override panel  │ HTML    │ §TOOL-JS   │ renderAlreadyPackedOverride()
-Reason selection (3 options)   │ HTML    │ §TOOL-JS   │ showReasonSelection()
-Stock return confirm modal      │ HTML    │ §TOOL-JS   │ showStockReturnModal()
-Write pack metafields           │ Worker  │ §PACK      │ complete_pack
-Write D1 columns (incl. items) │ Worker  │ §PACK      │ complete_pack (UPDATE after writeLog)
-Log: show edit_reason           │ HTML    │ §LOG-JS    │ renderLog()
-XLSX export (edit_reason col)   │ HTML    │ §LOG-JS    │ exportLogXLSX()
+Stage detection (3 signals)        │ Worker  │ §PACK      │ analyzeStage()
+Items fingerprint (change det)     │ Worker  │ §PACK      │ buildFingerprint()
+                                   │         │            │ parseSavedItemsString()
+Change detection (fingerprint)     │ Worker  │ §PACK      │ get_order
+Change detected modal (single)     │ HTML    │ §TOOL-JS   │ showChangeDetectedModal()
+Already packed modal (no change)   │ HTML    │ §TOOL-JS   │ showAlreadyPackedNoChangeModal()
+Pack info card builder             │ HTML    │ §TOOL-JS   │ buildPrevPackInfo()
+Items table builder                │ HTML    │ §TOOL-JS   │ buildItemsTable()
+Stored items string parser         │ HTML    │ §TOOL-JS   │ parseStoredItemsString()
+Write pack metafields              │ Worker  │ §PACK      │ complete_pack
+Write D1 columns (incl. items)    │ Worker  │ §PACK      │ complete_pack (UPDATE after writeLog)
+Log: show edit_reason              │ HTML    │ §LOG-JS    │ renderLog()
+XLSX export (edit_reason col)      │ HTML    │ §LOG-JS    │ exportLogXLSX()
 ──────────────────────────────────────────────────────────────────────────
 
 KEY VARIABLES (HTML)
@@ -478,8 +545,8 @@ LS_URL        = 'pack_checker_worker_url'
 LS_SECRET     = 'pack_checker_worker_secret'
 LS_ADMIN_URL  = 'admin_worker_url'
 currentEmployee          ← JS memory only (username, displayName)
-currentAlreadyPackedData ← JS memory (packedBy, storedItems, stage)
-currentEditReason        ← JS memory (text of selected reason)
+currentAlreadyPackedData ← JS memory (packedBy, storedItems, stage, packingDateTime)
+currentEditReason        ← JS memory — set to 'تعديل على منتجات الأوردر' on confirm
 
 KEY VARIABLES (Worker)
 buildFingerprint(items)        → JSON.stringify(["SKU:qty",...].sort())
@@ -490,9 +557,11 @@ NOTES
 - lineItemsEditCount مش موجود في Shopify Order type — تم استبداله بـ fingerprint
 - NULL في عمود items → changeDetected=true دائماً (safe default)
 - edit_count column محفوظ في D1 schema للتوافق — لكن لا يُكتب في v1.3.0+
-- clone+addEventListener في showStockReturnModal (لا pendingAction variable)
-- items fingerprint: يقارن SKU (أو title لو مافيش SKU) + quantity فقط
-- D1 migration (ALTER TABLE) إلزامي قبل deploy v1.2.0 — مش مطلوب لـ v1.3.0</pre>
+- clone+addEventListener في showChangeDetectedModal و showAlreadyPackedNoChangeModal
+- parseStoredItemsString: يقسم بـ ", " ثم يفصل SKU عن الكمية بآخر " ×"
+- packingDateTime: مُمرَّر من Worker في data.packingDateTime (ISO) — null → "غير محدد"
+- currentEditReason: لا يُختار يدوياً — يُسجَّل تلقائياً عند تأكيد إرجاع المخزون
+- D1 migration (ALTER TABLE) إلزامي قبل deploy v1.2.0 — مش مطلوب لـ v1.7.0</pre>
         </div>
       </details>
     </div>
@@ -502,20 +571,78 @@ NOTES
   </div>
 </div>
 
-<!-- Stock Return Confirm Modal -->
-<div class="modal-overlay hidden stock-return-modal" id="stockReturnModal">
-  <div class="modal-box" style="max-width:420px">
-    <div class="modal-header">
-      <span class="modal-title">📦 تأكيد إرجاع المخزون</span>
+<!-- ══════════════════════════════════════════════════════════════
+     Change Detected Modal — نافذة تعديل مكتشف (تجمع المعلومات + تأكيد إرجاع المخزون)
+     ══════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay hidden" id="changeDetectedModal">
+  <div class="modal-box" style="max-width:540px">
+    <div class="cd-modal-header">
+      <div class="cd-modal-icon">⚠️</div>
+      <div class="cd-modal-title">هذا الأوردر تم تغليفه سابقاً وحدث تعديل على المنتجات بعد التغليف</div>
     </div>
-    <div class="modal-body" style="align-items:center;text-align:center">
-      <div class="stock-return-icon">🔄</div>
-      <div class="stock-return-msg">هل قمت بالفعل بإرجاع الأوردر المغلَّف مسبقاً إلى المخزن؟</div>
-      <div class="stock-return-items" id="stockReturnItemsText"></div>
+    <div class="modal-body" style="gap:16px">
+      <!-- Previous pack info -->
+      <div class="pack-info-card" id="cdPrevInfo"></div>
+      <!-- Danger divider -->
+      <div class="danger-divider">⛔ يجب تأكيد رجوع منتجات الأوردر السابق إلى المخزن أولاً قبل تغليف الأوردر مرة أخرى ⛔</div>
+      <!-- Products table -->
+      <div>
+        <div class="pack-table-title">📦 منتجات التغليف السابق</div>
+        <div class="pack-table-wrap">
+          <table class="pack-items-table">
+            <thead>
+              <tr>
+                <th class="sku-col">المنتج / SKU</th>
+                <th class="qty-col">الكمية</th>
+              </tr>
+            </thead>
+            <tbody id="cdItemsBody"></tbody>
+          </table>
+        </div>
+      </div>
     </div>
-    <div class="modal-footer centered">
-      <button class="btn-ghost" id="stockReturnCancelBtn">إلغاء</button>
-      <button class="btn-green" id="stockReturnConfirmBtn">✓ نعم، تم الإرجاع</button>
+    <div class="modal-footer">
+      <button class="btn-ghost" id="cdCancelBtn">إلغاء</button>
+      <button class="btn-green" style="flex:1" id="cdConfirmBtn">تأكيد رجوع المنتجات للمخزن ✅</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     Already Packed No-Change Modal — نافذة تغليف سابق بدون تعديل
+     ══════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay hidden" id="alreadyPackedModal">
+  <div class="modal-box" style="max-width:540px">
+    <div class="nc-modal-header">
+      <div style="font-size:22px;line-height:1">📦</div>
+      <div class="nc-modal-title">تم تغليف هذا الأوردر مسبقاً</div>
+    </div>
+    <div class="modal-body" style="gap:16px">
+      <!-- No-change badge -->
+      <div class="nc-no-change-badge">
+        <span>✅</span>
+        <span>لم يتم اكتشاف أي تعديل على المنتجات منذ آخر تغليف — لا يمكن إعادة التغليف</span>
+      </div>
+      <!-- Previous pack info -->
+      <div class="pack-info-card" id="apPrevInfo"></div>
+      <!-- Products table -->
+      <div>
+        <div class="pack-table-title">📦 منتجات التغليف السابق</div>
+        <div class="pack-table-wrap">
+          <table class="pack-items-table">
+            <thead>
+              <tr>
+                <th class="sku-col">المنتج / SKU</th>
+                <th class="qty-col">الكمية</th>
+              </tr>
+            </thead>
+            <tbody id="apItemsBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" style="flex:1" id="apCloseBtn">إغلاق</button>
     </div>
   </div>
 </div>
@@ -607,107 +734,92 @@ NOTES
 
     <!-- Check Sub-screen -->
     <div id="subscreenCheck" style="display:none">
+      <div class="check-layout">
+        <aside class="order-side-panel">
 
-      <!-- Order Header -->
-      <div class="order-header-card">
-        <div class="order-header-top">
-          <div style="display:flex;align-items:center;gap:10px">
-            <span class="order-name" id="checkOrderName"></span>
-            <span class="stage-badge-sm" id="checkStageBadge"></span>
+          <!-- Order Header -->
+          <div class="order-header-card">
+            <div class="order-header-top">
+              <div style="display:flex;align-items:center;gap:10px">
+                <span class="order-name" id="checkOrderName"></span>
+                <span class="stage-badge-sm" id="checkStageBadge"></span>
+              </div>
+              <button class="btn-ghost btn-cancel-pack" onclick="resetToEntry()">❌ إلغاء التغليف</button>
+            </div>
+            <div class="order-note" id="checkOrderNote"></div>
+            <div class="employee-bar order-employee-bar">
+              <label>التغليف بواسطة:</label>
+              <span class="employee-bar-name" id="packedByName"></span>
+            </div>
           </div>
-          <button class="btn-ghost" style="font-size:12px;padding:6px 12px" onclick="resetToEntry()">← أوردر جديد</button>
-        </div>
-        <div class="order-note" id="checkOrderNote"></div>
-      </div>
 
-      <!-- Stage Indicator -->
-      <div class="stage-indicator-card" id="stageCard">
-        <div class="stage-badge-xl" id="stageBadgeXl"></div>
-        <div class="stage-indicator-info">
-          <div class="stage-indicator-title" id="stageTitle"></div>
-          <div class="stage-signals" id="stageSignals"></div>
-        </div>
-      </div>
-
-      <!-- Unclear Warning -->
-      <div class="unclear-warning" id="unclearWarn">
-        ⚠️ لم يتم تحديد manual_status أو status_2_r_e — يُعامَل الأوردر كـ S1 افتراضياً. تأكد من صحة هذا قبل التعبئة.
-      </div>
-
-      <!-- Conflict Panel -->
-      <div class="conflict-panel" id="conflictPanel" style="display:none">
-        <div class="conflict-header">
-          <div class="conflict-icon-big">🚫</div>
-          <div>
-            <div class="conflict-title">تعارض في بيانات الأوردر</div>
-            <div class="conflict-subtitle">لا يمكن المتابعة — يرجى تصحيح البيانات في Shopify أولاً ثم إعادة سكان الأوردر</div>
+          <!-- Stage Indicator -->
+          <div class="stage-indicator-card" id="stageCard">
+            <div class="stage-badge-xl" id="stageBadgeXl"></div>
+            <div class="stage-indicator-info">
+              <div class="stage-indicator-title" id="stageTitle"></div>
+              <div class="stage-signals" id="stageSignals"></div>
+            </div>
           </div>
-        </div>
-        <div class="conflict-data" id="conflictData"></div>
-        <div class="conflict-reason" id="conflictReason"></div>
-        <div class="conflict-actions">
-          <a id="shopifyLink" href="#" target="_blank" class="btn-shopify">فتح الأوردر في Shopify ↗</a>
-          <button class="btn-ghost" onclick="resetToEntry()">← أوردر آخر</button>
-        </div>
-      </div>
 
-      <!-- Already Packed Override Panel -->
-      <div class="ap-panel" id="alreadyPackedPanel" style="display:none">
-        <div class="ap-header">
-          <div class="ap-icon">⚠️</div>
-          <div class="ap-header-info">
-            <div class="ap-title">تم تغليف مسبقاً — تعديل مكتشف</div>
-            <div class="ap-subtitle">تم اكتشاف تغيير على منتجات الأوردر منذ آخر تغليف</div>
+          <!-- Unclear Warning -->
+          <div class="unclear-warning" id="unclearWarn">
+            ⚠️ لم يتم تحديد حالة الأوردر الأساسي (S1) أو حالة الأوردر الاستبدال (S2) — يُعامَل الأوردر كـ S1 افتراضياً. تأكد من صحة هذا قبل التغليف.
           </div>
-        </div>
-        <div class="ap-data" id="apData"></div>
-        <div class="ap-change-note" id="apChangeNote">🔄 تم اكتشاف تعديل على الأوردر — يمكن إعادة التغليف بعد تحديد السبب</div>
-        <button class="btn-override" id="btnOverridePack" onclick="showReasonSelection()">
-          🔄 إعادة تغليف — تعديل حصل
-        </button>
-        <!-- Reason Selection -->
-        <div class="reason-section" id="reasonSection">
-          <div class="reason-title">اختر سبب إعادة التغليف:</div>
-          <div class="reason-options">
-            <label class="reason-option selected" id="reason0">
-              <input type="radio" name="packReason" value="تعديل الأوردر من المتجر (تغيير منتج/كمية)" checked>
-              <span class="reason-option-text">تعديل الأوردر من المتجر (تغيير منتج/كمية)</span>
-            </label>
-            <label class="reason-option" id="reason1">
-              <input type="radio" name="packReason" value="خطأ في التغليف السابق">
-              <span class="reason-option-text">خطأ في التغليف السابق</span>
-            </label>
-            <label class="reason-option" id="reason2">
-              <input type="radio" name="packReason" value="طلب إدارة / سبب آخر">
-              <span class="reason-option-text">طلب إدارة / سبب آخر</span>
-            </label>
+
+          <!-- Conflict Panel -->
+          <div class="conflict-panel" id="conflictPanel" style="display:none">
+            <div class="conflict-header">
+              <div class="conflict-icon-big">🚫</div>
+              <div>
+                <div class="conflict-title">تعارض في بيانات الأوردر</div>
+                <div class="conflict-subtitle">لا يمكن المتابعة — يرجى تصحيح البيانات في Shopify أولاً ثم إعادة سكان الأوردر</div>
+              </div>
+            </div>
+            <div class="conflict-data" id="conflictData"></div>
+            <div class="conflict-reason" id="conflictReason"></div>
+            <div class="conflict-actions">
+              <a id="shopifyLink" href="#" target="_blank" class="btn-shopify">فتح الأوردر في Shopify ↗</a>
+              <button class="btn-ghost" onclick="resetToEntry()">← أوردر آخر</button>
+            </div>
           </div>
-          <button class="btn-reason-confirm" id="btnReasonConfirm" onclick="confirmReasonAndShowModal()">
-            متابعة — تأكيد إرجاع المخزون
+
+        </aside>
+
+        <!-- Packing Content -->
+        <section class="packing-main" id="packingContent">
+          <div class="scan-banner" id="scanBanner"></div>
+          <input type="text" class="barcode-input" id="barcodeScanInput"
+                 placeholder="سكان باركود المنتج..." autocomplete="off" inputmode="text">
+          <div class="progress-card" id="scanProgressCard">
+            <div class="progress-stats" aria-label="ملخص تقدم التغليف">
+              <div class="progress-stat total">
+                <div class="progress-stat-label">إجمالي القطع في الأوردر</div>
+                <div class="progress-stat-val" id="progressTotal">0</div>
+              </div>
+              <div class="progress-stat done">
+                <div class="progress-stat-label">القطع المكتملة</div>
+                <div class="progress-stat-val" id="progressScanned">0</div>
+              </div>
+              <div class="progress-stat remaining">
+                <div class="progress-stat-label">القطع المتبقية</div>
+                <div class="progress-stat-val" id="progressRemaining">0</div>
+              </div>
+            </div>
+            <div class="progress-track" aria-hidden="true">
+              <div class="progress-fill" id="progressFill"></div>
+              <div class="progress-checkpoints" id="progressCheckpoints"></div>
+            </div>
+          </div>
+          <button class="btn-complete" id="btnComplete" onclick="completePack()" disabled>
+            ✅ تأكيد اكتمال التغليف
           </button>
-        </div>
-      </div>
+          <div class="items-list" id="itemsList"></div>
+        </section>
 
-      <!-- Packing Content -->
-      <div id="packingContent">
-        <div class="employee-bar">
-          <label>مُعبَّأ بواسطة:</label>
-          <span class="employee-bar-name" id="packedByName"></span>
-        </div>
-        <div class="scan-banner" id="scanBanner"></div>
-        <input type="text" class="barcode-input" id="barcodeScanInput"
-               placeholder="سكان باركود المنتج..." autocomplete="off" inputmode="text">
-        <div class="summary-bar">
-          <span class="summary-label">إجمالي القطع</span>
-          <span class="summary-val" id="summaryTotal">0 / 0</span>
-        </div>
-        <div class="items-list" id="itemsList"></div>
-        <button class="btn-complete" id="btnComplete" onclick="completePack()" disabled>
-          ✅ تأكيد اكتمال التعبئة
-        </button>
       </div>
-
     </div>
+
   </div><!-- /screen-scan -->
 
   <!-- ══════════════════════════════════════════════════════════
@@ -763,7 +875,7 @@ function isConfigured() {
 async function apiPost(action, body = {}) {
   const { url, secret } = getConfig();
   if (!url || !secret) throw new Error('يرجى ضبط إعدادات الـ Worker أولاً');
-  const res = await fetch(`${url}?action=${action}`, {
+  const res = await fetch(`${url}?action=${encodeURIComponent(action)}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${secret}` },
     body: JSON.stringify(body),
@@ -815,9 +927,9 @@ async function saveSettings() {
   const url      = normalizeUrl(document.getElementById('settingUrl').value);
   const secret   = document.getElementById('settingSecret').value.trim();
   const adminUrl = normalizeUrl(document.getElementById('settingAdminUrl').value);
-  if (!isValidHttpUrl(url))              { showToast('أدخل WORKER URL صحيحًا', 'error'); return; }
-  if (!secret)                           { showToast('أدخل WORKER SECRET', 'error'); return; }
-  if (adminUrl && !isValidHttpUrl(adminUrl)) { showToast('ADMIN WORKER URL غير صحيح', 'error'); return; }
+  if (!isValidHttpUrl(url))                      { showToast('أدخل WORKER URL صحيحًا', 'error'); return; }
+  if (!secret)                                   { showToast('أدخل WORKER SECRET', 'error'); return; }
+  if (adminUrl && !isValidHttpUrl(adminUrl))     { showToast('ADMIN WORKER URL غير صحيح', 'error'); return; }
   localStorage.setItem(LS_URL, url);
   localStorage.setItem(LS_SECRET, secret);
   localStorage.setItem(LS_ADMIN_URL, adminUrl);
@@ -840,7 +952,7 @@ function switchTab(tab) {
 }
 
 // ══════════════════════════════════════════════════════════════
-// §AUTH-JS — Unified Login UI v1.0
+// §AUTH-JS — Unified Login UI
 // ══════════════════════════════════════════════════════════════
 let currentEmployee = null;
 let allEmployees = [];
@@ -926,8 +1038,8 @@ function restartNewPinFlow() { pendingNewPin = ''; renderLoginMode('new'); }
 function pressPinKey(key) {
   if (isLoginBusy || loginMode === 'employee') return;
   clearTimeout(autoLoginTimer);
-  if (key === 'clear')                             pinDigits = [];
-  else if (key === 'back')                         pinDigits.pop();
+  if (key === 'clear')                              pinDigits = [];
+  else if (key === 'back')                          pinDigits.pop();
   else if (/^\d$/.test(key) && pinDigits.length < 4) pinDigits.push(key);
   clearLoginAlert(); renderPinSlots(); updatePrimaryLoginState();
   if (pinDigits.length === 4) autoLoginTimer = setTimeout(() => handlePrimaryLoginAction(), 140);
@@ -999,10 +1111,10 @@ document.addEventListener('keydown', e => {
   const loginOverlay = document.getElementById('loginOverlay');
   const settingsOpen = !document.getElementById('settingsModal').classList.contains('hidden');
   if (loginOverlay.classList.contains('hidden') || settingsOpen || isLoginBusy) return;
-  if (/^\d$/.test(e.key))                     { e.preventDefault(); pressPinKey(e.key); return; }
-  if (e.key === 'Backspace')                  { e.preventDefault(); pressPinKey('back'); return; }
-  if (e.key === 'Delete' || e.key === 'Escape') { e.preventDefault(); pressPinKey('clear'); return; }
-  if (e.key === 'Enter')                      { e.preventDefault(); handlePrimaryLoginAction(); }
+  if (/^\d$/.test(e.key))                      { e.preventDefault(); pressPinKey(e.key); return; }
+  if (e.key === 'Backspace')                   { e.preventDefault(); pressPinKey('back'); return; }
+  if (e.key === 'Delete' || e.key === 'Escape'){ e.preventDefault(); pressPinKey('clear'); return; }
+  if (e.key === 'Enter')                       { e.preventDefault(); handlePrimaryLoginAction(); }
 });
 
 async function finishLogin(username, displayName) {
@@ -1063,6 +1175,56 @@ function submitManualLookup() {
 // §TOOL-JS
 // ══════════════════════════════════════════════════════════════
 
+// ── Stored items string parser ─────────────────────────────────
+// Input: "FOAM150 ×2, CA1 / Orange / 36 ×1, MRX155 ×1"
+// Output: [{sku:'FOAM150', qty:2}, {sku:'CA1 / Orange / 36', qty:1}, ...]
+function parseStoredItemsString(str) {
+  if (!str || !str.trim()) return [];
+  return str.split(', ').map(part => {
+    const lastX = part.lastIndexOf(' ×');
+    if (lastX === -1) return { sku: part.trim(), qty: 1 };
+    return {
+      sku: part.substring(0, lastX).trim(),
+      qty: parseInt(part.substring(lastX + 2), 10) || 1,
+    };
+  }).filter(i => i.sku);
+}
+
+// ── Builds previous-pack info HTML for modal ──────────────────
+function buildPrevPackInfo(ap) {
+  const orderType = ap.stage === 'S2' ? 'أوردر استبدال' : 'أوردر عادي';
+  const dtStr = ap.packingDateTime ? fmtDT(ap.packingDateTime) : 'غير محدد';
+  return `
+    <div class="pack-info-row">
+      <span class="pack-info-label">وقت التغليف السابق</span>
+      <span class="pack-info-val">${dtStr}</span>
+    </div>
+    <div class="pack-info-row">
+      <span class="pack-info-label">التغليف السابق بواسطة</span>
+      <span class="pack-info-val">${ap.packedBy || 'غير محدد'}</span>
+    </div>
+    <div class="pack-info-row">
+      <span class="pack-info-label">نوع الأوردر</span>
+      <span class="pack-info-val">${orderType}</span>
+    </div>
+  `;
+}
+
+// ── Builds items table <tr> rows HTML ────────────────────────
+function buildItemsTableRows(storedItems) {
+  const items = parseStoredItemsString(storedItems);
+  if (!items.length) {
+    return `<tr><td colspan="2" style="text-align:center;color:var(--text-muted);padding:16px;font-family:var(--font)">لا توجد بيانات منتجات</td></tr>`;
+  }
+  return items.map(i => `
+    <tr>
+      <td class="sku-col">${i.sku}</td>
+      <td class="qty-col">${i.qty}</td>
+    </tr>
+  `).join('');
+}
+
+// ── Lookup Order ───────────────────────────────────────────────
 async function lookupOrder(raw) {
   document.getElementById('lookupLoading').style.display = '';
   document.getElementById('btnLookup').disabled = true;
@@ -1071,25 +1233,27 @@ async function lookupOrder(raw) {
     const data  = await apiGet('get_order', isId ? { id: raw } : { name: raw });
 
     if (data.alreadyPacked) {
+      // Shared data object for both modal types
+      currentAlreadyPackedData = {
+        packedBy:        data.packedBy        || '',
+        storedItems:     data.storedItems     || null,
+        stage:           data.stage           || 'S1',
+        packingDateTime: data.packingDateTime || null,
+      };
+
       if (!data.changeDetected) {
-        // No change — block
-        showToast(`⚠️ تم تغليف مسبقاً (${data.stage}) — ${data.packedBy}`, 'error', 6000);
+        // ── No change → show info modal, block re-packing ──────
+        showAlreadyPackedNoChangeModal();
         playBeep('error');
         return;
       }
-      // Change detected — show override panel
-      currentOrder = { ...data.order, stage: data.stage };
-      currentItems = (data.items || []).map(i => ({ ...i, scanned: 0 }));
+
+      // ── Change detected → set up state then show single modal ─
+      currentOrder    = { ...data.order, stage: data.stage };
+      currentItems    = (data.items || []).map(i => ({ ...i, scanned: 0 }));
       currentAnalysis = data.stageAnalysis;
-      currentAlreadyPackedData = {
-        packedBy:    data.packedBy,
-        storedItems: data.storedItems || null,
-        stage:       data.stage,
-      };
       currentEditReason = null;
-      document.getElementById('subscreenEntry').style.display = 'none';
-      document.getElementById('subscreenCheck').style.display = '';
-      renderAlreadyPackedOverride();
+      showChangeDetectedModal();
       return;
     }
 
@@ -1098,7 +1262,6 @@ async function lookupOrder(raw) {
       return;
     }
 
-    // editCount removed — no longer stored on currentOrder
     currentOrder    = { ...data.order, stage: data.stage };
     currentItems    = data.items.map(i => ({ ...i, scanned: 0 }));
     currentAnalysis = data.stageAnalysis;
@@ -1120,112 +1283,23 @@ async function lookupOrder(raw) {
   }
 }
 
-function resetToEntry() {
-  currentOrder = null; currentItems = []; currentAnalysis = null;
-  currentAlreadyPackedData = null; currentEditReason = null;
-  document.getElementById('subscreenCheck').style.display = 'none';
-  document.getElementById('subscreenEntry').style.display = '';
-  document.getElementById('stageCard').style.display = '';
-  document.getElementById('alreadyPackedPanel').style.display = 'none';
-  document.getElementById('packingContent').style.display = '';
-  document.getElementById('scanBanner').className = 'scan-banner';
-  setTimeout(() => orderInput.focus(), 100);
-}
-
-// ── Already Packed Override Panel ─────────────────────────────
-function renderAlreadyPackedOverride() {
-  const ap = currentAlreadyPackedData;
-
-  document.getElementById('checkOrderName').textContent = currentOrder.name;
-  const sb = document.getElementById('checkStageBadge');
-  sb.textContent = currentOrder.stage;
-  sb.className = `stage-badge-sm ${currentOrder.stage.toLowerCase()}`;
-
-  const noteEl = document.getElementById('checkOrderNote');
-  if (currentOrder.note) {
-    noteEl.textContent = `ملاحظة: ${currentOrder.note}`;
-    noteEl.style.display = 'block';
-  } else {
-    noteEl.style.display = 'none';
-  }
-
-  document.getElementById('stageCard').style.display = 'none';
-  document.getElementById('conflictPanel').style.display = 'none';
-  document.getElementById('packingContent').style.display = 'none';
-  document.getElementById('unclearWarn').classList.remove('show');
-
-  const panel = document.getElementById('alreadyPackedPanel');
-  panel.style.display = '';
-
-  document.getElementById('apData').innerHTML = `
-    <div class="ap-row">
-      <span class="ap-label">مُغلَّف بواسطة:</span>
-      <span class="ap-val">${ap.packedBy}</span>
-    </div>
-    ${ap.storedItems ? `
-    <div class="ap-row">
-      <span class="ap-label">المنتجات المغلفة:</span>
-      <span class="ap-val">${ap.storedItems}</span>
-    </div>` : ''}
-    <div class="ap-row">
-      <span class="ap-label">المرحلة:</span>
-      <span class="ap-val">${ap.stage}</span>
-    </div>
-  `;
-
-  document.getElementById('reasonSection').classList.remove('visible');
-  document.getElementById('btnOverridePack').style.display = '';
-  document.querySelectorAll('input[name="packReason"]').forEach((r, i) => {
-    r.checked = i === 0;
-    document.getElementById(`reason${i}`).classList.toggle('selected', i === 0);
-  });
-}
-
-// Reason selection interaction
-document.querySelectorAll('input[name="packReason"]').forEach((radio, i) => {
-  radio.addEventListener('change', () => {
-    document.querySelectorAll('.reason-option').forEach(opt => opt.classList.remove('selected'));
-    document.getElementById(`reason${i}`).classList.add('selected');
-  });
-});
-document.querySelectorAll('.reason-option').forEach((opt, i) => {
-  opt.addEventListener('click', () => {
-    const radio = opt.querySelector('input[type=radio]');
-    radio.checked = true;
-    document.querySelectorAll('.reason-option').forEach(o => o.classList.remove('selected'));
-    opt.classList.add('selected');
-  });
-});
-
-function showReasonSelection() {
-  document.getElementById('btnOverridePack').style.display = 'none';
-  document.getElementById('reasonSection').classList.add('visible');
-}
-
-function confirmReasonAndShowModal() {
-  const selected = document.querySelector('input[name="packReason"]:checked');
-  if (!selected) { showToast('اختر سبب إعادة التغليف أولاً', 'error'); return; }
-  currentEditReason = selected.value;
-  showStockReturnModal(() => {
-    document.getElementById('alreadyPackedPanel').style.display = 'none';
-    document.getElementById('stageCard').style.display = '';
-    renderCheckScreen();
-    setTimeout(() => document.getElementById('barcodeScanInput').focus(), 100);
-  });
-}
-
-// Stock Return Confirmation Modal — clone+addEventListener pattern
-function showStockReturnModal(onConfirm) {
-  const modal = document.getElementById('stockReturnModal');
+// ── Change Detected Modal ──────────────────────────────────────
+// Single modal: previous pack info + danger warning + items table + confirm/cancel
+function showChangeDetectedModal() {
   const ap    = currentAlreadyPackedData;
+  const modal = document.getElementById('changeDetectedModal');
 
-  document.getElementById('stockReturnItemsText').textContent =
-    ap?.storedItems ? `المنتجات: ${ap.storedItems}` : `الأوردر: ${currentOrder?.name || ''}`;
+  // Populate info card
+  document.getElementById('cdPrevInfo').innerHTML = buildPrevPackInfo(ap);
+
+  // Populate items table
+  document.getElementById('cdItemsBody').innerHTML = buildItemsTableRows(ap.storedItems);
 
   modal.classList.remove('hidden');
 
-  const confirmBtn = document.getElementById('stockReturnConfirmBtn');
-  const cancelBtn  = document.getElementById('stockReturnCancelBtn');
+  // Clone buttons to avoid stale listeners (pattern per EcomModa standard)
+  const confirmBtn = document.getElementById('cdConfirmBtn');
+  const cancelBtn  = document.getElementById('cdCancelBtn');
   const newConfirm = confirmBtn.cloneNode(true);
   const newCancel  = cancelBtn.cloneNode(true);
   confirmBtn.replaceWith(newConfirm);
@@ -1233,13 +1307,60 @@ function showStockReturnModal(onConfirm) {
 
   newConfirm.addEventListener('click', () => {
     modal.classList.add('hidden');
-    onConfirm();
+    // Default reason — no manual selection needed
+    currentEditReason = 'تعديل على منتجات الأوردر';
+    // Navigate to check screen and proceed directly
+    document.getElementById('subscreenEntry').style.display = 'none';
+    document.getElementById('subscreenCheck').style.display = '';
+    renderCheckScreen();
+    setTimeout(() => document.getElementById('barcodeScanInput').focus(), 100);
   });
+
   newCancel.addEventListener('click', () => {
     modal.classList.add('hidden');
-    document.getElementById('reasonSection').classList.add('visible');
-    document.getElementById('btnOverridePack').style.display = 'none';
+    // Stay at entry screen, reset state
+    currentOrder = null; currentItems = []; currentAnalysis = null;
+    currentAlreadyPackedData = null; currentEditReason = null;
+    setTimeout(() => orderInput.focus(), 100);
   });
+}
+
+// ── Already Packed No-Change Modal ────────────────────────────
+// Shows previous pack info + items table, blocks re-packing
+function showAlreadyPackedNoChangeModal() {
+  const ap    = currentAlreadyPackedData;
+  const modal = document.getElementById('alreadyPackedModal');
+
+  // Populate info card
+  document.getElementById('apPrevInfo').innerHTML = buildPrevPackInfo(ap);
+
+  // Populate items table
+  document.getElementById('apItemsBody').innerHTML = buildItemsTableRows(ap.storedItems);
+
+  modal.classList.remove('hidden');
+
+  // Clone close button to avoid stale listeners
+  const closeBtn = document.getElementById('apCloseBtn');
+  const newClose = closeBtn.cloneNode(true);
+  closeBtn.replaceWith(newClose);
+
+  newClose.addEventListener('click', () => {
+    modal.classList.add('hidden');
+    currentAlreadyPackedData = null;
+    setTimeout(() => orderInput.focus(), 100);
+  });
+}
+
+// ── Reset to Entry ─────────────────────────────────────────────
+function resetToEntry() {
+  currentOrder = null; currentItems = []; currentAnalysis = null;
+  currentAlreadyPackedData = null; currentEditReason = null;
+  document.getElementById('subscreenCheck').style.display = 'none';
+  document.getElementById('subscreenEntry').style.display = '';
+  document.getElementById('stageCard').style.display = '';
+  document.getElementById('packingContent').style.display = '';
+  document.getElementById('scanBanner').className = 'scan-banner';
+  setTimeout(() => orderInput.focus(), 100);
 }
 
 // ── Render Check Screen ────────────────────────────────────────
@@ -1247,16 +1368,15 @@ function renderCheckScreen() {
   const sa    = currentAnalysis;
   const stage = currentOrder.stage;
 
-  document.getElementById('alreadyPackedPanel').style.display = 'none';
   document.getElementById('stageCard').style.display = '';
 
   document.getElementById('checkOrderName').textContent = currentOrder.name;
   const sb = document.getElementById('checkStageBadge');
-  sb.textContent = stage;
+  sb.textContent = stage === 'S2' ? 'أوردر استبدال' : 'أوردر عادي';
   sb.className   = `stage-badge-sm ${stage.toLowerCase()}`;
 
   const noteEl = document.getElementById('checkOrderNote');
-  if (currentOrder.note) { noteEl.textContent = `ملاحظة: ${currentOrder.note}`; noteEl.style.display = 'block'; }
+  if (currentOrder.note) { noteEl.textContent = `ملحوظات الأوردر: ${currentOrder.note}`; noteEl.style.display = 'block'; }
   else { noteEl.style.display = 'none'; }
 
   renderStageIndicator(sa, stage);
@@ -1303,9 +1423,9 @@ function renderStageIndicator(sa, stage) {
   title.textContent = titleText;
   if (!s) { sigs.innerHTML = ''; return; }
   sigs.innerHTML = [
-    { label: 'Return نشط', on: s.hasActiveReturn, val: s.hasActiveReturn ? `${s.activeReturnCount} return(s)` : 'لا يوجد' },
-    { label: 'manual_status', on: s.s1Signal,    val: s.manualStatus || 'غير محدد' },
-    { label: 'status_2_r_e',  on: s.s2MetaSignal, val: s.status2re  || 'غير محدد' },
+    { label: 'هل يوجد طلب استبدال في الأوردر؟', on: s.hasActiveReturn, val: s.hasActiveReturn ? `يوجد (${s.activeReturnCount})` : 'لا يوجد' },
+    { label: 'حالة الأوردر الأساسي (S1)',        on: s.s1Signal,       val: s.manualStatus || 'غير محدد' },
+    { label: 'حالة الأوردر الاستبدال (S2)',       on: s.s2MetaSignal,   val: s.status2re   || 'غير محدد' },
   ].map(r => `
     <div class="stage-signal-row">
       <div class="sig-dot ${r.on ? 'on' : 'off'}"></div>
@@ -1320,9 +1440,9 @@ function renderConflictPanel(sa) {
   document.getElementById('shopifyLink').href =
     `https://admin.shopify.com/store/6c7e1a-53/orders/${currentOrder.id}`;
   document.getElementById('conflictData').innerHTML = `
-    <div class="conflict-row"><span class="conflict-label">Return نشط:</span><span class="conflict-val ${s.hasActiveReturn?'set':'unset'}">${s.hasActiveReturn?`✅ يوجد (${s.activeReturnCount})`:'❌ لا يوجد'}</span></div>
-    <div class="conflict-row"><span class="conflict-label">manual_status:</span><span class="conflict-val ${s.manualStatus?'set':'unset'}">${s.manualStatus||'غير محدد'}</span></div>
-    <div class="conflict-row"><span class="conflict-label">status_2_r_e:</span><span class="conflict-val ${s.status2re?'set':'unset'}">${s.status2re||'غير محدد'}</span></div>
+    <div class="conflict-row"><span class="conflict-label">هل يوجد طلب استبدال في الأوردر؟:</span><span class="conflict-val ${s.hasActiveReturn?'set':'unset'}">${s.hasActiveReturn?`✅ يوجد (${s.activeReturnCount})`:'❌ لا يوجد'}</span></div>
+    <div class="conflict-row"><span class="conflict-label">حالة الأوردر الأساسي (S1):</span><span class="conflict-val ${s.manualStatus?'set':'unset'}">${s.manualStatus||'غير محدد'}</span></div>
+    <div class="conflict-row"><span class="conflict-label">حالة الأوردر الاستبدال (S2):</span><span class="conflict-val ${s.status2re?'set':'unset'}">${s.status2re||'غير محدد'}</span></div>
   `;
   document.getElementById('conflictReason').textContent = sa.conflictType || 'يوجد تعارض في البيانات';
 }
@@ -1338,8 +1458,12 @@ function renderItemsList() {
     const cntCls  = isDone ? 'done' : isP ? 'partial' : 'pending';
     const opts    = (item.options || []).map(o => o.value).join(' / ');
     const div     = document.createElement('div');
-    div.className = `item-card ${cls}`;
+    div.className = `item-card ${cls}${item.image ? ' has-image' : ''}`;
     div.id        = `ic-${idx}`;
+    if (item.image) {
+      div.addEventListener('click', () => openImagePopup(item.image));
+      div.setAttribute('title', 'اضغط لعرض صورة المنتج بحجم كامل');
+    }
     div.innerHTML = `
       ${item.image ? `<img class="item-img" src="${item.image}" alt="" loading="lazy">` : `<div class="item-placeholder">👟</div>`}
       <div class="item-info">
@@ -1363,13 +1487,61 @@ function updateItemCard(idx) {
   const cntCls = isDone ? 'done' : isP ? 'partial' : 'pending';
   const card   = document.getElementById(`ic-${idx}`);
   const cnt    = document.getElementById(`cnt-${idx}`);
-  if (card) card.className  = `item-card ${cls}`;
+  if (card) card.className  = `item-card ${cls}${item.image ? ' has-image' : ''}`;
   if (cnt)  { cnt.className = `item-count ${cntCls}`; cnt.textContent = `${item.scanned}/${item.quantity}`; }
 }
+function openImagePopup(src) {
+  if (!src) return;
+  const overlay = document.getElementById('imagePopup');
+  const img = document.getElementById('imagePopupImg');
+  if (!overlay || !img) return;
+  img.src = src;
+  overlay.classList.remove('hidden');
+  overlay.setAttribute('aria-hidden', 'false');
+}
+function closeImagePopup() {
+  const overlay = document.getElementById('imagePopup');
+  const img = document.getElementById('imagePopupImg');
+  if (!overlay || !img) return;
+  overlay.classList.add('hidden');
+  overlay.setAttribute('aria-hidden', 'true');
+  img.src = '';
+}
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeImagePopup();
+});
 function updateSummary() {
-  const scanned = currentItems.reduce((s, i) => s + i.scanned, 0);
-  const total   = currentItems.reduce((s, i) => s + i.quantity, 0);
-  document.getElementById('summaryTotal').textContent = `${scanned} / ${total}`;
+  const scanned   = currentItems.reduce((s, i) => s + i.scanned, 0);
+  const total     = currentItems.reduce((s, i) => s + i.quantity, 0);
+  const remaining = Math.max(total - scanned, 0);
+  const pct       = total ? Math.round((scanned / total) * 100) : 0;
+
+  const scannedEl   = document.getElementById('progressScanned');
+  const remainingEl = document.getElementById('progressRemaining');
+  const totalEl     = document.getElementById('progressTotal');
+  const fillEl      = document.getElementById('progressFill');
+
+  if (scannedEl)   scannedEl.textContent = scanned.toLocaleString('en-US');
+  if (remainingEl) remainingEl.textContent = remaining.toLocaleString('en-US');
+  if (totalEl)     totalEl.textContent = total.toLocaleString('en-US');
+  if (fillEl)      fillEl.style.width = `${pct}%`;
+
+  updateProgressCheckpoints(total, scanned);
+}
+function updateProgressCheckpoints(total, scanned) {
+  const wrap = document.getElementById('progressCheckpoints');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  if (!total) return;
+  for (let i = 0; i <= total; i++) {
+    const dot = document.createElement('span');
+    dot.className = 'progress-checkpoint';
+    dot.dataset.step = String(i);
+    if (scanned >= i) dot.classList.add('done');
+    else if (i === scanned + 1) dot.classList.add('current');
+    dot.style.right = `${(i / total) * 100}%`;
+    wrap.appendChild(dot);
+  }
 }
 function updateCompleteBtn() {
   const allDone = currentItems.length > 0 && currentItems.every(i => i.scanned >= i.quantity);
@@ -1453,7 +1625,6 @@ async function completePack() {
   const btn = document.getElementById('btnComplete');
   btn.disabled = true; btn.textContent = '⏳ جاري الحفظ...';
   try {
-    // editCount removed from payload — Worker v1.3.0+ doesn't use it
     const data = await apiPost('complete_pack', {
       orderId:    currentOrder.id,
       orderName:  currentOrder.name,
@@ -1465,16 +1636,16 @@ async function completePack() {
     });
     if (!data.ok) {
       showToast(data.error || 'خطأ في الحفظ', 'error');
-      btn.disabled = false; btn.textContent = '✅ تأكيد اكتمال التعبئة';
+      btn.disabled = false; btn.textContent = '✅ تأكيد اكتمال التغليف';
       return;
     }
     const overrideNote = currentEditReason ? ` (إعادة تغليف)` : '';
-    showToast(`✅ تم حفظ تعبئة ${currentOrder.name} بنجاح${overrideNote}`, 'success', 4000);
+    showToast(`✅ تم حفظ تغليف ${currentOrder.name} بنجاح${overrideNote}`, 'success', 4000);
     playBeep('success');
     setTimeout(() => resetToEntry(), 1500);
   } catch (err) {
     showToast(err.message || 'خطأ في الاتصال', 'error');
-    btn.disabled = false; btn.textContent = '✅ تأكيد اكتمال التعبئة';
+    btn.disabled = false; btn.textContent = '✅ تأكيد اكتمال التغليف';
   }
 }
 
@@ -1530,14 +1701,14 @@ function renderLog(entries) {
     div.className = 'log-entry';
     div.innerHTML = `
       <div class="log-top">
-        <span class="log-badge">مُعبَّأ</span>
+        <span class="log-badge">مُغلَّف</span>
         <span class="log-order">${e.order_name || '—'}</span>
         <span class="stage-badge-sm ${stageCls}" style="padding:2px 7px;font-size:11px">${extra.stage || e.stage || ''}</span>
         <span class="log-meta" style="margin-right:auto">${fmtDT(e.timestamp)}</span>
       </div>
       <div class="log-meta">
         بواسطة: ${e.employee || '—'}
-        ${extra.packedBy ? ` ← مُعبَّأ بواسطة: ${extra.packedBy}` : ''}
+        ${extra.packedBy ? ` ← التغليف بواسطة: ${extra.packedBy}` : ''}
         ${e.item_count ? ` | ${e.item_count} قطعة` : ''}
       </div>
       ${editReason ? `<div class="log-edit-reason">🔄 إعادة تغليف: ${editReason}</div>` : ''}
@@ -1582,7 +1753,7 @@ async function exportLogXLSX() {
       { header: 'الأوردر',         key: 'order',        width: 12 },
       { header: 'المرحلة',         key: 'stage',        width: 8  },
       { header: 'الموظف',          key: 'employee',     width: 16 },
-      { header: 'مُعبَّأ بواسطة',  key: 'packed_by',    width: 16 },
+      { header: 'مُغلَّف بواسطة',  key: 'packed_by',    width: 16 },
       { header: 'عدد القطع',        key: 'item_count',   width: 10 },
       { header: 'المنتجات',         key: 'items',        width: 40 },
       { header: 'سبب الإعادة',      key: 'edit_reason',  width: 32 },
