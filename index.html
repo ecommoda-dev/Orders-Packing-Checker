@@ -673,7 +673,8 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
             <tr><th>الحالة</th><th>الإجراءات على الأوردر</th></tr>
             <tr><td>تغليف S1</td><td>كتابة <code>custom.s1_packed_by</code> + <code>custom.s1_packing_date_time</code> · إضافة tag <code>S1=Packed</code> · صف <code>packed</code> في D1</td></tr>
             <tr><td>تغليف S2</td><td>كتابة <code>custom.s2_packed_by</code> + <code>custom.s2_packing_date_time</code> · إضافة tag <code>S2=Packed</code> · صف <code>packed</code> في D1</td></tr>
-            <tr><td>إعادة تغليف بعد تعديل</td><td>نفس الإجراءات + <code>edit_reason</code> في السجل</td></tr>
+            <tr><td>إعادة تغليف بعد تعديل</td><td>نفس الإجراءات + <code>edit_reason</code> في السجل + <code>extra.repack</code> و<code>extra.previousPackedBy</code></td></tr>
+            <tr><td>محاولة تغليف أوردر اتغلّف بالفعل</td><td><b>مفيش أي كتابة</b> — رد <code>409</code> + <code>conflict: true</code>. لو البنود اتغيّرت: <code>requiresReason: true</code> لحد ما يتدخل سبب.</td></tr>
           </table>
         </div>
       </details>
@@ -710,6 +711,9 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
             <li>كشف التغيير بيقرا <code>extra.fingerprint</code> المخزّن؛ الصفوف القديمة بترجع لتحليل نص <code>items</code> — ولو التحليل فشل، النتيجة «فيه تغيير» (الافتراضي الآمن).</li>
             <li>صيغة <code>items</code> (<code>SKU ×qty</code>) مرتبطة بين <code>complete_pack</code> و<code>get_order</code> — الاتنين بيتغيّروا مع بعض.</li>
             <li><code>fulfillableQuantity</code> هو مصدر الحقيقة الوحيد للتصنيف — ممنوع فلترة يدوية على الـ refunds.</li>
+            <li><b>v2.1.0</b> — <code>complete_pack</code> بقى <b>بيتحقق من شوبيفاي قبل أي كتابة</b>: بيقرا الأوردر، بيحسب المرحلة بنفسه (أي <code>stage</code> جاي من الواجهة بيتجاهل)، وبيرجّع <code>409</code> + <code>conflict</code> لو الأوردر اتغلّف بالفعل. تاب مفتوح من ساعة أو ضغطة مزدوجة ماعادش يعدّي.</li>
+            <li><b>v2.1.0</b> — الحارس اتفصل في <code>§PACK::evaluatePackGuard</code>: <b>دالة واحدة</b> بينادها <code>get_order</code> و<code>complete_pack</code>، فمستحيل يفترقوا في المنطق.</li>
+            <li><b>v2.1.0</b> — البصمة والملخّص المخزّنين في السجل بقوا من <b>بنود السيرفر</b> مش بنود الواجهة. لو الاتنين اختلفوا، العملية بتكمل ببنود السيرفر <b>مع تحذير</b> «الأوردر اتعدّل بين ما فتحته وما ضغطت تم».</li>
             <li><code>dateFrom</code>/<code>dateTo</code> بيتقارنوا بـ <code>timestamp</code> المخزّن (UTC) والعرض بتوقيت القاهرة (UTC+3) — فرق ٣ ساعات ممكن يحط عملية متأخرة في يوم UTC اللي بعده.</li>
             <li><code>edit_count</code> لسه في schema الـ D1 للتوافق بس — مابيتكتبش من v1.3.0+.</li>
           </ul>
@@ -1165,8 +1169,8 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
 // ══════════════════════════════════════════════════════════════
 // §CONFIG
 // ══════════════════════════════════════════════════════════════
-const TOOL_VERSION       = 'v2.0.0';   // مصدر واحد: الهيدر + الـ Changelog + شاشة الدخول
-const MIN_WORKER_VERSION = '2.0.0';    // أقل نسخة Worker الواجهة دي بتشتغل معاها
+const TOOL_VERSION       = 'v2.1.0';   // مصدر واحد: الهيدر + الـ Changelog + شاشة الدخول
+const MIN_WORKER_VERSION = '2.1.0';    // أقل نسخة Worker الواجهة دي بتشتغل معاها
                                        // (النسخة اللي ضافت get_config/diag وعقد complete_pack الجديد)
                                        // ⚠️ مالهاش أي علاقة بـ TOOL_VERSION — متزامنهمش
 
@@ -1204,7 +1208,15 @@ async function apiRequest(url, opts) {
   let data;
   try { data = JSON.parse(text); }
   catch { throw new Error(`رد غير متوقع من الـ Worker (HTTP ${resp.status}): ${text.slice(0, 160)}`); }
-  if (!resp.ok) throw new Error(data.error || `HTTP ${resp.status}`);
+  if (!resp.ok) {
+    // ⚠️ الرد الفاشل بيحمل معلومات المنادي محتاجها (مثال: 409 + conflict
+    //    من `complete_pack` — R3). رمي `Error` بالرسالة بس كان بيضيّعها،
+    //    فالحالة والجسم بيتعلّقوا على الاستثناء.
+    const err = new Error(data.error || `HTTP ${resp.status}`);
+    err.status  = resp.status;
+    err.payload = data;
+    throw err;
+  }
   return data;
 }
 
@@ -2157,6 +2169,29 @@ async function completePack() {
     playBeep('success');
     setTimeout(() => resetToEntry(), 1800);
   } catch (err) {
+    // ── R3: تعارض من الحارس السيرفر-سايد (409) ──────────────────
+    //    الحارس ده اتضاف في Worker v2.1.0. رسالته مش «خطأ غير معروف» —
+    //    هي حالة معروفة: الأوردر اتغلّف بالفعل، أو محتاج سبب إعادة.
+    if (err.status === 409 && err.payload?.conflict) {
+      const p = err.payload;
+      const when = p.packingDateTime ? formatDateTime(p.packingDateTime) : '—';
+      const lines = [
+        `الأوردر ${p.orderName || ''} اتغلّف بالفعل في المرحلة ${p.stage || '—'}`,
+        `بواسطة: ${p.packedBy || '—'} · التاريخ: ${when}`,
+      ];
+      if (p.storedItems) lines.push(`البنود المسجّلة: ${p.storedItems}`);
+      if (p.requiresReason) {
+        lines.push('البنود اتغيّرت من ساعتها — لازم تدخل سبب الإعادة قبل ما تحفظ.');
+      } else {
+        lines.push('والبنود ما اتغيّرتش — يعني مفيش داعي للتغليف تاني.');
+        lines.push('لو الشاشة كانت مفتوحة من زمان، اقفل وافتح الأوردر من أول وجديد.');
+      }
+      renderPackResult({ status: 'error', actions: [], warnings: lines });
+      showToast(p.requiresReason ? '⚠ محتاج سبب إعادة التغليف' : '⛔ الأوردر اتغلّف بالفعل', 'error', 9000);
+      playBeep('error');
+      btn.disabled = false; btn.textContent = '✅ تأكيد اكتمال التغليف';
+      return;
+    }
     renderPackResult({ status: 'error', actions: [], warnings: [err.message || 'خطأ في الاتصال'] });
     showToast(err.message || 'خطأ في الاتصال', 'error', 6000);
     playBeep('error');
