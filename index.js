@@ -1,8 +1,15 @@
 // ══════════════════════════════════════════════════════════════
 // §CONSTANTS
-// Pack Checker Worker — EcomModa  v2.0.0
+// Pack Checker Worker — EcomModa  v2.1.0
 // Tool: pack_checker | Endpoints: get_order, complete_pack, diag, get_config
 // skills: worker-builder v2.0.0 · constants v1.4.3 · order-lifecycle v1.2.0 · shopify-graphql-helper v1.0.0 — 03-09-2026
+//
+// CHANGELOG v2.1.0:
+//   - 🟠 R6 — حارس `WORKER_SECRET` الغايب قبل فحص المصادقة. من غيره
+//     `Bearer ${env.WORKER_SECRET}` بيتقيّم للنص الحرفي "Bearer undefined"
+//     لو السيكرت اتنسي أو النسخة اتنشرت بدون Promote — فأي طلب بالرأس ده
+//     كان بيعدّي المصادقة. الرد بقى 500 برسالة صريحة + step:'env'.
+//     (مراجعة 03-09-2026 · R6 · نفس حارس logistics-control-center-worker)
 //
 // CHANGELOG v2.0.0:
 //   - shopifyGQL استُبدلت بالنسخة القياسية الكاملة (worker-builder Step 5A ①):
@@ -39,7 +46,7 @@
 // ══════════════════════════════════════════════════════════════
 
 const TOOL_NAME      = 'pack_checker';
-const WORKER_VERSION = '2.0.0';
+const WORKER_VERSION = '2.1.0';
 
 // ══════════════════════════════════════════════════════════════
 // §CORS
@@ -646,12 +653,23 @@ export default {
     if (request.method === 'OPTIONS')
       return new Response(null, { status: 204, headers: getCORS(request) });
 
+    // ── R6: حارس WORKER_SECRET الغايب — **قبل** أي مقارنة ─────────
+    // من غير السطور دي: لو السيكرت اتنسي أو النسخة اتنشرت بدون Promote،
+    // يبقى env.WORKER_SECRET === undefined، والقالب بيتقيّم للنص الحرفي
+    // "Bearer undefined" — فأي طلب بالرأس ده **بيعدّي المصادقة**.
+    // (مراجعة 03-09-2026 · R6 · نفس حارس logistics-control-center-worker)
+    if (!env.WORKER_SECRET) {
+      return json({
+        error: 'WORKER_SECRET غير مضبوط على الـ Worker — أضفه من Settings → Variables ثم اعمل Promote',
+        step:  'env',
+      }, 500, request);
+    }
+
     // WORKER_SECRET check — always second
+    // ⚠️ `json()` مش `new Response` — `getCORS` مابيرجّعش 'Content-Type'.
     const auth = request.headers.get('Authorization');
     if (!auth || auth !== `Bearer ${env.WORKER_SECRET}`)
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401, headers: getCORS(request),
-      });
+      return json({ error: 'Unauthorized' }, 401, request);
 
     const url    = new URL(request.url);
     const action = url.searchParams.get('action') || '';
