@@ -25,6 +25,13 @@
 //     #43277 (100ث) · #45227 S1→S1 (168ث) · #47507 S1→S1 (434ث).
 //     التكلفة: استعلام قراءة إضافي واحد لكل نداء.
 //     (مراجعة 03-09-2026 · R3 · بيقفل بند ٨ في قرارات أحمد)
+//   - 🟡 R11 — `ENV_REQUIRED` اتنضّفت من مجموعتَي `bosta` و`stock` (بقايا
+//     قالب — الأداة مش بتنادي بوسطة ومش أداة مخزون، والمتغيّرين مش في
+//     `wrangler.toml`). `assertEnv(env,'stock')` بالسهو كان هيفشل برسالة
+//     مضلّلة. (مراجعة 03-09-2026 · R11)
+//   - 🟡 R13 — fallback الـ CORS في `json()` بقى `ALLOWED_ORIGINS[0]` بدل
+//     `'*'`. فرع ميّت دلوقتي، بس التناقض كان بيخلّي أي استدعاء مستقبلي من
+//     غير `request` يفتح wildcard في أداة كتابة. (مراجعة 03-09-2026 · R13)
 //   - 🟠 R6 — حارس `WORKER_SECRET` الغايب قبل فحص المصادقة. من غيره
 //     `Bearer ${env.WORKER_SECRET}` بيتقيّم للنص الحرفي "Bearer undefined"
 //     لو السيكرت اتنسي أو النسخة اتنشرت بدون Promote — فأي طلب بالرأس ده
@@ -91,16 +98,22 @@ function getCORS(request) {
 // ══════════════════════════════════════════════════════════════
 function json(data, status = 200, request = null) {
   const headers = { 'Content-Type': 'application/json' };
-  Object.assign(headers, request ? getCORS(request) : { 'Access-Control-Allow-Origin': '*' });
+  // R13: الـ fallback بيبقى ALLOWED_ORIGINS[0] — مش '*'. الفرع ده كود ميّت
+  // دلوقتي (كل النداءات بتمرّر request)، بس التناقض كان بيخلّي أي استدعاء
+  // مستقبلي من غير `request` يفتح wildcard في **أداة كتابة** على أوردرات حيّة.
+  Object.assign(headers, request ? getCORS(request) : { 'Access-Control-Allow-Origin': ALLOWED_ORIGINS[0] });
   return new Response(JSON.stringify(data), { status, headers });
 }
 
 // ─── §HELPERS::assertEnv ───
 // متغير ناقص لازم يوقف العملية برسالة باسمه.
+// ⚠️ المجموعات المتاحة هنا لازم تبقى **اللي الأداة بتستخدمها فعلاً**.
+//    مجموعتَي `bosta` و`stock` كانوا بقايا من قالب `ecommoda-worker-builder`
+//    والأداة مش بتنادي بوسطة ومش أداة مخزون — والمتغيّرين مش في
+//    `wrangler.toml` أصلاً (وصح إنهم مش موجودين). أي `assertEnv(env,'stock')`
+//    بالسهو كان هيفشل برسالة مضلّلة عن متغيّر مالوش لازمة. (R11)
 const ENV_REQUIRED = {
   shopify: ['SHOP_DOMAIN', 'CLIENT_ID', 'CLIENT_SECRET'],
-  bosta:   ['BOSTA_API_KEY'],
-  stock:   ['LOCATION_ID'],
 };
 
 function assertEnv(env, ...groups) {
