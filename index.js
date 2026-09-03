@@ -2,6 +2,7 @@
 // §CONSTANTS
 // Pack Checker Worker — EcomModa  v1.5.0
 // Tool: pack_checker | Endpoints: get_order, complete_pack
+// skills: worker-builder v2.0.0 · constants v1.4.3 · order-lifecycle v1.2.0 · shopify-graphql-helper v1.0.0 — 03-09-2026
 //
 // CHANGELOG v1.5.0:
 //   - BUGFIX: حذف refundedIds بالكامل من classifyOrderItems
