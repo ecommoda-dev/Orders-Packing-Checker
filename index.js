@@ -1,8 +1,42 @@
 // ══════════════════════════════════════════════════════════════
 // §CONSTANTS
-// Pack Checker Worker — EcomModa  v2.0.0
+// Pack Checker Worker — EcomModa  v2.1.0
 // Tool: pack_checker | Endpoints: get_order, complete_pack, diag, get_config
 // skills: worker-builder v2.0.0 · constants v1.4.3 · order-lifecycle v1.2.0 · shopify-graphql-helper v1.0.0 — 03-09-2026
+//
+// CHANGELOG v2.1.0:
+//   - 🔴 R3 — `complete_pack` بقى بيتحقق من شوبيفاي قبل أي كتابة. كان
+//     بياخد `stage` و`items` من الطلب وبيكتب على طول، وحارس «اتغلّف قبل
+//     كده» كان في `get_order` **بس** — يعني الحارس كله في العميل، وتاب
+//     قديم أو ضغطة مزدوجة أو جهاز تاني بيعدّي عليه («التحقق في العميل بس
+//     مش تحقق» — order-lifecycle §1.5). دلوقتي:
+//       · الأوردر بيتقرا من شوبيفاي، و`stage` بيتحسب بـ `analyzeStage`
+//         (أي stage جاي من العميل بيتجاهل تمامًا)
+//       · الحارس اتفصل في `§PACK::evaluatePackGuard` — **دالة واحدة**
+//         بينادها `get_order` و`complete_pack`، فمستحيل يفترقوا
+//       · اتغلّف والبنود ما اتغيّرتش → 409 + `conflict: true`
+//       · اتغلّف والبنود اتغيّرت وبدون سبب → 409 + `requiresReason: true`
+//       · البصمة والملخّص المخزّنين بقوا من **بنود السيرفر** مش العميل —
+//         بنود عميل قديمة كانت هتخزّن بصمة قديمة وتدي كشف تغيير كاذب بعدين
+//       · بنود العميل مختلفة عن السيرفر → تحذير «الأوردر اتعدّل بين ما
+//         فتحته وما ضغطت تم» (العملية بتكمل ببنود السيرفر)
+//       · تعارض/التباس في `analyzeStage` بيتسجّل كتحذير مع الصف
+//     دليل من D1: تلات أوردرات اتغلّفوا مرتين في نفس المرحلة خلال دقايق —
+//     #43277 (100ث) · #45227 S1→S1 (168ث) · #47507 S1→S1 (434ث).
+//     التكلفة: استعلام قراءة إضافي واحد لكل نداء.
+//     (مراجعة 03-09-2026 · R3 · بيقفل بند ٨ في قرارات أحمد)
+//   - 🟡 R11 — `ENV_REQUIRED` اتنضّفت من مجموعتَي `bosta` و`stock` (بقايا
+//     قالب — الأداة مش بتنادي بوسطة ومش أداة مخزون، والمتغيّرين مش في
+//     `wrangler.toml`). `assertEnv(env,'stock')` بالسهو كان هيفشل برسالة
+//     مضلّلة. (مراجعة 03-09-2026 · R11)
+//   - 🟡 R13 — fallback الـ CORS في `json()` بقى `ALLOWED_ORIGINS[0]` بدل
+//     `'*'`. فرع ميّت دلوقتي، بس التناقض كان بيخلّي أي استدعاء مستقبلي من
+//     غير `request` يفتح wildcard في أداة كتابة. (مراجعة 03-09-2026 · R13)
+//   - 🟠 R6 — حارس `WORKER_SECRET` الغايب قبل فحص المصادقة. من غيره
+//     `Bearer ${env.WORKER_SECRET}` بيتقيّم للنص الحرفي "Bearer undefined"
+//     لو السيكرت اتنسي أو النسخة اتنشرت بدون Promote — فأي طلب بالرأس ده
+//     كان بيعدّي المصادقة. الرد بقى 500 برسالة صريحة + step:'env'.
+//     (مراجعة 03-09-2026 · R6 · نفس حارس logistics-control-center-worker)
 //
 // CHANGELOG v2.0.0:
 //   - shopifyGQL استُبدلت بالنسخة القياسية الكاملة (worker-builder Step 5A ①):
@@ -39,7 +73,7 @@
 // ══════════════════════════════════════════════════════════════
 
 const TOOL_NAME      = 'pack_checker';
-const WORKER_VERSION = '2.0.0';
+const WORKER_VERSION = '2.1.0';
 
 // ══════════════════════════════════════════════════════════════
 // §CORS
@@ -64,16 +98,22 @@ function getCORS(request) {
 // ══════════════════════════════════════════════════════════════
 function json(data, status = 200, request = null) {
   const headers = { 'Content-Type': 'application/json' };
-  Object.assign(headers, request ? getCORS(request) : { 'Access-Control-Allow-Origin': '*' });
+  // R13: الـ fallback بيبقى ALLOWED_ORIGINS[0] — مش '*'. الفرع ده كود ميّت
+  // دلوقتي (كل النداءات بتمرّر request)، بس التناقض كان بيخلّي أي استدعاء
+  // مستقبلي من غير `request` يفتح wildcard في **أداة كتابة** على أوردرات حيّة.
+  Object.assign(headers, request ? getCORS(request) : { 'Access-Control-Allow-Origin': ALLOWED_ORIGINS[0] });
   return new Response(JSON.stringify(data), { status, headers });
 }
 
 // ─── §HELPERS::assertEnv ───
 // متغير ناقص لازم يوقف العملية برسالة باسمه.
+// ⚠️ المجموعات المتاحة هنا لازم تبقى **اللي الأداة بتستخدمها فعلاً**.
+//    مجموعتَي `bosta` و`stock` كانوا بقايا من قالب `ecommoda-worker-builder`
+//    والأداة مش بتنادي بوسطة ومش أداة مخزون — والمتغيّرين مش في
+//    `wrangler.toml` أصلاً (وصح إنهم مش موجودين). أي `assertEnv(env,'stock')`
+//    بالسهو كان هيفشل برسالة مضلّلة عن متغيّر مالوش لازمة. (R11)
 const ENV_REQUIRED = {
   shopify: ['SHOP_DOMAIN', 'CLIENT_ID', 'CLIENT_SECRET'],
-  bosta:   ['BOSTA_API_KEY'],
-  stock:   ['LOCATION_ID'],
 };
 
 function assertEnv(env, ...groups) {
@@ -635,6 +675,52 @@ function readStoredFingerprint(lastLog) {
   return { fingerprint: null, source: 'unreadable' };
 }
 
+// ─── §PACK::evaluatePackGuard ───
+//
+// حارس «اتغلّف قبل كده» — **مصدر واحد** لـ `get_order` و`complete_pack`.
+//
+// ⚠️ الدالة دي اتفصلت في v2.1.0 عشان الحارس ما يبقاش متكرّر في مكانين.
+//    قبل كده الحارس كان في `get_order` **بس**، و`complete_pack` كان بيكتب
+//    من غير أي قراءة — يعني الحارس كله كان **في العميل**، وتاب قديم أو
+//    ضغطة مزدوجة بتعدّي عليه. أي تعديل في منطق الكشف مكانه هنا لوحده.
+//    (مراجعة 03-09-2026 · R3 · order-lifecycle §1.5)
+//
+// بترجّع: { packedBy, changeDetected, storedItems, packingDateTime,
+//           fingerprintSource, currentFingerprint }
+// و`packedBy = null` معناها الأوردر ما اتغلّفش في المرحلة دي أصلاً.
+async function evaluatePackGuard(env, order, stage, items) {
+  const packedByKey = stage === 'S1' ? 's1_packed_by' : 's2_packed_by';
+  const packedBy    = order[packedByKey]?.value || null;
+
+  const currentFingerprint = buildFingerprint(items);
+  if (!packedBy) {
+    return { packedBy: null, changeDetected: false, storedItems: null,
+             packingDateTime: null, fingerprintSource: 'none', currentFingerprint };
+  }
+
+  const lastLog = await env.DB.prepare(
+    `SELECT items, extra, timestamp FROM logs
+     WHERE tool = ? AND type = 'packed' AND order_name = ?
+     ORDER BY timestamp DESC LIMIT 1`
+  ).bind(TOOL_NAME, order.name).first();
+
+  const { fingerprint: storedFingerprint, source: fingerprintSource } = readStoredFingerprint(lastLog);
+
+  // "معرفناش" = تغيير مكتشف (الافتراضي الآمن)
+  const changeDetected = storedFingerprint === null
+    ? true
+    : currentFingerprint !== storedFingerprint;
+
+  return {
+    packedBy,
+    changeDetected,
+    storedItems:     lastLog?.items     || null,
+    packingDateTime: lastLog?.timestamp || null,
+    fingerprintSource,
+    currentFingerprint,
+  };
+}
+
 // ══════════════════════════════════════════════════════════════
 // §HANDLER
 // ══════════════════════════════════════════════════════════════
@@ -646,12 +732,23 @@ export default {
     if (request.method === 'OPTIONS')
       return new Response(null, { status: 204, headers: getCORS(request) });
 
+    // ── R6: حارس WORKER_SECRET الغايب — **قبل** أي مقارنة ─────────
+    // من غير السطور دي: لو السيكرت اتنسي أو النسخة اتنشرت بدون Promote،
+    // يبقى env.WORKER_SECRET === undefined، والقالب بيتقيّم للنص الحرفي
+    // "Bearer undefined" — فأي طلب بالرأس ده **بيعدّي المصادقة**.
+    // (مراجعة 03-09-2026 · R6 · نفس حارس logistics-control-center-worker)
+    if (!env.WORKER_SECRET) {
+      return json({
+        error: 'WORKER_SECRET غير مضبوط على الـ Worker — أضفه من Settings → Variables ثم اعمل Promote',
+        step:  'env',
+      }, 500, request);
+    }
+
     // WORKER_SECRET check — always second
+    // ⚠️ `json()` مش `new Response` — `getCORS` مابيرجّعش 'Content-Type'.
     const auth = request.headers.get('Authorization');
     if (!auth || auth !== `Bearer ${env.WORKER_SECRET}`)
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401, headers: getCORS(request),
-      });
+      return json({ error: 'Unauthorized' }, 401, request);
 
     const url    = new URL(request.url);
     const action = url.searchParams.get('action') || '';
@@ -842,32 +939,17 @@ export default {
           fulfillmentStatus: order.displayFulfillmentStatus,
         };
 
-        // ── Already-packed guard
-        const s1PackedBy = order.s1_packed_by?.value || null;
-        const s2PackedBy = order.s2_packed_by?.value || null;
-        const relevantPackedBy = stage === 'S1' ? s1PackedBy : s2PackedBy;
-
+        // ── Already-packed guard — عن طريق §PACK::evaluatePackGuard.
+        //    نفس الدالة اللي `complete_pack` بينادها، فمستحيل الاتنين
+        //    يفترقوا في المنطق (R3).
         const { activeItems, exchangeItems } = classifyOrderItems(order);
         const items = stage === 'S1' ? activeItems : exchangeItems;
 
+        const guard = await evaluatePackGuard(env, order, stage, items);
+        const relevantPackedBy = guard.packedBy;
+
         if (relevantPackedBy) {
-          const currentFingerprint = buildFingerprint(items);
-
-          const lastLog = await env.DB.prepare(
-            `SELECT items, extra, timestamp FROM logs
-             WHERE tool = ? AND type = 'packed' AND order_name = ?
-             ORDER BY timestamp DESC LIMIT 1`
-          ).bind(TOOL_NAME, order.name).first();
-
-          const { fingerprint: storedFingerprint, source: fingerprintSource } = readStoredFingerprint(lastLog);
-
-          // "معرفناش" = تغيير مكتشف (الافتراضي الآمن)
-          const changeDetected = storedFingerprint === null
-            ? true
-            : currentFingerprint !== storedFingerprint;
-
-          const packingDateTime = lastLog?.timestamp || null;
-          const storedItems     = lastLog?.items     || null;
+          const { changeDetected, storedItems, packingDateTime, fingerprintSource } = guard;
 
           if (!changeDetected) {
             return json({
@@ -925,27 +1007,113 @@ export default {
         assertEnv(env, 'shopify');
 
         const body = await request.json().catch(() => ({}));
-        const { orderId, orderName, stage, employee, packedBy, items, editReason } = body;
+        // ⚠️ `stage` **مابيتقراش من العميل** — بيتحسب سيرفر-سايد تحت (R3).
+        //    أي `stage` جاي في الـ body بيتجاهل تمامًا.
+        const { orderId, employee, packedBy, items: clientItems, editReason } = body;
 
-        if (!orderId || !stage || !employee || !packedBy) {
-          return json({ ok: false, error: 'بيانات ناقصة: orderId, stage, employee, packedBy مطلوبة' }, 400, request);
-        }
-
-        if (!['S1', 'S2'].includes(stage)) {
-          return json({ ok: false, error: 'stage يجب أن يكون S1 أو S2' }, 400, request);
+        if (!orderId || !employee || !packedBy) {
+          return json({ ok: false, error: 'بيانات ناقصة: orderId · employee · packedBy مطلوبة' }, 400, request);
         }
 
         const token = await getAccessToken(env);
+        const gid   = `gid://shopify/Order/${orderId}`;
+
+        // ══════════════════════════════════════════════════════════
+        // R3 — الحقيقة من شوبيفاي، مش من العميل
+        //
+        // قبل v2.1.0 الـ endpoint ده كان بياخد `stage` و`items` من الطلب
+        // وبيكتب على طول. حارس «اتغلّف قبل كده» كان في `get_order` **بس** —
+        // يعني الحارس كله في العميل، و«التحقق في العميل بس مش تحقق»
+        // (order-lifecycle §1.5). سيناريوهات الفشل اللي كانت مفتوحة:
+        //
+        //   ١ تاب مفتوح من ساعة → المغلِّف يضغط «تم» → بيدوس على
+        //     s1_packed_by ويكتب صف D1 تاني من غير أي مقاومة
+        //   ٢ ضغطة مزدوجة / شبكة بطيئة → صفّين `packed` لنفس الأوردر
+        //   ٣ جهاز تاني (بند ٨ في قرارات أحمد) → موظفين يغلّفوا نفس
+        //     الأوردر والاتنين ياخدوا «تم»
+        //   ٤ `stage` مغلوط من العميل → يكتب s1_* على أوردر S2
+        //
+        // ⚠️ ١ و٢ **حصلوا فعلاً**: في D1 تلات أوردرات اتغلّفوا مرتين في نفس
+        //    المرحلة خلال دقايق — #43277 (100ث) · #45227 S1→S1 (168ث) ·
+        //    #47507 S1→S1 (434ث). ده مش خطر نظري.
+        //
+        // التكلفة: استعلام قراءة إضافي واحد لكل `complete_pack`.
+        // ══════════════════════════════════════════════════════════
+
+        // ① اقرا الأوردر من شوبيفاي
+        const { order: freshOrder } = await fetchOrderForPack(env, token, gid);
+        if (!freshOrder) return json({ ok: false, error: 'الأوردر غير موجود على شوبيفاي' }, 404, request);
+
+        // ② الـ stage يُحسب سيرفر-سايد
+        const stageAnalysis = analyzeStage(freshOrder);
+        const { stage }     = stageAnalysis;
+        const orderName     = freshOrder.name;
+
+        // ③ بنود المرحلة من الأوردر نفسه — مش من العميل
+        const { activeItems, exchangeItems } = classifyOrderItems(freshOrder);
+        const serverItems = stage === 'S1' ? activeItems : exchangeItems;
+
+        if (serverItems.length === 0) {
+          return json({
+            ok: false, status: 'error', stage, orderName,
+            error: `لا توجد منتجات ${stage === 'S1' ? 'نشطة' : 'استبدال'} في هذا الأوردر — مفيش حاجة تتغلّف`,
+          }, 409, request);
+        }
+
+        // ④ حارس «اتغلّف قبل كده» — نفس دالة `get_order` بالظبط
+        const guard = await evaluatePackGuard(env, freshOrder, stage, serverItems);
+
+        if (guard.packedBy) {
+          if (!guard.changeDetected) {
+            return json({
+              ok: false, status: 'error', conflict: true, stage, orderName,
+              packedBy:        guard.packedBy,
+              packingDateTime: guard.packingDateTime,
+              storedItems:     guard.storedItems,
+              error: `الأوردر اتغلّف بالفعل (${stage}) بواسطة ${guard.packedBy} — والبنود ما اتغيّرتش`,
+            }, 409, request);
+          }
+          if (!editReason) {
+            return json({
+              ok: false, status: 'error', conflict: true, requiresReason: true,
+              stage, orderName,
+              packedBy:        guard.packedBy,
+              packingDateTime: guard.packingDateTime,
+              storedItems:     guard.storedItems,
+              error: 'الأوردر اتغلّف قبل كده والبنود اتغيّرت — سبب الإعادة مطلوب',
+            }, 409, request);
+          }
+        }
 
         const packedByKey    = stage === 'S1' ? 's1_packed_by'         : 's2_packed_by';
         const packingDateKey = stage === 'S1' ? 's1_packing_date_time' : 's2_packing_date_time';
         const tag            = stage === 'S1' ? 'S1=Packed'            : 'S2=Packed';
-        const gid            = `gid://shopify/Order/${orderId}`;
         const nowISO         = new Date().toISOString();
 
         // الأكشنز بتتملي أول بأول — مش بترجع من الدالة في الآخر (Step 5A ⑤)
         const actions  = [];
         const warnings = [];
+
+        // ⑤ الأوردر اتغيّر بين ما الموظف فتحه وما ضغط «تم»؟ العملية بتكمل
+        //    (البنود اللي بتتسجّل هي بنود السيرفر)، بس التحذير لازم يبان —
+        //    الموظف شيّك على قايمة مختلفة عن اللي اتسجّلت.
+        // ⑥ المرحلة كانت ملتبسة؟ العملية بتكمل (الموظف شاف التنبيه في
+        //    `get_order` واختار يكمّل)، بس السبب بيتسجّل مع الصف — من غير
+        //    كده الصف بيبان كأن المرحلة كانت قاطعة.
+        if (stageAnalysis.conflict) {
+          warnings.push(`المرحلة اتحسبت ${stage} مع تعارض في الإشارات: ${stageAnalysis.conflictType}`);
+        } else if (stageAnalysis.unclear) {
+          warnings.push(`مفيش إشارة واضحة للمرحلة — اتكتبت ${stage} كافتراضي. راجع manual_status و status_2_r_e.`);
+        }
+
+        if (Array.isArray(clientItems) && clientItems.length) {
+          if (buildFingerprint(clientItems) !== guard.currentFingerprint) {
+            warnings.push(
+              'الأوردر اتعدّل بين ما فتحته وما ضغطت «تم» — اللي اتسجّل هو بنود الأوردر ' +
+              'الحالية على شوبيفاي، مش اللي كانت على الشاشة. راجع الأوردر قبل ما تقفله.'
+            );
+          }
+        }
 
         // ── 1. Write metafields — التلات فحوصات ──
         const metaData = await shopifyGQL(env, token,
@@ -1018,9 +1186,14 @@ export default {
         // ⚠️ itemSummary مرتبط بـ parseSavedItemsString في get_order.
         // الـ fingerprint اتخزّن مستقل في extra عشان الكشف ما يبقاش
         // معتمد على تحليل نصي هشّ.
-        const itemCount   = (items || []).reduce((s, i) => s + (i.quantity || 1), 0);
-        const itemSummary = (items || []).map(i => `${i.sku || i.title} ×${i.quantity}`).join(', ');
-        const fingerprint = buildFingerprint(items || []);
+        //
+        // ⚠️ v2.1.0 (R3): المصدر بقى `serverItems` مش بنود العميل. البصمة
+        //    المخزّنة لازم تعبّر عن حالة الأوردر **وقت الكتابة**، لأن
+        //    `get_order` بيقارن بيها المرة الجاية. بنود عميل قديمة كانت
+        //    هتخزّن بصمة قديمة → كشف تغيير كاذب في الفحص اللي بعده.
+        const itemCount   = serverItems.reduce((s, i) => s + (i.quantity || 1), 0);
+        const itemSummary = serverItems.map(i => `${i.sku || i.title} ×${i.quantity}`).join(', ');
+        const fingerprint = guard.currentFingerprint;   // = buildFingerprint(serverItems)
         const editNote    = editReason ? ` (سبب الإعادة: ${editReason})` : '';
         const result      = warnings.length ? 'warning' : 'success';
 
@@ -1036,6 +1209,10 @@ export default {
             notes:     `${stage} — ${itemCount} قطعة — ${packedBy}${editNote}`,
             extra:     { stage, packedBy, packingDate: nowISO, itemCount,
                          items: itemSummary, fingerprint, editReason: editReason || null,
+                         // R3: إعادة تغليف بعد تغيير في البنود — الحارس
+                         // السيرفر-سايد سمح بيها لأن `editReason` موجود.
+                         repack:      !!guard.packedBy,
+                         previousPackedBy: guard.packedBy || null,
                          result, actions, warnings },
             timestamp: nowISO,
           });
@@ -1074,7 +1251,12 @@ export default {
         return json({
           ok: true, status, actions, warnings,
           logged, logError, columnsWritten,
-          stage, tag, packedBy, packingDate: nowISO, itemCount,
+          // `stage` و`orderName` و`items` كلهم **محسوبين سيرفر-سايد** (R3) —
+          // الواجهة بتعرضهم عشان الموظف يشوف اللي اتسجّل فعلاً.
+          stage, orderName, tag, packedBy, packingDate: nowISO, itemCount,
+          items: serverItems,
+          repack: !!guard.packedBy,
+          stageAnalysis,
         }, 200, request);
       }
 
