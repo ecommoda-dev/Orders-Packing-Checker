@@ -1,9 +1,29 @@
 // ══════════════════════════════════════════════════════════════
 // §CONSTANTS
-// Pack Checker Worker — EcomModa  v2.2.0
+// Pack Checker Worker — EcomModa  v2.4.0
 // Tool: pack_checker | Endpoints: get_order, complete_pack, get_ready_orders,
 //                                 diag, get_config
-// skills: worker-builder v2.0.0 · html-builder v6.3.0 · constants v1.4.4 · order-lifecycle v1.2.0 · shopify-graphql-helper v1.0.0 — 05-09-2026
+// skills: worker-builder v2.0.0 · html-builder v6.3.0 · constants v1.4.4 · order-lifecycle v1.2.0 · shopify-graphql-helper v1.0.0 · bosta-api-helper — 05-09-2026
+//
+// CHANGELOG v2.4.0:
+//   - 🔴 مدخل تالت: **سكانر تراكينج بوسطة**. `get_order` بقى بياخد
+//     `?tracking=` كمان: بينادي `/deliveries/search` على بوسطة (قراءة
+//     بحتة)، بيطلّع `businessReference` منها، بينضّفه بـ `cleanOrderName`
+//     وبيكمّل **بنفس مسار الاسم بالحرف** — نفس `fetchOrderForPack` ونفس
+//     `analyzeStage` ونفس `evaluatePackGuard`. **مفيش مسار تغليف تاني**:
+//     مسار موازي كان معناه حارس «اتغلّف قبل كده» يفترق عن الأصلي، وده
+//     بالظبط اللي أنتج R3.
+//     · §BOSTA منقول حرفيًا من `Bosta-Orders-Shipped-Scanner` v3.3.0 —
+//       ومعاه فخّ الـ '#' في `businessReference` (بدون `cleanOrderName`
+//       كل أوردر بيترفض بـ«غير موجود على شوبيفاي») وقاعدة «الفشل بيرمي
+//       مايترجعش قايمة فاضية» (مفتاح غلط ≠ شحنة غير موجودة).
+//     · ⚠️ الكود ده بقى في **مكانين** — أي إصلاح على شكل رد بوسطة لازم
+//       يتعمل في الريبوهين.
+//   - 🟡 `ENV_REQUIRED.bosta` رجعت — بس المرة دي لأن الأداة بتنادي بوسطة
+//     فعلاً. `BOSTA_API_KEY` **سر جديد مطلوب على الـ Worker**؛ من غيره
+//     المدخل ده بيفشل برسالة باسم المتغيّر مش بـ«الشحنة غير موجودة».
+//   - 🟡 `?action=diag` بقى بيفحص وجود `BOSTA_API_KEY` (وجود بس — مفيش
+//     نداء فعلي لبوسطة برقم وهمي).
 //
 // CHANGELOG v2.2.0:
 //   - 🔴 دمج أداة «أوردرات جاهزة للتغليف» (`Ready-to-Pack`) جوّه الأداة دي.
@@ -97,7 +117,7 @@
 // ══════════════════════════════════════════════════════════════
 
 const TOOL_NAME      = 'pack_checker';
-const WORKER_VERSION = '2.3.0';
+const WORKER_VERSION = '2.4.0';
 
 // ─── §CONSTANTS::ready — ثوابت طابور «جاهز للتغليف» (مدموجة من ready_to_pack) ───
 // سقف صفحات الـ pagination على قايمة الطابور — 250 أوردر للصفحة. الوضع
@@ -110,6 +130,12 @@ const READY_MAX_PAGES = 20;
 // المصفوفة كلها) بيولّد THROTTLED من شوبيفاي، واللي بدوره كان بيتحوّل
 // لأوردرات ناقصة في القايمة.
 const S2_CONCURRENCY = 4;
+
+// ─── §CONSTANTS::bosta — مدخل ثالث: سكانر تراكينج بوسطة (v2.4.0) ───
+// الأداة **مش** بتكتب أي حاجة على بوسطة — النداء الوحيد قراءة بحتة
+// (`/deliveries/search`) عشان نحوّل رقم التتبع لرقم أوردر على شوبيفاي،
+// وبعدها الطريق هو نفس طريق السكانر العادي حرف بحرف.
+const BOSTA_API_BASE = 'https://app.bosta.co/api/v2';
 
 // ══════════════════════════════════════════════════════════════
 // §CORS
@@ -148,8 +174,13 @@ function json(data, status = 200, request = null) {
 //    والأداة مش بتنادي بوسطة ومش أداة مخزون — والمتغيّرين مش في
 //    `wrangler.toml` أصلاً (وصح إنهم مش موجودين). أي `assertEnv(env,'stock')`
 //    بالسهو كان هيفشل برسالة مضلّلة عن متغيّر مالوش لازمة. (R11)
+//    ⚠️ `bosta` **رجعت** في v2.4.0 — بس المرة دي لأن الأداة بقت بتنادي
+//    بوسطة فعلاً من مدخل «ماسح باركود بوسطة» (`get_order?tracking=`).
+//    و`BOSTA_API_KEY` سر لازم يتضاف على الـ Worker، وإلا المدخل ده بيفشل
+//    **برسالة باسم المتغيّر** مش بـ«الشحنة غير موجودة».
 const ENV_REQUIRED = {
   shopify: ['SHOP_DOMAIN', 'CLIENT_ID', 'CLIENT_SECRET'],
+  bosta:   ['BOSTA_API_KEY'],
 };
 
 function assertEnv(env, ...groups) {
@@ -314,6 +345,124 @@ function logParamsFrom(url, tool) {
 // ══════════════════════════════════════════════════════════════
 // END SHARED BLOCK
 // ══════════════════════════════════════════════════════════════
+
+// ══════════════════════════════════════════════════════════════
+// §BOSTA — مدخل «ماسح باركود بوسطة» (v2.4.0)
+//
+// ⚠️ **قراءة بحتة، ومنقولة حرفيًا من `Bosta-Orders-Shipped-Scanner`
+//    v3.3.0** (§BOSTA::bostaSearch · extractDeliveries · cleanOrderName).
+//    الأداة دي مابتكتبش على بوسطة ومابتغيّرش أي حالة هناك — النداء
+//    الوحيد هو `/deliveries/search` عشان نطلّع `businessReference`
+//    (رقم الأوردر على شوبيفاي) من رقم التتبع، وبعدها الطريق هو نفس
+//    طريق سكانر شوبيفاي: `get_order` بالاسم، نفس التصنيف ونفس الحارس.
+//
+// ⚠️ **الكود ده موجود في مكانين دلوقتي** — هنا وفي ريبو
+//    `Bosta-Orders-Shipped-Scanner`. أي إصلاح على `STATE_MAP` أو على
+//    شكل رد بوسطة لازم يتعمل في **الاتنين**؛ نفس الخطر المكتوب في
+//    CLAUDE.md عن `classifyS2Subtype`. الاختلاف الوحيد المقبول إن
+//    الأداة دي مابتستخدمش `STATE_MAP` في أي قرار — العرض بس.
+// ══════════════════════════════════════════════════════════════
+
+// حالات بوسطة — **للعرض بس** في الأداة دي. مفيش أي قرار متوقّف عليها:
+// الانتقال المسموح بيتحدّد من شوبيفاي (analyzeStage) زي أي سكان تاني.
+const BOSTA_STATE_MAP = {
+  10:  'Pickup requested',
+  11:  'Waiting for route',
+  20:  'Route Assigned',
+  21:  'Picked up from business',
+  22:  'Picking up from consignee',
+  23:  'Picked up from consignee',
+  24:  'Received at warehouse',
+  25:  'Fulfilled',
+  30:  'In transit between Hubs',
+  40:  'Picking up',
+  41:  'Picked up',
+  45:  'Delivered',
+  46:  'Returned to business',
+  47:  'Exception',
+  48:  'Terminated',
+  49:  'Canceled',
+  60:  'Returned to stock',
+  100: 'Lost',
+  101: 'Damaged',
+  102: 'Investigation',
+  103: 'Awaiting your action',
+  104: 'Archived',
+  105: 'On hold',
+};
+
+// ─── §BOSTA::cleanOrderName ───
+// ⚠️ `businessReference` بتيجي من بوسطة بالـ '#' أحيانًا وبدونه أحيانًا،
+//    وممكن تيجي بمسافات. الباج ده (v2.0.0 في الأداة التانية) كان بيخلّي
+//    **كل** أوردر يترفض بـ «غير موجود على شوبيفاي».
+function cleanOrderName(v) {
+  return String(v || '').trim().replace(/^#/, '');
+}
+
+// ─── §BOSTA::bostaSearch ───
+// ⚠️ ممنوع `if (!res.ok) return []` أو `catch (_) {}` هنا — الاتنين
+//    بيحوّلوا «مفتاح غلط / بوسطة واقعة» لـ «الشحنة غير موجودة»، وهي
+//    رسالة كاذبة بتخلي الموظف يسيب شحنة موجودة فعلاً. الفشل بيرمي.
+async function bostaSearch(env, trackingNumbers) {
+  let res, text;
+  try {
+    res = await fetch(`${BOSTA_API_BASE}/deliveries/search`, {
+      method:  'POST',
+      headers: { Authorization: env.BOSTA_API_KEY, 'Content-Type': 'application/json' }, // ✅ من غير "Bearer"
+      body: JSON.stringify({ trackingNumbers: trackingNumbers.map(String), limit: trackingNumbers.length }),
+    });
+    text = await res.text();
+  } catch (e) {
+    throw new Error(`فشل الاتصال ببوسطة — ${e.message}`);
+  }
+
+  if (!res.ok) {
+    throw new Error(
+      `بوسطة ردّت HTTP ${res.status}` +
+      (res.status === 401 || res.status === 403 ? ' (مفتاح BOSTA_API_KEY غلط أو منتهي)' : '') +
+      ` — ${text.slice(0, 160)}`
+    );
+  }
+
+  let data;
+  try { data = JSON.parse(text); }
+  catch { throw new Error(`رد بوسطة مش JSON صالح — ${text.slice(0, 160)}`); }
+
+  return extractBostaDeliveries(data);
+}
+
+// بوسطة بترجّع أربع أشكال مختلفة للرد — الأربعة لازم يتعاملوا
+function extractBostaDeliveries(raw) {
+  if (Array.isArray(raw?.data?.deliveries)) return raw.data.deliveries;
+  if (Array.isArray(raw?.data))             return raw.data;
+  if (Array.isArray(raw?.deliveries))       return raw.deliveries;
+  if (raw?.trackingNumber)                  return [raw];
+  return [];
+}
+
+// ─── §BOSTA::resolveTrackingToOrderName ───
+// رقم تتبع واحد → اسم أوردر على شوبيفاي (بدون '#').
+// بيرمي برسالة واضحة في كل حالة فشل — «مالقيناهاش» و«معرفناش نسأل»
+// **مش نفس الحاجة**، والاتنين مش «الأوردر مش موجود».
+async function resolveTrackingToOrderName(env, tracking) {
+  const tn = String(tracking || '').trim();
+  if (!tn) throw new Error('رقم التتبع فاضي');
+
+  const deliveries = await bostaSearch(env, [tn]);
+  const d = deliveries.find(x => String(x.trackingNumber || '') === tn) || deliveries[0];
+  if (!d) throw new Error(`رقم التتبع ${tn} مش موجود على بوسطة`);
+
+  const orderName = cleanOrderName(d.businessReference);
+  if (!orderName)
+    throw new Error(`شحنة ${tn} موجودة على بوسطة بس من غير رقم أوردر (businessReference فاضي)`);
+
+  return {
+    orderName,
+    trackingNumber: String(d.trackingNumber || tn),
+    bostaType:      String(d.type?.value || d.type || ''),
+    bostaState:     BOSTA_STATE_MAP[d.state?.code] || d.state?.value || '',
+  };
+}
 
 // ══════════════════════════════════════════════════════════════
 // §SHOPIFY
@@ -1266,6 +1415,19 @@ export default {
           checks.push({ key: 'shopify', ok: false, label: 'صلاحيات تطبيق شوبيفاي', detail: e.message });
         }
 
+        // ⑤ بوسطة — مدخل «ماسح باركود بوسطة» (v2.4.0)
+        // ⚠️ **مفيش نداء فعلي لبوسطة هنا** — الفحص على وجود المفتاح بس.
+        //    نداء `/deliveries/search` برقم وهمي بيستهلك من حدود بوسطة
+        //    وبيدّي «مش موجود» اللي مابتفرّقش بين مفتاح غلط ورقم غلط.
+        checks.push({
+          key:   'bosta',
+          ok:    !!(env.BOSTA_API_KEY && String(env.BOSTA_API_KEY).trim()),
+          label: 'مفتاح بوسطة (سكانر التتبع)',
+          detail: env.BOSTA_API_KEY && String(env.BOSTA_API_KEY).trim()
+            ? `BOSTA_API_KEY موجود (${String(env.BOSTA_API_KEY).length})`
+            : 'BOSTA_API_KEY ناقص — مدخل «ماسح باركود بوسطة» هيفشل. ضِفه من Settings → Variables (Secret) ثم Promote',
+        });
+
         return json({ ok: checks.every(c => c.ok), version: WORKER_VERSION, tool: TOOL_NAME, checks }, 200, request);
       }
 
@@ -1274,10 +1436,33 @@ export default {
       // ── get_order ─────────────────────────────────────────
       if (action === 'get_order') {
         assertEnv(env, 'shopify');
-        const token = await getAccessToken(env);
 
-        let orderId = url.searchParams.get('id')   || null;
-        let name    = url.searchParams.get('name') || null;
+        let orderId = url.searchParams.get('id')       || null;
+        let name    = url.searchParams.get('name')     || null;
+        const tracking = url.searchParams.get('tracking') || null;
+
+        // ── مدخل «ماسح باركود بوسطة» (v2.4.0) ──────────────────
+        // رقم التتبع بيتحوّل لاسم أوردر **قبل** أي نداء لشوبيفاي، وبعدها
+        // الطريق هو نفس طريق السكانر العادي بالحرف: نفس البحث بالاسم،
+        // نفس `fetchOrderForPack`، نفس `analyzeStage`، ونفس
+        // `evaluatePackGuard`. **مفيش مسار تغليف تاني** — لو المدخل ده
+        // خدّ طريق خاص بيه، حارس «اتغلّف قبل كده» هيفترق عن الأصلي وده
+        // بالظبط اللي أنتج R3.
+        let bostaInfo = null;
+        if (!orderId && !name && tracking) {
+          assertEnv(env, 'bosta');
+          try {
+            bostaInfo = await resolveTrackingToOrderName(env, tracking);
+          } catch (e) {
+            // ⚠️ 404 هنا معناها «بوسطة ردّت ومالقتش» أو «الرد بلا رقم
+            //    أوردر» — والفشل التقني بيرجع بنفس الرسالة الصريحة، مش
+            //    بـ«غير موجود» الصامتة.
+            return json({ ok: false, error: e.message, step: 'bosta' }, 404, request);
+          }
+          name = bostaInfo.orderName;
+        }
+
+        const token = await getAccessToken(env);
 
         if (!orderId && name) {
           const normalized = name.replace(/^#/, '');
@@ -1291,7 +1476,16 @@ export default {
           );
 
           const found = searchRes?.data?.orders?.nodes?.[0];
-          if (!found) return json({ ok: false, error: `الأوردر #${normalized} غير موجود` }, 404, request);
+          if (!found) return json({
+            ok: false,
+            error: bostaInfo
+              // رقم التتبع اتقرا صح من بوسطة — اللي مش موجود هو الأوردر
+              // على شوبيفاي. الرسالة لازم تقول ده صراحةً، وإلا الموظف
+              // هيفتكر إن السكانر هو اللي غلط.
+              ? `شحنة ${bostaInfo.trackingNumber} على بوسطة مربوطة بالأوردر #${normalized}، والأوردر ده غير موجود على شوبيفاي`
+              : `الأوردر #${normalized} غير موجود`,
+            step: bostaInfo ? 'shopify' : undefined,
+          }, 404, request);
           orderId = found.legacyResourceId || found.id.replace('gid://shopify/Order/', '');
         }
 
@@ -1314,6 +1508,10 @@ export default {
           name:              order.name,
           note:              order.note || '',
           fulfillmentStatus: order.displayFulfillmentStatus,
+          // مصدر الأوردر — موجود بس لما الدخول كان من سكانر بوسطة.
+          // الواجهة بتعرضه فوق شاشة التشييك عشان الموظف يشوف رقم التتبع
+          // اللي فتح الأوردر ده، ويقدر يقارنه بالملصق اللي في إيده.
+          bosta:             bostaInfo,
         };
 
         // ── Already-packed guard — عن طريق §PACK::evaluatePackGuard.

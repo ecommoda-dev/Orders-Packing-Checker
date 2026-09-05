@@ -40,5 +40,8 @@ SHOP_DOMAIN = "6c7e1a-53.myshopify.com"
 
 # ⚠️ الأسرار مبتتكتبش هنا أبدًا.
 #    Worker → Settings → Variables and Secrets → علّم Secret
-#    الأداة دي محتاجة: WORKER_SECRET · CLIENT_ID · CLIENT_SECRET
+#    الأداة دي محتاجة: WORKER_SECRET · CLIENT_ID · CLIENT_SECRET · BOSTA_API_KEY
+#    ⚠️ BOSTA_API_KEY **جديد في v2.4.0** — مدخل «ماسح باركود بوسطة» بيحوّل
+#       رقم التتبع لرقم أوردر عن طريق /deliveries/search (قراءة بحتة).
+#       من غيره المدخل ده بيفشل برسالة باسم المتغيّر، وباقي الأداة شغّالة عادي.
 #    وبعدها: Deployments → Version History → ⋯ → Promote version
