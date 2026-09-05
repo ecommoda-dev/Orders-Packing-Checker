@@ -57,6 +57,10 @@
   --amber-dark:         #92400e;
   --purple-dark:        #4c1d95;
   --overlay-scrim:      rgba(17,24,39,.88);
+  /* حلقات الفوكس — لون المربع نفسه (قاعدة: صفر #hex حرفي خارج :root) */
+  --focus-ring:         rgba(37,99,235,.12);
+  --focus-ring-red:     rgba(220,38,38,.12);
+  --focus-ring-neutral: rgba(107,114,128,.14);
 
   --radius:         12px;
   --radius-sm:      8px;
@@ -320,9 +324,58 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
 
 /* ── Scan inputs ── */
 .scan-input-wrap{display:flex;gap:8px}
-.scan-input{flex:1;padding:12px 14px;border:2px solid var(--accent);border-radius:var(--radius-sm);font-family:var(--font-mono);font-size:16px;background:var(--surface);outline:none;transition:box-shadow .15s}
-.scan-input:focus{box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.scan-input{flex:1;width:100%;padding:12px 14px;border:2px solid var(--accent);border-radius:var(--radius-sm);font-family:var(--font-mono);font-size:16px;background:var(--surface);outline:none;transition:box-shadow .15s,border-color .15s}
+.scan-input:focus{box-shadow:0 0 0 3px var(--focus-ring)}
 .scan-hint{font-size:12px;color:var(--text-muted);margin-top:6px;text-align:center}
+
+/* ── §STYLES::entry — تلات مداخل جنب بعض (v2.5.0) ──────────────
+   الشاشة بتتقسم بالتساوي على التلاتة (`1fr` ×٣) — ومقاس واحد
+   للتلاتة مقصود: مفيش مدخل «رئيسي» ومدخل «تاني»، الموظف بيختار
+   حسب الملصق اللي في إيده.
+   ⚠️ اللون هو التمييز الوحيد بينهم — أزرق شوبيفاي · أحمر بوسطة ·
+      محايد لليدوي — فأي تغيير في الألوان دي بيضيّع التمييز ده. */
+.entry-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px;align-items:start}
+@media (max-width:1000px){.entry-grid{grid-template-columns:1fr}}
+.entry-card{position:relative;display:flex;flex-direction:column;background:var(--surface);
+  border:1px solid var(--border);border-top:3px solid var(--border-strong);
+  border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;cursor:text;
+  transition:border-color .15s,box-shadow .15s}
+.entry-title{font-size:13px;font-weight:800;color:var(--text-muted);letter-spacing:.3px;margin-bottom:12px}
+
+.entry-card.entry-shopify{border-top-color:var(--accent)}
+.entry-card.entry-shopify .entry-title{color:var(--accent-dark)}
+.entry-card.entry-bosta{border-top-color:var(--red)}
+.entry-card.entry-bosta .entry-title{color:var(--red-dark)}
+.entry-card.entry-manual{border-top-color:var(--border-strong)}
+.entry-card.entry-manual .entry-title{color:var(--text-secondary)}
+
+.scan-input.si-shopify{border-color:var(--accent)}
+.scan-input.si-shopify:focus{box-shadow:0 0 0 3px var(--focus-ring)}
+.scan-input.si-bosta{border-color:var(--red)}
+.scan-input.si-bosta:focus{box-shadow:0 0 0 3px var(--focus-ring-red)}
+.scan-input.si-manual{border-color:var(--border-strong)}
+.scan-input.si-manual:focus{box-shadow:0 0 0 3px var(--focus-ring-neutral)}
+
+/* المربع النشط = آخر مدخل اتعمل منه استعلام. الفوكس بيرجع له لوحده
+   بعد كل عملية، والعلامة دي بتقول للموظف «السكانة هتكتب هنا». */
+.entry-card.is-active{box-shadow:0 0 0 2px var(--border-strong),var(--shadow)}
+.entry-card.entry-shopify.is-active{box-shadow:0 0 0 2px var(--accent),var(--shadow)}
+.entry-card.entry-bosta.is-active{box-shadow:0 0 0 2px var(--red),var(--shadow)}
+.entry-active-tag{position:absolute;top:-9px;inset-inline-start:14px;display:none;
+  padding:1px 9px;border-radius:20px;font-size:10px;font-weight:800;color:var(--on-accent);
+  background:var(--border-strong)}
+.entry-card.is-active .entry-active-tag{display:inline-flex}
+.entry-card.entry-shopify .entry-active-tag{background:var(--accent)}
+.entry-card.entry-bosta   .entry-active-tag{background:var(--red)}
+
+/* شريط «الأوردر ده اتفتح من تراكينج بوسطة» فوق شاشة التشييك */
+.bosta-src{display:none;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;
+  padding:8px 13px;border-radius:9px;background:var(--red-light);border:1px solid var(--red-border);
+  color:var(--red-dark);font-size:12px;font-weight:700}
+.bosta-src.visible{display:flex}
+.bosta-src-chip{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;
+  background:var(--surface);border:1px solid var(--red-border);
+  font-family:var(--font-mono);font-size:11.5px;font-weight:800}
 .barcode-input{width:100%;padding:12px 14px;border:2px solid var(--accent);border-radius:var(--radius-sm);font-family:var(--font-mono);font-size:15px;background:var(--surface);outline:none;transition:box-shadow .15s;margin-bottom:16px}
 .barcode-input:focus{box-shadow:0 0 0 3px rgba(37,99,235,.12)}
 .barcode-input:disabled{border-color:var(--border);background:var(--bg);cursor:not-allowed}
@@ -625,9 +678,12 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
 @keyframes rdySpin{to{transform:rotate(360deg)}}
 
 /* بادجات الجدول */
-.type-badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:800}
-.type-badge.type-s1{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--accent-border)}
-.type-badge.type-s2{background:var(--purple-light);color:var(--purple-dark);border:1px solid var(--purple-border)}
+/* نوع الأوردر — **نص عادي بدون بادج** (قرار أحمد 05-09-2026)، بنفس
+   ألوان البادج القديم: عادي أزرق · استبدال بنفسجي. اللون هو اللي فضل
+   شايل التصنيف بعد ما الخلفية اتشالت، فمينفعش يتوحّد مع باقي النص. */
+.type-text{font-weight:800;white-space:nowrap}
+.type-text.type-s1{color:var(--accent-dark)}
+.type-text.type-s2{color:var(--purple-dark)}
 .attempt-badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700}
 .attempt-badge.attempt-repeat{background:var(--amber-light);color:var(--amber-dark);border:1px solid var(--amber-border)}
 .attempt-badge.attempt-first{background:var(--surface-2);color:var(--text-secondary);border:1px solid var(--border)}
@@ -656,10 +712,33 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
 .zone-badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;
   font-size:11px;font-weight:800;white-space:nowrap;border:1px solid var(--border);
   background:var(--surface-2);color:var(--text-secondary)}
-.zone-badge.zone-cairo{background:var(--accent-light);color:var(--accent-dark);border-color:var(--accent-border)}
-.zone-badge.zone-other{background:var(--red-light);color:var(--red-dark);border-color:var(--red-border)}
-.zone-badge.zone-showroom{background:var(--green-light);color:var(--green-dark);border-color:var(--green-border)}
-.zone-badge.zone-blank{background:var(--orange-light);color:var(--orange-dark);border-color:var(--orange-border)}
+/* ⚠️ ألوان المنطقة **مكتوبة مرة واحدة** وبيستخدمها الاتنين: بادج
+   العمود في الجدول ومربعات الفلترة فوق. نسختين معناهم إن مربع فوق
+   لونه يختلف عن بادج تحته لنفس المنطقة، وده بيكسر الربط البصري
+   اللي المربعات دي أصلاً موجودة عشانه. */
+.zone-badge.zone-cairo,.zchip.zone-cairo{background:var(--accent-light);color:var(--accent-dark);border-color:var(--accent-border)}
+.zone-badge.zone-other,.zchip.zone-other{background:var(--red-light);color:var(--red-dark);border-color:var(--red-border)}
+.zone-badge.zone-showroom,.zchip.zone-showroom{background:var(--green-light);color:var(--green-dark);border-color:var(--green-border)}
+.zone-badge.zone-blank,.zchip.zone-blank{background:var(--orange-light);color:var(--orange-dark);border-color:var(--orange-border)}
+
+/* ── مربعات المناطق — فلتر بضغطة على صندوق الأعداد ──
+   مقاسها أكبر من بادج الجدول عن قصد: دي هدف ضغط للموظف بإيد مشغولة،
+   مش علامة للقراءة. */
+.rdy-zone-chips{display:flex;align-items:center;gap:9px;flex-wrap:wrap;flex:1;min-width:0;justify-content:center}
+.rdy-zone-chips:empty{display:none}
+.zchip{display:inline-flex;align-items:center;gap:9px;padding:9px 15px;border-radius:var(--radius-sm);
+  border:1.5px solid var(--border);background:var(--surface-2);color:var(--text-secondary);
+  font-family:var(--font-body);font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap;
+  transition:filter .12s,transform .1s,box-shadow .15s}
+.zchip:hover{filter:brightness(.97)}
+.zchip:active{transform:translateY(1px)}
+.zchip-n{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:22px;padding:0 7px;
+  border-radius:20px;background:var(--surface);border:1px solid currentColor;
+  font-family:var(--font-mono);font-size:12.5px;font-weight:800;line-height:1}
+/* المربع المختار = فلتر شغّال. العلامة لازم تبان من بعيد — الموظف اللي
+   مش فاهم ليه الجدول ناقص بيدوّر على المربع المولّع ده. */
+.zchip.active{box-shadow:0 0 0 2px currentColor inset}
+.zchip.active::after{content:'✕';font-size:12px;font-weight:800;opacity:.75}
 
 /* ── المندوب — القيمة زي ما هي، واللون بيقول أنهي مندوب (بند ٦) ── */
 .courier-cell{font-weight:800;white-space:nowrap}
@@ -748,6 +827,24 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
       <div class="cl-version-block">
         <div class="cl-version-row">
           <span class="cl-ver-badge" id="clLatestVerBadge"></span>
+          <span class="cl-ver-date">05-09-2026</span>
+        </div>
+        <ul class="cl-items">
+          <li class="cl-item"><span class="cl-tag new">جديد</span><span><b>ماسح باركود بوسطة</b> — مربع تالت بيقرا <b>تراكينج بوسطة</b>، بيطلّع منه رقم الأوردر على شوبيفاي ويفتح شاشة التشييك عادي. نفس مسار التغليف بالظبط ونفس حارس «اتغلّف قبل كده» — والتراكينج بيفضل معروض فوق شاشة التشييك عشان تقارنه بالملصق</span></li>
+          <li class="cl-item"><span class="cl-tag new">جديد</span><span><b>التلات مداخل جنب بعض</b> بالتساوي، كل واحد بلونه: ماسح شوبيفاي <b>أزرق</b> · ماسح بوسطة <b>أحمر</b> · الإدخال اليدوي محايد</span></li>
+          <li class="cl-item"><span class="cl-tag new">جديد</span><span><b>الفوكس بيرجع لآخر مربع اتشتغل منه</b> — لو آخر أوردر فتحته من ماسح بوسطة، أول ما ترجع من التغليف تلاقي السكانة جاهزة على نفس المربع</span></li>
+          <li class="cl-item"><span class="cl-tag new">جديد</span><span><b>مربعات المناطق</b> في نص صندوق الأعداد: كل منطقة وعددها بلونها، والضغط على أي مربع بيفلتر الجدول عليها (وضغطة تانية بتشيل الفلتر)</span></li>
+          <li class="cl-item"><span class="cl-tag new">جديد</span><span>فلتر <b>المنطقة</b> — وبقى <b>أول فلتر</b> في القسم</span></li>
+          <li class="cl-item"><span class="cl-tag change">تغيير</span><span>قسم الفلاتر بقى <b>مقفول افتراضيًا</b> — الجدول بقى أقرب للشاشة، والفلاتر بضغطة على العنوان</span></li>
+          <li class="cl-item"><span class="cl-tag change">تغيير</span><span><b>نوع الأوردر</b> بقى نص عادي من غير بادج — بنفس الألوان (عادي أزرق · استبدال بنفسجي)</span></li>
+          <li class="cl-item"><span class="cl-tag change">تغيير</span><span>المندوب الفاضي بقى <b>«غير محدد»</b> بدل «لا يوجد مندوب مسجل»</span></li>
+          <li class="cl-item"><span class="cl-tag change">تغيير</span><span>زرار <b>«طباعة»</b> في عمود الخيارات بقى <b>«إعادة 🖨»</b> — نفس الرابط، ولسه لينك خارجي بلا أي أكشن على الأوردر</span></li>
+          <li class="cl-item"><span class="cl-tag fix">تنبيه</span><span>ماسح بوسطة محتاج <b>مفتاح بوسطة على الـ Worker</b>. لو ظهرت رسالة عن <code>BOSTA_API_KEY</code>، ده إعداد ناقص — باقي الأداة شغّالة عادي، وافحصه من 🩺 فحص النظام</span></li>
+        </ul>
+      </div>
+      <div class="cl-version-block">
+        <div class="cl-version-row">
+          <span class="cl-ver-badge old">v2.4.0</span>
           <span class="cl-ver-date">05-09-2026</span>
         </div>
         <ul class="cl-items">
@@ -879,7 +976,8 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
             <li><code>§PACK::buildFingerprint</code> + <code>readStoredFingerprint</code> (Worker) — كشف التغيير</li>
             <li><code>§PACK::fetchOrderForPack</code> (Worker) — تصفيح lineItems و returns + علم <code>truncated</code></li>
             <li><code>§DIAG</code> (Worker) — <code>diag</code> و<code>get_config</code></li>
-            <li><code>§SCAN</code> (HTML) — سكانر الأوردر وسكانر الباركود</li>
+            <li><code>§SCAN</code> (HTML) — سكانر الأوردر وسكانر الباركود · <code>§SCAN::entryMode</code> — المربع النشط والفوكس بيرجع له · <code>::scannerBinding</code> — نفس سلوك السكانة للمربعين</li>
+            <li><code>§BOSTA</code> (Worker) — <code>bostaSearch</code> · <code>cleanOrderName</code> · <code>resolveTrackingToOrderName</code> — تحويل تراكينج بوسطة لرقم أوردر (قراءة بحتة)</li>
             <li><code>§TOOL-JS</code> (HTML) — شاشة الفحص · النوافذ · نتيجة التغليف بـ ٣ حالات</li>
             <li><code>§LOG-JS</code> (HTML) — جدول السجل · الفلاتر · الترتيب · الصفحات · تصدير XLSX</li>
             <li><code>§READY</code> (Worker) — طابور «جاهز للتغليف»: <code>get_ready_orders</code> · <code>isPrintedNotPacked</code> · <code>classifyS2Subtype</code> · <code>classifyS2Batch</code> · <code>shapeReadyOrder</code></li>
@@ -888,6 +986,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
             <li><code>§READY-JS::ticker</code> + <code>::freshness</code> (HTML) — نبضة كل ٣٠ ثانية بتحدّث الأرقام النسبية <b>في مكانها</b> بدون أي نداء شبكة</li>
             <li><code>§READY-JS::autoRefresh</code> (HTML) — <code>rdyArmAutoRefresh</code> · <code>rdyAutoRefreshTick</code> · <code>rdyQueueVisible</code> — التحديث التلقائي كل ١٥ دقيقة (النداء الدوري الوحيد في الأداة)</li>
             <li><code>§READY-JS::zone</code> + <code>::courier</code> (HTML) — ترجمة <code>custom.zone</code> وعرض المندوب بلونه</li>
+            <li><code>§READY-JS::zoneChips</code> (HTML) — مربعات المناطق فوق الجدول: عدّ من الطابور كله وفلترة بضغطة، <b>نفس حالة</b> فلتر «المنطقة»</li>
           </ul>
 
           <h4>KEY VARIABLES</h4>
@@ -897,6 +996,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
             <li><code>WORKER_URL</code> · <code>ADMIN_WORKER_URL</code> — ثوابت في <code>§CONFIG</code>، مش في الإعدادات ولا localStorage</li>
             <li><code>LS_SECRET = 'pack_checker_worker_secret'</code> — المفتاح الوحيد في localStorage</li>
             <li><code>currentEmployee</code> — <code>{ username, displayName }</code> في الذاكرة فقط</li>
+            <li><code>lastEntryMode</code> — آخر مربع إدخال اتشتغل منه (<code>shopify</code> · <code>bosta</code> · <code>manual</code>). في الذاكرة فقط، وبيتصفّر عند الخروج.</li>
             <li><code>msState</code> — حالة فلاتر الاختيار المتعدد في <b>تاب السجل</b> (فلترة server-side)</li>
             <li><code>rdyMsState</code> · <code>rdyAllOrders</code> · <code>rdySortState</code> — حالة فلاتر وترتيب <b>الطابور</b> (فلترة client-side). منفصلة عن اللي فوقها بالكامل — الاتنين شغّالين في نفس الصفحة.</li>
             <li><code>rdyDirty</code> — «حصل تغليف والطابور بقى قديم». التحديث بيحصل عند <b>الرجوع</b> لشاشة الطابور، والفلاج مابيتصفّرش غير بعد جلب ناجح.</li>
@@ -926,6 +1026,14 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
             <li><b>v2.4.0</b> — صندوق الأعداد <b>مابيختفيش</b> في أي حالة، لأنه بقى شايل زرار التحديث ولوحة «آخر تحديث». وقبل أول جلب ناجح الأعداد «—» مش «0»: «ما اتحدّثش» مش «مفيش شغل».</li>
             <li><b>v2.4.0</b> — زراير عمود «خيارات» <b>لينكات خارجية بس</b> (<code>target="_blank"</code>) — مفيش أي أكشن على الأوردر ومفيش نداء للـ Worker. لو حد ضاف أكشن هناك بعدين، لازم يعدّي على حارس التغليف زي أي كتابة تانية.</li>
             <li><b>v2.2.0</b> — منطق الطابور والتغليف بيقروا نفس الميتافيلدات، و<code>classifyS2Subtype</code> بقت <b>نسخة واحدة</b> في الـ Worker. قبل الدمج كانت في ملفين، وده اللي خلّى إصلاح <code>refundedIds</code> يتعمل في أداة ويفضل مكسور في التانية لشهور.</li>
+            <li><b>v2.5.0</b> — <b>مدخل تالت: ماسح باركود بوسطة</b>. رقم التتبع بيتبعت للـ Worker (<code>get_order?tracking=</code>)، والـ Worker بينادي بوسطة <b>قراءة بحتة</b>، بيطلّع <code>businessReference</code>، بينضّفه من الـ <code>#</code> وبيكمّل <b>بنفس مسار الاسم بالحرف</b> — نفس التصنيف ونفس حارس «اتغلّف قبل كده». <b>مفيش مسار تغليف تاني</b>: مسار موازي كان معناه حارسين يفترقوا، وده اللي أنتج R3.</li>
+            <li><b>v2.5.0</b> — <code>BOSTA_API_KEY</code> <b>سر جديد مطلوب على الـ Worker</b>. من غيره مدخل بوسطة بس هو اللي بيفشل، وبرسالة باسم المتغيّر مش بـ«الشحنة غير موجودة» — و🩺 فحص النظام بيعرض وجوده.</li>
+            <li><b>v2.5.0</b> — التلات مداخل جنب بعض بالتساوي، وكل واحد بلونه: شوبيفاي أزرق · بوسطة أحمر · اليدوي محايد. <b>اللون هو التمييز</b> — الموظف بيختار المربع من لون الملصق اللي في إيده.</li>
+            <li><b>v2.5.0</b> — <b>الفوكس بيرجع لآخر مربع اتشتغل منه</b> (<code>lastEntryMode</code>): موظف شغّال دفعة ملصقات بوسطة مايرجعش بإيده للمربع بعد كل أوردر. في الذاكرة بس — مش <code>localStorage</code> — فموظف جديد بيبدأ من الافتراضي.</li>
+            <li><b>v2.5.0</b> — <b>مربعات المناطق</b> في نص صندوق الأعداد = فلتر بضغطة. العدد جوّه المربع من <b>الطابور كله</b> مش من المفلتر: لو اتحسب على المفلتر، أول ضغطة كانت هتصفّر باقي المربعات فمحدش يقدر يرجّع. والضغط بينادي نفس <code>rdyMsToggleItem('zone', …)</code> — <b>حالة واحدة</b> مع فلتر «المنطقة»، مش حالة موازية.</li>
+            <li><b>v2.5.0</b> — قسم الفلاتر <b>مقفول افتراضيًا</b>، و«المنطقة» بقت <b>أول فلتر</b>. قيمة الفلتر هي النص المترجم المعروض في العمود، مش قيمة الميتافيلد.</li>
+            <li><b>v2.5.0</b> — نوع الأوردر بقى <b>نص عادي بنفس الألوان</b> بدل بادج، والمندوب الفاضي بقى «غير محدد»، وزرار «طباعة» بقى «إعادة 🖨» (نفس الرابط — لسه لينك خارجي بلا أكشن).</li>
+            <li><b>فخّ v2.5.0:</b> §BOSTA اتنقل حرفيًا من ريبو <code>Bosta-Orders-Shipped-Scanner</code>، فالكود ده بقى في <b>مكانين</b>. أي إصلاح على شكل رد بوسطة أو على <code>cleanOrderName</code> لازم يتعمل في الاتنين — نفس عيلة خطر <code>classifyS2Subtype</code>.</li>
             <li><b>فخّ:</b> منطق الـ multi-select والترتيب <b>متكرر</b> بين <code>§LOG-JS</code> و<code>§READY-JS</code> (الأول server-side والتاني client-side). أي تعديل على سلوك القوايم أو الترتيب لازم يتعمل في <b>الاتنين</b>.</li>
             <li><code>isPrintedNotPacked</code> بتسأل «اتطبع <b>بعد</b> آخر تغليف؟» مش «متملّي ولا فاضي» — ميتافيلدات التغليف مبتتصفّرش بين دورات الإرجاع، والمقارنة بـ <code>new Date()</code> مش نصوص (<code>printing_time</code> بتيجي بصيغتين).</li>
           </ul>
@@ -1062,23 +1170,47 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
 
 <div class="tab-panel active" id="panel-scan">
 
-  <!-- ─── §TOOL::entry ─── -->
+  <!-- ─── §TOOL::entry — تلات مداخل جنب بعض (v2.5.0) ──────────────
+       الشاشة بتتقسم بالتساوي على التلاتة، وكل مدخل ليه لون ثابت:
+       شوبيفاي أزرق · بوسطة أحمر · اليدوي محايد. اللون مش زينة —
+       الموظف بيشوف قدامه ملصق فيه باركود أوردر أو ملصق بوسطة،
+       والمربع الغلط معناه استعلام فاشل ووقت ضايع.
+       ⚠️ المربع النشط بيتعلّم بإطار وشريط علوي، و`lastEntryMode`
+          بيرجّع الفوكس لنفس المربع بعد كل عملية — راجع
+          §SCAN::entryMode. ────────────────────────────────────── -->
   <div id="subscreenEntry">
-    <div class="card">
-      <div class="card-title">🔫 ماسح الباركود</div>
-      <input type="text" class="scan-input" id="orderScanInput"
-             placeholder="امسح الباركود هنا..." autocomplete="off" inputmode="text"
-             style="width:100%;margin-bottom:6px">
-      <div class="scan-hint">Scanner Gun: امسح وسيتم الاستعلام تلقائياً</div>
-    </div>
-    <div class="card" style="margin-top:-8px">
-      <div class="card-title">⌨️ إدخال يدوي</div>
-      <div class="scan-input-wrap">
-        <input type="text" class="scan-input" id="orderManualInput"
-               placeholder="أدخل رقم الأوردر يدوياً..." autocomplete="off" inputmode="text">
-        <button class="btn-primary" id="btnLookup" onclick="submitManualLookup()">بحث</button>
+    <div class="entry-grid">
+
+      <div class="entry-card entry-shopify is-active" id="entryCard-shopify"
+           onclick="focusEntryInput('shopify')">
+        <span class="entry-active-tag">النشط الآن</span>
+        <div class="entry-title">🔫 ماسح باركود شوبيفاي</div>
+        <input type="text" class="scan-input si-shopify" id="orderScanInput"
+               placeholder="امسح باركود الأوردر هنا..." autocomplete="off" inputmode="text">
+        <div class="scan-hint">Scanner Gun: امسح وسيتم الاستعلام تلقائياً</div>
       </div>
-      <div class="scan-hint">أدخل الرقم مع أو بدون # ثم اضغط بحث أو Enter</div>
+
+      <div class="entry-card entry-bosta" id="entryCard-bosta"
+           onclick="focusEntryInput('bosta')">
+        <span class="entry-active-tag">النشط الآن</span>
+        <div class="entry-title">🚚 ماسح باركود بوسطة</div>
+        <input type="text" class="scan-input si-bosta" id="bostaScanInput"
+               placeholder="امسح تراكينج بوسطة هنا..." autocomplete="off" inputmode="text">
+        <div class="scan-hint">Scanner Gun: التراكينج بيتحوّل لرقم أوردر تلقائياً</div>
+      </div>
+
+      <div class="entry-card entry-manual" id="entryCard-manual"
+           onclick="focusEntryInput('manual')">
+        <span class="entry-active-tag">النشط الآن</span>
+        <div class="entry-title">⌨️ إدخال يدوي</div>
+        <div class="scan-input-wrap">
+          <input type="text" class="scan-input si-manual" id="orderManualInput"
+                 placeholder="أدخل رقم الأوردر يدوياً..." autocomplete="off" inputmode="text">
+          <button class="btn-primary" id="btnLookup" onclick="submitManualLookup()">بحث</button>
+        </div>
+        <div class="scan-hint">أدخل الرقم مع أو بدون # ثم اضغط بحث أو Enter</div>
+      </div>
+
     </div>
     <div id="lookupLoading" class="loading-area" style="display:none">
       <div class="spinner"></div>
@@ -1108,6 +1240,13 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
           <span class="count-badge badge-repeat">محاولة مكرّرة: <span id="rdyCountRepeat">—</span></span>
         </div>
       </div>
+      <!-- ⚠️ مربعات المناطق — فلتر بضغطة واحدة على المساحة الفاضية في نص
+           صندوق الأعداد (قرار أحمد 05-09-2026). العدد جوّه كل مربع هو
+           **العدد الكلي للمنطقة في الطابور**، مش عدد المعروض بعد الفلترة —
+           لأنه لو اتفلتر على منطقة، باقي المربعات كانت هتبقى أصفار
+           والموظف مش هيعرف يرجّع. الألوان **نفس ألوان عمود المنطقة**. -->
+      <div class="rdy-zone-chips" id="rdyZoneChips"></div>
+
       <div class="rdy-actions">
         <div class="rdy-fresh">
           <div class="rdy-fresh-row">
@@ -1146,9 +1285,13 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
 
     <div class="unified-section" id="rdyUnifiedSection" style="display:none">
 
+      <!-- ⚠️ قسم الفلاتر **مقفول افتراضيًا** (قرار أحمد 05-09-2026) —
+           الاستخدام الغالب للطابور هو القراءة من فوق لتحت، والفلاتر
+           مفتوحة كانت بتزقّ الجدول لتحت الشاشة. المربعات فوق بتغطّي
+           الفلترة الأكتر استخدامًا (المنطقة) من غير ما القسم يتفتح. -->
       <div class="flt-header" onclick="rdyToggleFilters()">
         <div class="flt-header-right">
-          <span class="flt-toggle open" id="rdyFltToggleIcon">▲</span>
+          <span class="flt-toggle" id="rdyFltToggleIcon">▲</span>
           <svg class="flt-icon" id="rdyFltIcon" viewBox="0 0 36 24" fill="none"
                stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <polygon points="2 3 13 3 8.3 10.2 8.3 19 6.7 19 6.7 10.2 2 3"></polygon>
@@ -1161,10 +1304,33 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
           onclick="event.stopPropagation(); rdyClearAllFilters();">✕ مسح كل الفلاتر</button>
       </div>
 
-      <div class="flt-body" id="rdyFltBody">
+      <div class="flt-body collapsed" id="rdyFltBody">
 
-        <!-- صف 1 — فلاتر الاختيار المتعدد (بند ٢١: كلها multi-select) -->
+        <!-- صف 1 — فلاتر الاختيار المتعدد (بند ٢١: كلها multi-select)
+             ⚠️ **المنطقة أول فلتر** (قرار أحمد 05-09-2026) — هي أول
+             قرار في الفرز عند الشحن، ومربعات المنطقة فوق بتكتب فيها. -->
         <div class="flt-row">
+          <div class="flt-g">
+            <span class="flt-label">المنطقة</span>
+            <div class="ms-wrap" id="rdyMsWrap-zone">
+              <button class="ms-btn" id="rdyMsBtn-zone" data-default-label="الكل" onclick="rdyMsToggle('zone')">
+                <span id="rdyMsBtnLabel-zone">الكل</span><span class="ms-arrow">▾</span>
+              </button>
+              <div class="ms-menu" id="rdyMsMenu-zone">
+                <div class="ms-ftr-top">
+                  <button class="ms-ftr-clear" onclick="rdyMsClear('zone')">مسح الاختيار</button>
+                  <span class="ms-ftr-count" id="rdyMsFtrCount-zone"></span>
+                </div>
+                <div class="ms-selectall-row" onclick="rdyMsToggleSelectAll('zone')">
+                  <input type="checkbox" id="rdyMsSelectAll-zone"
+                    onclick="event.stopPropagation()" onchange="rdyMsToggleSelectAll('zone', this.checked)">
+                  <span id="rdyMsSelectAllLabel-zone">تحديد الكل</span>
+                </div>
+                <div class="ms-list" id="rdyMsList-zone"></div>
+              </div>
+            </div>
+          </div>
+
           <div class="flt-g">
             <span class="flt-label">النوع</span>
             <div class="ms-wrap" id="rdyMsWrap-orderType">
@@ -1277,6 +1443,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
         </div>
 
         <!-- Chips — سطر منفصل لكل فلتر (بند ٢٣) -->
+        <div class="ms-chips-row" id="rdyChipsRow-zone"></div>
         <div class="ms-chips-row" id="rdyChipsRow-orderType"></div>
         <div class="ms-chips-row" id="rdyChipsRow-courier"></div>
         <div class="ms-chips-row" id="rdyChipsRow-attempt"></div>
@@ -1327,6 +1494,10 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
 
   <!-- ─── §TOOL::checkScreen ─── -->
   <div id="subscreenCheck" style="display:none">
+    <!-- الأوردر ده اتفتح من تراكينج بوسطة — الشريط بيعرض رقم التتبع عشان
+         الموظف يقارنه بالملصق اللي في إيده قبل ما يبدأ يشيّك. بيختفي
+         تمامًا لو الدخول كان من سكانر شوبيفاي أو من الإدخال اليدوي. -->
+    <div id="bostaSourceBar" class="bosta-src"></div>
     <div id="orderTruncWarn" class="warn-banner" style="display:none"></div>
     <div class="check-layout">
       <aside class="order-side-panel">
@@ -1620,12 +1791,14 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
 // ══════════════════════════════════════════════════════════════
 // §CONFIG
 // ══════════════════════════════════════════════════════════════
-const TOOL_VERSION       = 'v2.4.0';   // مصدر واحد: الهيدر + الـ Changelog + شاشة الدخول
-const MIN_WORKER_VERSION = '2.3.0';    // أقل نسخة Worker الواجهة دي بتشتغل معاها
-                                       // اترفعت لـ 2.2.0 لأن الطابور تحت مربعات الإدخال
-                                       // بيعتمد على `get_ready_orders` — الـ endpoint ده
-                                       // اتضاف في Worker v2.2.0، ونسخة أقدم هترجّع
-                                       // «action غير معروف» على كل تحديث للطابور.
+const TOOL_VERSION       = 'v2.5.0';   // مصدر واحد: الهيدر + الـ Changelog + شاشة الدخول
+const MIN_WORKER_VERSION = '2.4.0';    // أقل نسخة Worker الواجهة دي بتشتغل معاها
+                                       // اترفعت لـ 2.4.0 لأن مدخل «ماسح باركود بوسطة»
+                                       // بيعتمد على `get_order?tracking=` — الباراميتر ده
+                                       // اتضاف في Worker v2.4.0. ونسخة أقدم **مش** هترجّع
+                                       // خطأ: هترجّع «id أو name مطلوب» على كل سكان بوسطة،
+                                       // فالتحذير هنا هو اللي بيقول للموظف إن الـ Promote
+                                       // ما تمّش بدل ما يفتكر السكانة عطلانة.
                                        // ⚠️ مالهاش أي علاقة بـ TOOL_VERSION — متزامنهمش
 
 // الرابطين ثابتين — مش أسرار ومش حقول إعدادات (Standards #28)
@@ -1696,6 +1869,13 @@ async function apiGet(action, params = {}) {
 // ══════════════════════════════════════════════════════════════
 // §SHELL-JS
 // ══════════════════════════════════════════════════════════════
+// تهريب HTML — **مصدر واحد للملف كله**. `rdyEsc` في §READY-JS اسم تاني
+// لنفس الدالة، مش نسخة منها.
+function esc(v) {
+  return String(v ?? '').replace(/[&<>"']/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
 function showToast(msg, type = 'neutral', duration = 3000) {
   const t = document.createElement('div');
   t.className = `toast toast-${type}`;
@@ -2031,7 +2211,7 @@ async function finishLogin(username, displayName) {
   document.getElementById('packedByName').textContent = displayName;
   // CUSTOMIZE — بعد الدخول
   checkWorkerVersion();
-  setTimeout(() => { if (orderInput) orderInput.focus(); }, 100);
+  setTimeout(() => focusEntryInput(), 100);   // المربع النشط — بعد الدخول هو الافتراضي
   // الطابور بيتحمّل مع الدخول — هو أول حاجة الموظف محتاج يشوفها في
   // الشاشة دي. مش بننتظره (بدون await) عشان مايأخّرش فتح الشاشة ولا
   // ياخد الفوكس من مربع السكانر.
@@ -2054,6 +2234,8 @@ async function doLogout() {
   currentOrder = null; currentItems = []; currentAnalysis = null;
   currentAlreadyPackedData = null; currentEditReason = null;
   rdyResetAll();   // الطابور مايفضلش معروض لموظف خرج
+  renderBostaSource(null);
+  resetEntryMode();   // الموظف الجديد بيبدأ من المربع الافتراضي مش من مربع زميله
   document.getElementById('subscreenCheck').style.display = 'none';
   document.getElementById('subscreenEntry').style.display = '';
   switchMainTab('scan');
@@ -2070,30 +2252,92 @@ let currentAnalysis = null;
 let currentAlreadyPackedData = null;
 let currentEditReason = null;
 
-const orderInput = document.getElementById('orderScanInput');
-let orderScanTimer, lastOrderKey = 0;
-orderInput.addEventListener('input', () => {
-  clearTimeout(orderScanTimer);
-  const gap = Date.now() - lastOrderKey;      // السكانر بيطلّق أقل من 80ms بين الحروف
-  lastOrderKey = Date.now();
-  orderScanTimer = setTimeout(handleOrderScan, gap < 80 ? 150 : 400);
-});
-orderInput.addEventListener('keydown', e => {
-  if (e.key === 'Enter') { clearTimeout(orderScanTimer); handleOrderScan(); }
-});
-function handleOrderScan() {
-  const val = orderInput.value.trim();
-  orderInput.value = ''; orderInput.focus();
-  if (!val) return;
-  lookupOrder(val);
+// ─── §SCAN::entryMode — الفوكس بيرجع لآخر مدخل اتشتغل منه (v2.5.0) ───
+//
+// الموظف اللي شغّال دفعة كلها من ملصقات بوسطة مش عايز يرجع بإيده لمربع
+// بوسطة بعد كل أوردر. `lastEntryMode` بيتسجّل عند **بداية كل استعلام** —
+// يعني المربع اللي الرقم اتكتب فيه فعلاً، وبيتغيّر كمان بمجرّد ما الفوكس
+// يروح لمربع تاني (بالماوس أو بالتاب).
+//
+// ⚠️ **في ذاكرة الصفحة بس** — مش في `localStorage`. المفتاح الوحيد في
+//    التخزين هو السر (Standards #28)، والموظف اللي بيخرج ويدخل تاني
+//    المفروض يبدأ من المربع الافتراضي مش من مربع زميله.
+const ENTRY_INPUT_IDS = {
+  shopify: 'orderScanInput',
+  bosta:   'bostaScanInput',
+  manual:  'orderManualInput',
+};
+const DEFAULT_ENTRY_MODE = 'shopify';
+let lastEntryMode = DEFAULT_ENTRY_MODE;
+
+function markActiveEntryCard() {
+  Object.keys(ENTRY_INPUT_IDS).forEach(m => {
+    const card = document.getElementById(`entryCard-${m}`);
+    if (card) card.classList.toggle('is-active', m === lastEntryMode);
+  });
 }
+
+// بتتنادى من الضغط على أي مربع (بتغيّر المربع النشط) ومن كل رجوع لشاشة
+// الإدخال (من غير باراميتر — بترجّع الفوكس للمربع النشط زي ما هو).
+function focusEntryInput(mode) {
+  if (mode && ENTRY_INPUT_IDS[mode]) lastEntryMode = mode;
+  markActiveEntryCard();
+  const el = document.getElementById(ENTRY_INPUT_IDS[lastEntryMode] || ENTRY_INPUT_IDS[DEFAULT_ENTRY_MODE]);
+  if (el) el.focus();
+}
+function resetEntryMode() {
+  lastEntryMode = DEFAULT_ENTRY_MODE;
+  markActiveEntryCard();
+}
+
+// ─── §SCAN::scannerBinding — نفس سلوك السكانة للمربعين ───
+// السكانة بتطلّق الحروف أسرع من 80ms، فالمهلة القصيرة معناها «ده سكان
+// خلص» والطويلة معناها «إنسان بيكتب». نفس المنطق للمربعين — بس
+// `onSubmit` مختلفة: مربع شوبيفاي بيبعت رقم الأوردر، ومربع بوسطة بيبعت
+// رقم التتبع للـ Worker اللي بيحوّله لرقم أوردر.
+function bindScannerInput(el, mode, onSubmit) {
+  let timer, lastKey = 0;
+  el.addEventListener('input', () => {
+    clearTimeout(timer);
+    const gap = Date.now() - lastKey;
+    lastKey = Date.now();
+    timer = setTimeout(fire, gap < 80 ? 150 : 400);
+  });
+  el.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { clearTimeout(timer); fire(); }
+  });
+  // الفوكس بالماوس/التاب بيغيّر المربع النشط كمان — من غير كده، سكان
+  // في مربع اتفتح بالإيد كان هيرجّع الفوكس لمربع تاني بعد التغليف.
+  el.addEventListener('focus', () => {
+    if (lastEntryMode !== mode) { lastEntryMode = mode; markActiveEntryCard(); }
+  });
+  function fire() {
+    const val = el.value.trim();
+    el.value = ''; el.focus();
+    if (!val) return;
+    lastEntryMode = mode; markActiveEntryCard();
+    onSubmit(val);
+  }
+}
+
+const orderInput = document.getElementById('orderScanInput');
+bindScannerInput(orderInput, 'shopify', val => lookupOrder(val));
+
+// مربع بوسطة — بيمرّر `{ tracking: true }` فالـ Worker بيحوّل التراكينج
+// لرقم أوردر ويكمّل **بنفس مسار** `get_order` بالحرف.
+const bostaInput = document.getElementById('bostaScanInput');
+bindScannerInput(bostaInput, 'bosta', val => lookupOrder(val, { tracking: true }));
 
 const orderManualInput = document.getElementById('orderManualInput');
 orderManualInput.addEventListener('keydown', e => { if (e.key === 'Enter') submitManualLookup(); });
+orderManualInput.addEventListener('focus', () => {
+  if (lastEntryMode !== 'manual') { lastEntryMode = 'manual'; markActiveEntryCard(); }
+});
 function submitManualLookup() {
   const val = orderManualInput.value.trim();
   if (!val) return;
   orderManualInput.value = '';
+  lastEntryMode = 'manual'; markActiveEntryCard();
   lookupOrder(val);
 }
 
@@ -2150,14 +2394,39 @@ function buildItemsTableRows(storedItems) {
   `).join('');
 }
 
+// ── شريط «اتفتح من تراكينج بوسطة» ─────────────────────────────
+// ⚠️ بيتصفّر في **كل** استعلام قبل ما يتملّى — وإلا أوردر اتفتح من
+//    سكانر شوبيفاي هيفضل شايل رقم تتبع الأوردر اللي قبله، والموظف
+//    هيقارن الملصق بالرقم الغلط.
+function renderBostaSource(info) {
+  const bar = document.getElementById('bostaSourceBar');
+  if (!bar) return;
+  if (!info || !info.trackingNumber) { bar.classList.remove('visible'); bar.innerHTML = ''; return; }
+  const bits = [`<span class="bosta-src-chip">${esc(info.trackingNumber)}</span>`];
+  if (info.bostaType)  bits.push(`<span class="bosta-src-chip">${esc(info.bostaType)}</span>`);
+  if (info.bostaState) bits.push(`<span class="bosta-src-chip">${esc(info.bostaState)}</span>`);
+  bar.innerHTML = `<span>🚚 اتفتح من تراكينج بوسطة</span>${bits.join('')}`;
+  bar.classList.add('visible');
+}
+
 // ── Lookup Order ───────────────────────────────────────────────
-async function lookupOrder(raw) {
+// `opts.tracking` = الرقم الجاي رقم **تتبع بوسطة** مش رقم أوردر. الـ
+// Worker هو اللي بيحوّله (بوسطة → businessReference → اسم الأوردر) —
+// الواجهة مابتنادّيش بوسطة ومابتخمّنش الشكل، والباقي **نفس المسار
+// بالحرف**: نفس التصنيف ونفس حارس «اتغلّف قبل كده».
+async function lookupOrder(raw, opts = {}) {
   document.getElementById('lookupLoading').style.display = '';
   document.getElementById('btnLookup').disabled = true;
   clearPackResult();
+  renderBostaSource(null);
   try {
-    const isId = /^\d{10,}$/.test(raw);
-    const data  = await apiGet('get_order', isId ? { id: raw } : { name: raw });
+    const isId  = /^\d{10,}$/.test(raw);
+    const params = opts.tracking ? { tracking: raw } : (isId ? { id: raw } : { name: raw });
+    const data  = await apiGet('get_order', params);
+
+    // مصدر الأوردر بيرجع من الـ Worker (مش من الواجهة) — يعني الرقم
+    // المعروض هو اللي بوسطة ردّت بيه فعلاً، مش اللي اتكتب في المربع.
+    renderBostaSource(data.order?.bosta || null);
 
     // القصّ بيترجع من الـ Worker — بانر ثابت، مش صمت
     renderTruncWarn(data.truncated === true);
@@ -2251,7 +2520,7 @@ function showChangeDetectedModal() {
     // Stay at entry screen, reset state
     currentOrder = null; currentItems = []; currentAnalysis = null;
     currentAlreadyPackedData = null; currentEditReason = null;
-    setTimeout(() => orderInput.focus(), 100);
+    setTimeout(() => focusEntryInput(), 100);   // نفس المربع اللي اتشتغل منه آخر مرة
   });
 }
 
@@ -2277,7 +2546,7 @@ function showAlreadyPackedNoChangeModal() {
   newClose.addEventListener('click', () => {
     modal.classList.add('hidden');
     currentAlreadyPackedData = null;
-    setTimeout(() => orderInput.focus(), 100);
+    setTimeout(() => focusEntryInput(), 100);   // نفس المربع اللي اتشتغل منه آخر مرة
   });
 }
 
@@ -2285,7 +2554,7 @@ function showAlreadyPackedNoChangeModal() {
 function resetToEntry() {
   currentOrder = null; currentItems = []; currentAnalysis = null;
   currentAlreadyPackedData = null; currentEditReason = null;
-  clearPackResult(); renderTruncWarn(false);
+  clearPackResult(); renderTruncWarn(false); renderBostaSource(null);
   const cb = document.getElementById('btnComplete');
   if (cb) { cb.disabled = true; cb.textContent = '✅ تأكيد اكتمال التغليف'; }
   document.getElementById('subscreenCheck').style.display = 'none';
@@ -2293,7 +2562,7 @@ function resetToEntry() {
   document.getElementById('stageCard').style.display = '';
   document.getElementById('packingContent').style.display = '';
   document.getElementById('scanBanner').className = 'scan-banner';
-  setTimeout(() => orderInput.focus(), 100);
+  setTimeout(() => focusEntryInput(), 100);   // نفس المربع اللي اتشتغل منه آخر مرة
   rdyRefreshIfDirty();   // رجعنا للطابور بعد تغليف — يتحدّث لوحده
 }
 
@@ -2702,10 +2971,10 @@ let rdyLoading = false;
 const RDY_TYPE_LABELS    = { S1: 'عادي', S2: 'استبدال' };
 const RDY_ATTEMPT_LABELS = { repeat: 'محاولة مكرّرة', first: 'أول شحنة', na: 'غير محدد' };
 
-function rdyEsc(v) {
-  return String(v ?? '').replace(/[&<>"']/g, c =>
-    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-}
+// اسم تاني لـ `esc` (§SHELL-JS) — الاسم ده مستخدم في كل §READY-JS.
+// **نسخة واحدة من التهريب** في الملف: نسختين معناهم واحدة تتصلّح
+// والتانية تفضل مكسورة، وهي بالظبط عيلة الباجات المكتوبة في CLAUDE.md.
+const rdyEsc = esc;
 
 // اليوم بتوقيت القاهرة كـ YYYY-MM-DD — فلتر التاريخ بيقارن بيه.
 // ⚠️ لازم يتحسب من `toCairo` مش من `iso.slice(0,10)` — التانية بتفلتر
@@ -2725,8 +2994,10 @@ function rdyYmd(d) {
 //    «قاهرة» — يعني مندوب اسمه فلان كان بيتقري «قاهرة» وده كذب. دلوقتي
 //    القيمة بتتعرض زي ما هي في الميتافيلد، واللون هو اللي بيصنّف:
 //    بوسطة أحمر · شو روم أخضر · أي مندوب تاني أزرق.
-//    والفاضي **مش** مندوب — نصّه صريح إنه مفيش.
-const RDY_COURIER_NONE = 'لا يوجد مندوب مسجل';
+//    والفاضي **مش** مندوب — بيتعرض «غير محدد» رمادي.
+// «غير محدد» — نفس مفردة «غير محدد» في عمود المحاولة، فالموظف بيقرا
+// نفس المعنى بنفس الكلمة في الجدول كله (قرار أحمد 05-09-2026).
+const RDY_COURIER_NONE = 'غير محدد';
 function rdyFormatCourier(courier) {
   const v = (courier || '').trim();
   return v || RDY_COURIER_NONE;
@@ -2757,6 +3028,58 @@ function rdyZoneInfo(zone) {
   const v = (zone || '').trim();
   if (!v) return RDY_ZONE_BLANK;
   return RDY_ZONE_MAP[v] || { label: v, cls: '' };
+}
+
+// ─── §READY-JS::zoneChips — مربعات المناطق كفلتر (v2.5.0) ───
+//
+// مربع لكل منطقة موجودة في الطابور + عددها، بنفس ألوان عمود المنطقة،
+// والضغط عليه = نفس فعل اختيار المنطقة من فلتر «المنطقة» بالظبط
+// (`rdyMsToggleItem('zone', …)`) — **مش** حالة فلترة تانية موازية:
+// حالتين معناهم مربع مولّع وفلتر فاضي، أو العكس.
+//
+// ⚠️ العدّ من `rdyAllOrders` (الطابور كله) مش من المفلتر — لو اتحسب على
+//    المفلتر، أول ضغطة كانت هتصفّر باقي المربعات فما حدش يقدر يرجّع.
+const RDY_ZONE_ORDER = Object.values(RDY_ZONE_MAP).map(z => z.label);
+
+function rdyZoneChipRows() {
+  const map = new Map();
+  for (const o of rdyAllOrders) {
+    if (!map.has(o.zone)) map.set(o.zone, { zone: o.zone, cls: o.zoneCls, n: 0 });
+    map.get(o.zone).n++;
+  }
+  // ترتيب ثابت (ترتيب الـ choice list) — والقيم اللي برّه القايمة بعدهم
+  // أبجديًا. الترتيب بالعدد كان هيرقّص المربعات مكانها مع كل تحديث.
+  return [...map.values()].sort((a, b) => {
+    const ai = RDY_ZONE_ORDER.indexOf(a.zone), bi = RDY_ZONE_ORDER.indexOf(b.zone);
+    if (ai !== -1 || bi !== -1) return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+    return a.zone.localeCompare(b.zone, 'ar');
+  });
+}
+
+function rdyRenderZoneChips() {
+  const box = document.getElementById('rdyZoneChips');
+  if (!box) return;
+  box.innerHTML = rdyZoneChipRows().map(z => `
+    <button type="button" class="zchip ${rdyEsc(z.cls)}" data-zone="${rdyEsc(z.zone)}"
+            onclick="rdyZoneChipClick(this)">
+      <span>${rdyEsc(z.zone)}</span>
+      <span class="zchip-n">${z.n.toLocaleString('en-US')}</span>
+    </button>`).join('');
+  rdyUpdateZoneChipStates();
+}
+
+// ⚠️ القيمة بتتقرا من `dataset` مش من نص متسرّب جوّه `onclick` — اسم
+//    منطقة برّه القايمة بيتعرض زي ما هو، وأي علامة تنصيص فيه كانت
+//    هتكسر النداء.
+function rdyZoneChipClick(el) {
+  rdyMsToggleItem('zone', el.dataset.zone || '');
+}
+
+function rdyUpdateZoneChipStates() {
+  const sel = rdyMsState.zone.selected;
+  document.querySelectorAll('#rdyZoneChips .zchip').forEach(el => {
+    el.classList.toggle('active', sel.has(el.dataset.zone || ''));
+  });
 }
 
 // ─── §READY-JS::optionLinks — عمود «خيارات» (بند ٧، v2.4.0) ───
@@ -2830,19 +3153,24 @@ function rdyOrderAge(iso, now = new Date()) {
 }
 
 // ─── §READY-JS::msState — كل الفلاتر multi-select (بند ٢١) ───
+// ⚠️ ترتيب المفاتيح هنا **هو** ترتيب صفوف الشيبس، والمنطقة الأولى
+//    مقصودة — نفس ترتيب الفلاتر في الـ HTML.
 const rdyMsState = {
+  zone:      { items: [], selected: new Set(), search: '' },
   orderType: { items: [], selected: new Set(), search: '' },
   courier:   { items: [], selected: new Set(), search: '' },
   attempt:   { items: [], selected: new Set(), search: '' },
 };
-const rdyFilterLabels = { orderType: 'النوع', courier: 'المندوب', attempt: 'المحاولة' };
+const rdyFilterLabels = { zone: 'المنطقة', orderType: 'النوع', courier: 'المندوب', attempt: 'المحاولة' };
 
 let rdySearchTerm = '';
 let rdyDateFrom = null, rdyDateTo = null, rdyDateFilterActive = false;
 let rdyActivePreset = '';
 
 // ─── §READY-JS::collapse ───
-let rdyFltOpen = true;
+// ⚠️ مقفول افتراضيًا — لازم يفضل متطابق مع `class="flt-body collapsed"`
+//    في الـ HTML، وإلا أول ضغطة على الهيدر مابتعملش حاجة ظاهرة.
+let rdyFltOpen = false;
 function rdyToggleFilters() {
   rdyFltOpen = !rdyFltOpen;
   document.getElementById('rdyFltBody').classList.toggle('collapsed', !rdyFltOpen);
@@ -3120,6 +3448,7 @@ function rdyFilteredRows() {
   const q = rdySearchTerm.trim().toLowerCase();
   return rdyAllOrders.filter(o => {
     if (q && !o.orderNumber.toLowerCase().includes(q)) return false;
+    if (rdyMsState.zone.selected.size      && !rdyMsState.zone.selected.has(o.zone))           return false;
     if (rdyMsState.orderType.selected.size && !rdyMsState.orderType.selected.has(o.orderType)) return false;
     if (rdyMsState.courier.selected.size   && !rdyMsState.courier.selected.has(o.courier))     return false;
     if (rdyMsState.attempt.selected.size   && !rdyMsState.attempt.selected.has(o.attempt))     return false;
@@ -3131,6 +3460,7 @@ function rdyFilteredRows() {
 
 function rdyApplyFilters() {
   rdyUpdateFilterIconState();
+  rdyUpdateZoneChipStates();   // المربعات فوق والفلتر تحت **حالة واحدة**
   const filtered = rdyFilteredRows();
   rdyRenderTable(rdyApplySort(filtered));
   document.getElementById('rdyFilteredCount').textContent = filtered.length.toLocaleString('en-US');
@@ -3163,7 +3493,7 @@ function rdyRenderTable(rows) {
       <td>
         <div class="opt-cell">
           <a class="opt-btn opt-broken" href="${RDY_OPT_LINKS.broken}" target="_blank" rel="noopener">عطلان</a>
-          <a class="opt-btn opt-print"  href="${RDY_OPT_LINKS.print}"  target="_blank" rel="noopener">طباعة</a>
+          <a class="opt-btn opt-print"  href="${RDY_OPT_LINKS.print}"  target="_blank" rel="noopener">إعادة 🖨</a>
         </div>
       </td>
       <td>${orderLink(o.orderNumber, o.orderId)}</td>
@@ -3173,7 +3503,7 @@ function rdyRenderTable(rows) {
       <td class="col-num">${o.printingTime ? formatTimeOnly(o.printingTime) : dash}</td>
       <td>${sinceCell}</td>
       <td class="col-num">${formatDate(o.createdAt)}<span class="time-badge age-badge ${age.cls}" data-rdy-age="${rdyEsc(o.createdAt)}">${rdyEsc(age.text)}</span></td>
-      <td><span class="type-badge ${typeClass}">${rdyEsc(RDY_TYPE_LABELS[o.orderType] || o.orderType)}</span></td>
+      <td><span class="type-text ${typeClass}">${rdyEsc(RDY_TYPE_LABELS[o.orderType] || o.orderType)}</span></td>
       <td>${attemptCell}</td>
     </tr>`;
   }).join('');
@@ -3418,7 +3748,11 @@ async function rdyLoadOrders({ silent = false } = {}) {
     rdyStartTicker();
     rdyArmAutoRefresh();   // العدّاد بيبدأ من آخر تحديث ناجح
 
-    if (!rdyAllOrders.length) { rdySetCounts(0, 0, 0, 0); rdyShowState('rdyStateEmpty'); return; }
+    // ⚠️ المربعات لازم تتصفّر هنا كمان — طابور رجع فاضي ومربعات المناطق
+    //    لسه شايلة أعداد الجلبة اللي فاتت = رقم كذّاب على الشاشة.
+    if (!rdyAllOrders.length) {
+      rdySetCounts(0, 0, 0, 0); rdyRenderZoneChips(); rdyShowState('rdyStateEmpty'); return;
+    }
 
     rdyRebuildFilterItems();
 
@@ -3457,6 +3791,10 @@ function rdyRefreshIfDirty() {
 function rdyRebuildFilterItems() {
   const uniq = arr => [...new Set(arr)];
 
+  // ⚠️ القيمة هنا هي **النص المترجم** (`o.zone`) مش قيمة الميتافيلد —
+  //    نفس اللي بيتفلتر بيه في `rdyFilteredRows` وبيتعرض في الجدول.
+  rdyMsState.zone.items = uniq(rdyAllOrders.map(o => o.zone)).sort((a, b) => a.localeCompare(b, 'ar'))
+    .map(v => ({ value: v, label: v }));
   rdyMsState.orderType.items = uniq(rdyAllOrders.map(o => o.orderType)).sort()
     .map(v => ({ value: v, label: RDY_TYPE_LABELS[v] || v }));
   rdyMsState.courier.items = uniq(rdyAllOrders.map(o => o.courier)).sort((a, b) => a.localeCompare(b, 'ar'))
@@ -3470,6 +3808,7 @@ function rdyRebuildFilterItems() {
     rdyMsRenderList(k);
   });
   rdyRenderChips();
+  rdyRenderZoneChips();
 }
 
 // تصفير كامل — بيتنادى من doLogout عشان الطابور مايفضلش معروض لموظف خرج
@@ -3492,6 +3831,8 @@ function rdyResetAll() {
   rdyRenderChips();
   rdyUpdateFilterIconState();
   rdyClearPartialBanner();
+  const zc = document.getElementById('rdyZoneChips');
+  if (zc) zc.innerHTML = '';
   document.getElementById('rdyTblBody').innerHTML = '';
   rdyShowState('rdyStateIdle');
 }
