@@ -598,6 +598,8 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
 .btn-primary:disabled{opacity:.5;cursor:not-allowed}
 .btn-green{padding:9px 18px;border-radius:var(--radius-sm);border:none;background:var(--green);color:var(--on-accent);font-family:var(--font-body);font-size:13px;font-weight:700;cursor:pointer;transition:background .15s}
 .btn-green:hover{background:var(--green-dark)}
+.btn-red{padding:9px 18px;border-radius:var(--radius-sm);border:none;background:var(--red);color:var(--on-accent);font-family:var(--font-body);font-size:13px;font-weight:700;cursor:pointer;transition:background .15s}
+.btn-red:hover{background:var(--red-dark)}
 
 /* ══════════════════════════════════════════════════════════════
    §STYLES::ready — طابور «جاهز للتغليف» (مدموج من Ready-to-Pack v2.1.0)
@@ -833,6 +835,15 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
       <div class="cl-version-block">
         <div class="cl-version-row">
           <span class="cl-ver-badge" id="clLatestVerBadge"></span>
+          <span class="cl-ver-date">05-09-2026</span>
+        </div>
+        <ul class="cl-items">
+          <li class="cl-item"><span class="cl-tag change">تغيير</span><span>زرار <b>«إغلاق»</b> في نافذة «تم تغليف هذا الأوردر مسبقاً» بقى <b>أحمر</b> (`.btn-red` — نفس ألوان `.btn-green` الموجودة، `--red`/`--red-dark`) بدل الرمادي المحايد، عشان يعبّر إنه رفض مش إغلاق عادي</span></li>
+        </ul>
+      </div>
+      <div class="cl-version-block">
+        <div class="cl-version-row">
+          <span class="cl-ver-badge old">v2.6.0</span>
           <span class="cl-ver-date">05-09-2026</span>
         </div>
         <ul class="cl-items">
@@ -1124,7 +1135,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn-ghost" style="flex:1" id="apCloseBtn">إغلاق</button>
+      <button class="btn-red" style="flex:1" id="apCloseBtn">إغلاق</button>
     </div>
   </div>
 </div>
@@ -1811,7 +1822,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
 // ══════════════════════════════════════════════════════════════
 // §CONFIG
 // ══════════════════════════════════════════════════════════════
-const TOOL_VERSION       = 'v2.6.0';   // مصدر واحد: الهيدر + الـ Changelog + شاشة الدخول
+const TOOL_VERSION       = 'v2.6.1';   // مصدر واحد: الهيدر + الـ Changelog + شاشة الدخول
 const MIN_WORKER_VERSION = '2.4.0';    // أقل نسخة Worker الواجهة دي بتشتغل معاها
                                        // اترفعت لـ 2.4.0 لأن مدخل «ماسح باركود بوسطة»
                                        // بيعتمد على `get_order?tracking=` — الباراميتر ده

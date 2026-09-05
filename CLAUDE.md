@@ -2,14 +2,14 @@
 
 # أداة تشييك تغليف الأوردرات — Pack Checker (`Orders-Packing-Checker`)
 
-![version](https://img.shields.io/badge/version-v2.6.0-blue)
+![version](https://img.shields.io/badge/version-v2.6.1-blue)
 
 **بتعمل إيه:** بتعرض للموظف **طابور الأوردرات الجاهزة للتغليف** تحت مربعات
 الإدخال، وبيسكن باركود الأوردر (أو **تراكينج بوسطة**، أو بيدخّل الرقم بإيده)،
 الأداة بتجيب منتجاته من Shopify، بيشيّك عليها قطعة قطعة، وبتسجّل التغليف على
 الأوردر (ميتافيلد + tag + D1).
 **مين بيستخدمها:** المخزن (التغليف)
-**الإصدار:** Worker `v2.4.0` · الواجهة `v2.6.0` · `MIN_WORKER_VERSION = 2.4.0`   ← الاتنين مستقلين، طبيعي يختلفوا
+**الإصدار:** Worker `v2.4.0` · الواجهة `v2.6.1` · `MIN_WORKER_VERSION = 2.4.0`   ← الاتنين مستقلين، طبيعي يختلفوا
 
 > 🔗 **من v2.2.0 الأداة دي بقت مدموجة مع «أوردرات جاهزة للتغليف»** (`Ready-to-Pack`).
 > التفاصيل في قسم «الدمج» تحت — **اقراه قبل أي تعديل على الطابور أو على تصنيف S2.**
@@ -588,6 +588,30 @@ Bosta-Orders-Shipped-Scanner/index.js  §BOSTA::bostaSearch · cleanOrderName
 > ⚠️ **ممنوع الرجوع لإيموجي هنا.** الأيقونة اللي مابتترسمش مابتفشلش بصوت —
 > بتبان زرار ناقص، والموظف مش هيبلّغ عنها.
 
+## v2.6.1 (05-09-2026) — واجهة بس · مفيش Promote
+
+> **`index.js` ما اتلمسش.** `MIN_WORKER_VERSION` زي ما هو (`2.4.0`).
+
+### زرار «إغلاق» في نافذة «تم تغليف هذا الأوردر مسبقاً» — بقى أحمر
+
+كان `.btn-ghost` (رمادي محايد) زي أي زرار إغلاق عادي. النافذة دي بترفض
+تكرار التغليف (409 + `conflict: true`)، مش مجرد معلومة — فالزرار بقى
+`.btn-red` عشان يعبّر عن الرفض بصريًا مش يتوه وسط أزرار الإلغاء العادية.
+
+كلاس جديد على نفس نمط `.btn-green` الموجود — بتوكنز `:root` الموجودة
+بالفعل، **صفر hex جديد**:
+
+```css
+.btn-red{padding:9px 18px;border-radius:var(--radius-sm);border:none;background:var(--red);color:var(--on-accent);font-family:var(--font-body);font-size:13px;font-weight:700;cursor:pointer;transition:background .15s}
+.btn-red:hover{background:var(--red-dark)}
+```
+
+`--red` · `--red-dark` · `--on-accent` كلهم معرّفين في `:root` من قبل
+(مستخدمين في `.modal-close-x` و`.pin-key.utility`). `.btn-red` بقى الشكل
+المعتمد لأي زرار «إغلاق/إلغاء» رئيسي في نافذة بتوصف حالة سلبية أو نهائية —
+مش بديل لـ `.modal-close-x` (زرار الـ ✕ الصغير في هيدر أي modal، قاعدته
+منفصلة).
+
 ## حارس التغليف المزدوج — server-side من v2.1.0 (R3)
 
 قبل v2.1.0 حارس «اتغلّف قبل كده» كان في `get_order` **فقط**، و`complete_pack`
@@ -764,7 +788,7 @@ git show de52336:Index-v1.1.3.html
 | shopify-graphql-helper | v1.0.0 |
 | bosta-api-helper | — (خارج نظام الإصدارات) |
 
-آخر مطابقة: 05-09-2026 · `index.js` v2.4.0 · `index.html` v2.6.0
+آخر مطابقة: 05-09-2026 · `index.js` v2.4.0 · `index.html` v2.6.1
 
 > ✅ **فحص Step 9 الآلي اتنفّذ على الملف النهائي** (05-09-2026) — كل البنود
 > عدّت: سلّم z-index (login 500 · modals 600 · toast 9999 · محتوى ≤ 210) ·
