@@ -853,7 +853,7 @@ git show de52336:Index-v1.1.3.html
 |---|---|
 | ecommoda-worker-builder | v2.0.0 |
 | ecommoda-html-builder | v6.3.0 |
-| ecommoda-constants | v1.4.4 |
+| ecommoda-constants | v1.6.0 (مجموعات السر §6) |
 | ecommoda-order-lifecycle | v1.2.0 |
 | shopify-graphql-helper | v1.0.0 |
 | bosta-api-helper | — (خارج نظام الإصدارات) |
