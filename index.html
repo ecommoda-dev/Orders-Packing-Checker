@@ -714,24 +714,18 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
 /* عدّاد عمر الأوردر — نفس البادج بمقاس أصغر، جوّه عمود تاريخ الأوردر */
 .time-badge.age-badge{margin-inline-start:6px;padding:2px 8px;font-size:10.5px;font-weight:700}
 
-/* ── بادج المنطقة (custom.zone) — بند ٣ ── */
-.zone-badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;
-  font-size:11px;font-weight:800;white-space:nowrap;border:1px solid var(--border);
-  background:var(--surface-2);color:var(--text-secondary)}
-/* ⚠️ ألوان المنطقة **مكتوبة مرة واحدة** وبيستخدمها الاتنين: بادج
-   العمود في الجدول ومربعات الفلترة فوق. نسختين معناهم إن مربع فوق
-   لونه يختلف عن بادج تحته لنفس المنطقة، وده بيكسر الربط البصري
-   اللي المربعات دي أصلاً موجودة عشانه. */
-.zone-badge.zone-cairo,.zchip.zone-cairo{background:var(--accent-light);color:var(--accent-dark);border-color:var(--accent-border)}
-.zone-badge.zone-other,.zchip.zone-other{background:var(--red-light);color:var(--red-dark);border-color:var(--red-border)}
-.zone-badge.zone-showroom,.zchip.zone-showroom{background:var(--green-light);color:var(--green-dark);border-color:var(--green-border)}
-.zone-badge.zone-blank,.zchip.zone-blank{background:var(--orange-light);color:var(--orange-dark);border-color:var(--orange-border)}
+/* ── مربعات فلتر المندوب — بوسطة/مناديب (بند ٦، v2.6.2) ──
+   ⚠️ الألوان **نفس ألوان عمود المندوب** (`.courier-cell.courier-bosta` أحمر
+   و`.courier-cell.courier-other`/`.courier-showroom` أزرق/أخضر مجمّعين هنا
+   في مربع أزرق واحد) — مفيش نسخة تانية من الألوان. */
+.zchip.qc-bosta{background:var(--red-light);color:var(--red-dark);border-color:var(--red-border)}
+.zchip.qc-courier{background:var(--accent-light);color:var(--accent-dark);border-color:var(--accent-border)}
 
-/* ── مربعات المناطق — فلتر بضغطة على صندوق الأعداد ──
-   مقاسها أكبر من بادج الجدول عن قصد: دي هدف ضغط للموظف بإيد مشغولة،
+/* ── مربعات فلتر المندوب — فلتر بضغطة على صندوق الأعداد ──
+   مقاسها أكبر من نص عمود المندوب عن قصد: دي هدف ضغط للموظف بإيد مشغولة،
    مش علامة للقراءة. */
-.rdy-zone-chips{display:flex;align-items:center;gap:9px;flex-wrap:wrap;flex:1;min-width:0;justify-content:center}
-.rdy-zone-chips:empty{display:none}
+.rdy-courier-chips{display:flex;align-items:center;gap:9px;flex-wrap:wrap;flex:1;min-width:0;justify-content:center}
+.rdy-courier-chips:empty{display:none}
 .zchip{display:inline-flex;align-items:center;gap:9px;padding:9px 15px;border-radius:var(--radius-sm);
   border:1.5px solid var(--border);background:var(--surface-2);color:var(--text-secondary);
   font-family:var(--font-body);font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap;
@@ -835,6 +829,17 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
       <div class="cl-version-block">
         <div class="cl-version-row">
           <span class="cl-ver-badge" id="clLatestVerBadge"></span>
+          <span class="cl-ver-date">05-09-2026</span>
+        </div>
+        <ul class="cl-items">
+          <li class="cl-item"><span class="cl-tag change">تغيير</span><span>عمود <b>«المنطقة»</b> (<code>custom.zone</code>) <b>اتشال نهائيًا</b> من جدول الطابور والفلاتر — الأداة مش محتاجاه (قرار أحمد 05-09-2026)</span></li>
+          <li class="cl-item"><span class="cl-tag new">جديد</span><span>مربعا فلتر جدد فوق الجدول بدل مربعات المنطقة: <b>«بوسطة»</b> (أحمر) لو المندوب <code>Bosta</code>، و<b>«مناديب»</b> (أزرق) لأي مندوب تاني — <b>حتى لو مفيش مندوب مسجل خالص</b></span></li>
+          <li class="cl-item"><span class="cl-tag change">تغيير</span><span>فلتر <b>«المندوب»</b> بقى <b>أول فلتر</b> في القسم بدل «المنطقة» — مربعا «بوسطة/مناديب» بيكتبوا فيه (نفس مبدأ v2.5.0: حالة واحدة مش فلترة موازية)</span></li>
+        </ul>
+      </div>
+      <div class="cl-version-block">
+        <div class="cl-version-row">
+          <span class="cl-ver-badge old">v2.6.1</span>
           <span class="cl-ver-date">05-09-2026</span>
         </div>
         <ul class="cl-items">
@@ -976,7 +981,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
             <tr><th>action</th><th>الوصف</th></tr>
             <tr><td><code>get_order</code></td><td>جلب الأوردر + تحليل المرحلة + كشف التغيير بالبصمة</td></tr>
             <tr><td><code>complete_pack</code></td><td>كتابة الميتافيلدات + tag + تسجيل D1، وبترجّع <code>status</code> و<code>actions</code></td></tr>
-            <tr><td><code>get_ready_orders</code></td><td>طابور «جاهز للتغليف» — أوردرات S1+S2 حالتها <code>Ready</code> واتطبعت ولسه ما اتغلّفتش. قراءة بحتة، وبترجّع <code>partial</code> و<code>s2Failed</code> و<code>s2Truncated</code>. <b>من Worker v2.3.0</b> بيرجّع كمان <code>zone</code> (<code>custom.zone</code>)</td></tr>
+            <tr><td><code>get_ready_orders</code></td><td>طابور «جاهز للتغليف» — أوردرات S1+S2 حالتها <code>Ready</code> واتطبعت ولسه ما اتغلّفتش. قراءة بحتة، وبترجّع <code>partial</code> و<code>s2Failed</code> و<code>s2Truncated</code>. <b>من Worker v2.3.0</b> بيرجّع كمان <code>zone</code> (<code>custom.zone</code>) — <b>الواجهة بقت من v2.6.2 مابتقراهوش</b>، عمود المنطقة اتشال نهائيًا</td></tr>
             <tr><td><code>get_logs</code> · <code>get_logs_count</code> · <code>get_logs_export</code></td><td>استعراض وتصدير سجل التغليف (فلترة server-side)</td></tr>
             <tr><td><code>diag</code> · <code>get_config</code></td><td>فحص ذاتي بدون كتابة · نسخة الـ Worker لحارس التوافق</td></tr>
             <tr><td><code>check_employee</code> · <code>register_pin</code> · <code>verify_employee</code> · <code>log_logout</code> · <code>get_employees</code></td><td>بلوك الدخول المشترك</td></tr>
@@ -1013,8 +1018,8 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
             <li><code>§READY-JS::elapsed</code> (HTML) — <code>rdySincePrint</code> · <code>rdyOrderAgeText</code> · <code>rdyDayDiff</code> — الأعمدة المحسوبة بالوقت (بتوقيت القاهرة، بفرق الأيام التقويمية)</li>
             <li><code>§READY-JS::ticker</code> + <code>::freshness</code> (HTML) — نبضة كل ٣٠ ثانية بتحدّث الأرقام النسبية <b>في مكانها</b> بدون أي نداء شبكة</li>
             <li><code>§READY-JS::autoRefresh</code> (HTML) — <code>rdyArmAutoRefresh</code> · <code>rdyAutoRefreshTick</code> · <code>rdyQueueVisible</code> — التحديث التلقائي كل ١٥ دقيقة (النداء الدوري الوحيد في الأداة)</li>
-            <li><code>§READY-JS::zone</code> + <code>::courier</code> (HTML) — ترجمة <code>custom.zone</code> وعرض المندوب بلونه</li>
-            <li><code>§READY-JS::zoneChips</code> (HTML) — مربعات المناطق فوق الجدول: عدّ من الطابور كله وفلترة بضغطة، <b>نفس حالة</b> فلتر «المنطقة»</li>
+            <li><code>§READY-JS::courier</code> (HTML) — عرض المندوب بلونه (بوسطة أحمر · شو روم أخضر · غيرهم أزرق · فاضي رمادي)</li>
+            <li><code>§READY-JS::courierChips</code> (HTML) — مربعا «بوسطة/مناديب» فوق الجدول (v2.6.2، بدّلوا مربعات المنطقة اللي اتشالت): عدّ من الطابور كله وفلترة بضغطة، <b>نفس حالة</b> فلتر «المندوب»</li>
           </ul>
 
           <h4>KEY VARIABLES</h4>
@@ -1064,6 +1069,9 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
             <li><b>v2.6.0</b> — <b>رقم الأوردر في شاشة التغليف بقى لينك لشوبيفاي</b> (قاعدة #20) — نفس <code>orderLink()</code> اللي في الجدول وتاب السجل. ولو الأوردر جه من غير <code>id</code>، بيتعرض نص عادي (<code>.no-link</code>) مش لينك مكسور.</li>
             <li><b>v2.6.0</b> — عمود <b>المحاولة</b> بقى نص عادي بنفس الألوان بدل بادج — زي نوع الأوردر.</li>
             <li><b>v2.6.0</b> — أيقونة زرار «إعادة» بقت <b>SVG</b> (<code>RDY_PRINT_ICON</code>) بترث لون الزرار. الإيموجي 🖨 (U+1F5A8) مش مدعوم على أجهزة كتير وكان بيطلع مربع فاضي — <b>ممنوع الرجوع لإيموجي هنا</b>.</li>
+            <li><b>v2.6.2</b> — عمود <b>«المنطقة»</b> (<code>custom.zone</code>) <b>اتشال نهائيًا</b> من الجدول والفلاتر (قرار أحمد 05-09-2026) — مش موقوف مؤقتًا، محذوف. الـ Worker لسه بيرجّع <code>zone</code> في <code>get_ready_orders</code>، بس الواجهة بقت متجاهلاه تمامًا.</li>
+            <li><b>v2.6.2</b> — مربعات المنطقة فوق الجدول اتبدّلت بمربعين على <b>عمود المندوب</b>: <b>«بوسطة»</b> (أحمر، نفس <code>.courier-bosta</code>) لو المندوب Bosta، و<b>«مناديب»</b> (أزرق، نفس <code>.courier-other</code>) لأي مندوب تاني <b>حتى لو مفيش مندوب مسجل خالص</b>. الشو روم بقى داخل «مناديب» هنا رغم إنه أخضر في عمود المندوب — التقسيم في المربعات ثنائي بس (بوسطة/غير بوسطة).</li>
+            <li><b>v2.6.2</b> — نفس مبدأ v2.5.0: المربعان **حالة واحدة** مع فلتر «المندوب» التفصيلي (بقى أول فلتر بدل المنطقة) — الضغط بيحدد/يلغي كل قيم المندوب الحقيقية اللي بتقع في المجموعة دي جوّه <code>rdyMsState.courier.selected</code>، مش حالة موازية.</li>
             <li><b>فخّ v2.5.0:</b> §BOSTA اتنقل حرفيًا من ريبو <code>Bosta-Orders-Shipped-Scanner</code>، فالكود ده بقى في <b>مكانين</b>. أي إصلاح على شكل رد بوسطة أو على <code>cleanOrderName</code> لازم يتعمل في الاتنين — نفس عيلة خطر <code>classifyS2Subtype</code>.</li>
             <li><b>فخّ:</b> منطق الـ multi-select والترتيب <b>متكرر</b> بين <code>§LOG-JS</code> و<code>§READY-JS</code> (الأول server-side والتاني client-side). أي تعديل على سلوك القوايم أو الترتيب لازم يتعمل في <b>الاتنين</b>.</li>
             <li><code>isPrintedNotPacked</code> بتسأل «اتطبع <b>بعد</b> آخر تغليف؟» مش «متملّي ولا فاضي» — ميتافيلدات التغليف مبتتصفّرش بين دورات الإرجاع، والمقارنة بـ <code>new Date()</code> مش نصوص (<code>printing_time</code> بتيجي بصيغتين).</li>
@@ -1271,12 +1279,12 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
           <span class="count-badge badge-repeat">محاولة مكرّرة: <span id="rdyCountRepeat">—</span></span>
         </div>
       </div>
-      <!-- ⚠️ مربعات المناطق — فلتر بضغطة واحدة على المساحة الفاضية في نص
-           صندوق الأعداد (قرار أحمد 05-09-2026). العدد جوّه كل مربع هو
-           **العدد الكلي للمنطقة في الطابور**، مش عدد المعروض بعد الفلترة —
-           لأنه لو اتفلتر على منطقة، باقي المربعات كانت هتبقى أصفار
-           والموظف مش هيعرف يرجّع. الألوان **نفس ألوان عمود المنطقة**. -->
-      <div class="rdy-zone-chips" id="rdyZoneChips"></div>
+      <!-- ⚠️ مربعات فلتر المندوب — فلتر بضغطة واحدة على المساحة الفاضية في نص
+           صندوق الأعداد (قرار أحمد 05-09-2026، بدّل مربعات المنطقة في
+           v2.6.2). العدد جوّه كل مربع هو **العدد الكلي في الطابور**، مش
+           عدد المعروض بعد الفلترة — لأنه لو اتفلتر، باقي المربع كان هيبقى
+           صفر والموظف مش هيعرف يرجّع. الألوان **نفس ألوان عمود المندوب**. -->
+      <div class="rdy-courier-chips" id="rdyCourierChips"></div>
 
       <div class="rdy-actions">
         <div class="rdy-fresh">
@@ -1338,26 +1346,27 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
       <div class="flt-body collapsed" id="rdyFltBody">
 
         <!-- صف 1 — فلاتر الاختيار المتعدد (بند ٢١: كلها multi-select)
-             ⚠️ **المنطقة أول فلتر** (قرار أحمد 05-09-2026) — هي أول
-             قرار في الفرز عند الشحن، ومربعات المنطقة فوق بتكتب فيها. -->
+             ⚠️ **المندوب أول فلتر** (قرار أحمد 05-09-2026، v2.6.2) — مربعات
+             «بوسطة/مناديب» فوق بتكتب فيه، فمكانه هنا زي ما كان فلتر
+             المنطقة قبل ما يتشال. -->
         <div class="flt-row">
           <div class="flt-g">
-            <span class="flt-label">المنطقة</span>
-            <div class="ms-wrap" id="rdyMsWrap-zone">
-              <button class="ms-btn" id="rdyMsBtn-zone" data-default-label="الكل" onclick="rdyMsToggle('zone')">
-                <span id="rdyMsBtnLabel-zone">الكل</span><span class="ms-arrow">▾</span>
+            <span class="flt-label">المندوب</span>
+            <div class="ms-wrap" id="rdyMsWrap-courier">
+              <button class="ms-btn" id="rdyMsBtn-courier" data-default-label="الكل" onclick="rdyMsToggle('courier')">
+                <span id="rdyMsBtnLabel-courier">الكل</span><span class="ms-arrow">▾</span>
               </button>
-              <div class="ms-menu" id="rdyMsMenu-zone">
+              <div class="ms-menu" id="rdyMsMenu-courier">
                 <div class="ms-ftr-top">
-                  <button class="ms-ftr-clear" onclick="rdyMsClear('zone')">مسح الاختيار</button>
-                  <span class="ms-ftr-count" id="rdyMsFtrCount-zone"></span>
+                  <button class="ms-ftr-clear" onclick="rdyMsClear('courier')">مسح الاختيار</button>
+                  <span class="ms-ftr-count" id="rdyMsFtrCount-courier"></span>
                 </div>
-                <div class="ms-selectall-row" onclick="rdyMsToggleSelectAll('zone')">
-                  <input type="checkbox" id="rdyMsSelectAll-zone"
-                    onclick="event.stopPropagation()" onchange="rdyMsToggleSelectAll('zone', this.checked)">
-                  <span id="rdyMsSelectAllLabel-zone">تحديد الكل</span>
+                <div class="ms-selectall-row" onclick="rdyMsToggleSelectAll('courier')">
+                  <input type="checkbox" id="rdyMsSelectAll-courier"
+                    onclick="event.stopPropagation()" onchange="rdyMsToggleSelectAll('courier', this.checked)">
+                  <span id="rdyMsSelectAllLabel-courier">تحديد الكل</span>
                 </div>
-                <div class="ms-list" id="rdyMsList-zone"></div>
+                <div class="ms-list" id="rdyMsList-courier"></div>
               </div>
             </div>
           </div>
@@ -1379,27 +1388,6 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
                   <span id="rdyMsSelectAllLabel-orderType">تحديد الكل</span>
                 </div>
                 <div class="ms-list" id="rdyMsList-orderType"></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="flt-g">
-            <span class="flt-label">المندوب</span>
-            <div class="ms-wrap" id="rdyMsWrap-courier">
-              <button class="ms-btn" id="rdyMsBtn-courier" data-default-label="الكل" onclick="rdyMsToggle('courier')">
-                <span id="rdyMsBtnLabel-courier">الكل</span><span class="ms-arrow">▾</span>
-              </button>
-              <div class="ms-menu" id="rdyMsMenu-courier">
-                <div class="ms-ftr-top">
-                  <button class="ms-ftr-clear" onclick="rdyMsClear('courier')">مسح الاختيار</button>
-                  <span class="ms-ftr-count" id="rdyMsFtrCount-courier"></span>
-                </div>
-                <div class="ms-selectall-row" onclick="rdyMsToggleSelectAll('courier')">
-                  <input type="checkbox" id="rdyMsSelectAll-courier"
-                    onclick="event.stopPropagation()" onchange="rdyMsToggleSelectAll('courier', this.checked)">
-                  <span id="rdyMsSelectAllLabel-courier">تحديد الكل</span>
-                </div>
-                <div class="ms-list" id="rdyMsList-courier"></div>
               </div>
             </div>
           </div>
@@ -1474,9 +1462,8 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
         </div>
 
         <!-- Chips — سطر منفصل لكل فلتر (بند ٢٣) -->
-        <div class="ms-chips-row" id="rdyChipsRow-zone"></div>
-        <div class="ms-chips-row" id="rdyChipsRow-orderType"></div>
         <div class="ms-chips-row" id="rdyChipsRow-courier"></div>
+        <div class="ms-chips-row" id="rdyChipsRow-orderType"></div>
         <div class="ms-chips-row" id="rdyChipsRow-attempt"></div>
 
       </div>
@@ -1503,7 +1490,6 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
               <tr>
                 <th>خيارات</th>
                 <th class="sortable-th" data-rdy-sort-key="orderNumber" onclick="rdyToggleSort('orderNumber')">رقم الأوردر<span class="sort-icon" data-rdy-sort-key="orderNumber"></span></th>
-                <th class="sortable-th" data-rdy-sort-key="zone"        onclick="rdyToggleSort('zone')">المنطقة<span class="sort-icon" data-rdy-sort-key="zone"></span></th>
                 <th class="sortable-th" data-rdy-sort-key="courier"     onclick="rdyToggleSort('courier')">المندوب<span class="sort-icon" data-rdy-sort-key="courier"></span></th>
                 <th class="sortable-th" data-rdy-sort-key="printDate"   onclick="rdyToggleSort('printDate')">تاريخ الطباعة<span class="sort-icon" data-rdy-sort-key="printDate"></span></th>
                 <th class="sortable-th" data-rdy-sort-key="printTime"   onclick="rdyToggleSort('printTime')">وقت الطباعة<span class="sort-icon" data-rdy-sort-key="printTime"></span></th>
@@ -1822,7 +1808,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
 // ══════════════════════════════════════════════════════════════
 // §CONFIG
 // ══════════════════════════════════════════════════════════════
-const TOOL_VERSION       = 'v2.6.1';   // مصدر واحد: الهيدر + الـ Changelog + شاشة الدخول
+const TOOL_VERSION       = 'v2.6.2';   // مصدر واحد: الهيدر + الـ Changelog + شاشة الدخول
 const MIN_WORKER_VERSION = '2.4.0';    // أقل نسخة Worker الواجهة دي بتشتغل معاها
                                        // اترفعت لـ 2.4.0 لأن مدخل «ماسح باركود بوسطة»
                                        // بيعتمد على `get_order?tracking=` — الباراميتر ده
@@ -3050,75 +3036,65 @@ function rdyCourierClass(display) {
   return 'courier-other';
 }
 
-// ─── §READY-JS::zone — custom.zone (بند ٣، v2.4.0) ───
+// ─── §READY-JS::courierChips — مربعات بوسطة/مناديب كفلتر (v2.6.2) ───
 //
-// ⚠️ الميتافيلد choice list قيمه: Cairo+Giza · Other_Regions · Show_Room ·
-//    BLANK. و**الغايب زي BLANK** — الاتنين معناهم «مفيش منطقة مسجلة»،
-//    وبيتعرضوا بتحذير برتقالي مش بخانة فاضية: منطقة ناقصة قرار شحن ناقص.
-//    وأي قيمة **مش في القايمة** بتتعرض زي ما هي ببادج محايد — ما بنترجمش
-//    قيمة معرفناهاش وما بنخبّيهاش.
-const RDY_ZONE_MAP = {
-  'Cairo+Giza':    { label: 'قاهرة وجيزة',            cls: 'zone-cairo'    },
-  'Other_Regions': { label: 'محافظات',                cls: 'zone-other'    },
-  'Show_Room':     { label: 'شو روم',                 cls: 'zone-showroom' },
-  'BLANK':         { label: '⚠ لا توجد منطقة مسجلة ⚠', cls: 'zone-blank'    },
-};
-const RDY_ZONE_BLANK = RDY_ZONE_MAP['BLANK'];
-function rdyZoneInfo(zone) {
-  const v = (zone || '').trim();
-  if (!v) return RDY_ZONE_BLANK;
-  return RDY_ZONE_MAP[v] || { label: v, cls: '' };
+// ⚠️ بدّلت مربعات المنطقة (custom.zone اتشال من الأداة نهائيًا). مربعان
+//    بس: «بوسطة» (أحمر) لو المندوب بوسطة، و«مناديب» (أزرق) لأي حاجة
+//    تانية — **حتى لو مفيش مندوب مسجل خالص**. نفس تصنيف `rdyCourierClass`
+//    اللي بيلوّن عمود المندوب، بس مجمّع في مجموعتين بدل أربعة.
+const RDY_COURIER_GROUPS = [
+  { key: 'bosta', label: 'بوسطة',  cls: 'qc-bosta'    },
+  { key: 'other', label: 'مناديب', cls: 'qc-courier'  },
+];
+function rdyCourierGroupOf(courierDisplay) {
+  return rdyCourierClass(courierDisplay) === 'courier-bosta' ? 'bosta' : 'other';
 }
 
-// ─── §READY-JS::zoneChips — مربعات المناطق كفلتر (v2.5.0) ───
-//
-// مربع لكل منطقة موجودة في الطابور + عددها، بنفس ألوان عمود المنطقة،
-// والضغط عليه = نفس فعل اختيار المنطقة من فلتر «المنطقة» بالظبط
-// (`rdyMsToggleItem('zone', …)`) — **مش** حالة فلترة تانية موازية:
-// حالتين معناهم مربع مولّع وفلتر فاضي، أو العكس.
-//
+// الضغط عليه = تحديد/إلغاء **كل** قيم المندوب الحقيقية اللي بتقع في المجموعة
+// دي جوّه فلتر «المندوب» التفصيلي (`rdyMsState.courier.selected`) —
+// **مش** حالة فلترة تانية موازية: حالتين معناهم مربع مولّع وفلتر فاضي،
+// أو العكس. لو مندوب جديد ظهر بعد تحديث ومش بوسطة، الفلتر مابيضيفهوش
+// لوحده لحد ما الموظف يدوس تاني على المربع — نفس سلوك «تحديد الكل»
+// الموجود بالفعل في باقي الفلاتر (تحديد جزئي = مش محدد).
+function rdyCourierGroupValues(group) {
+  return rdyMsState.courier.items.filter(it => rdyCourierGroupOf(it.value) === group).map(it => it.value);
+}
+
 // ⚠️ العدّ من `rdyAllOrders` (الطابور كله) مش من المفلتر — لو اتحسب على
-//    المفلتر، أول ضغطة كانت هتصفّر باقي المربعات فما حدش يقدر يرجّع.
-const RDY_ZONE_ORDER = Object.values(RDY_ZONE_MAP).map(z => z.label);
-
-function rdyZoneChipRows() {
-  const map = new Map();
-  for (const o of rdyAllOrders) {
-    if (!map.has(o.zone)) map.set(o.zone, { zone: o.zone, cls: o.zoneCls, n: 0 });
-    map.get(o.zone).n++;
-  }
-  // ترتيب ثابت (ترتيب الـ choice list) — والقيم اللي برّه القايمة بعدهم
-  // أبجديًا. الترتيب بالعدد كان هيرقّص المربعات مكانها مع كل تحديث.
-  return [...map.values()].sort((a, b) => {
-    const ai = RDY_ZONE_ORDER.indexOf(a.zone), bi = RDY_ZONE_ORDER.indexOf(b.zone);
-    if (ai !== -1 || bi !== -1) return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
-    return a.zone.localeCompare(b.zone, 'ar');
-  });
+//    المفلتر، أول ضغطة كانت هتصفّر باقي المربع فما حدش يقدر يرجّع.
+function rdyCourierChipRows() {
+  const counts = { bosta: 0, other: 0 };
+  for (const o of rdyAllOrders) counts[rdyCourierGroupOf(o.courier)]++;
+  return RDY_COURIER_GROUPS.map(g => ({ ...g, n: counts[g.key] }));
 }
 
-function rdyRenderZoneChips() {
-  const box = document.getElementById('rdyZoneChips');
+function rdyRenderCourierChips() {
+  const box = document.getElementById('rdyCourierChips');
   if (!box) return;
-  box.innerHTML = rdyZoneChipRows().map(z => `
-    <button type="button" class="zchip ${rdyEsc(z.cls)}" data-zone="${rdyEsc(z.zone)}"
-            onclick="rdyZoneChipClick(this)">
-      <span>${rdyEsc(z.zone)}</span>
-      <span class="zchip-n">${z.n.toLocaleString('en-US')}</span>
+  box.innerHTML = rdyCourierChipRows().map(g => `
+    <button type="button" class="zchip ${rdyEsc(g.cls)}" data-courier-group="${rdyEsc(g.key)}"
+            onclick="rdyCourierChipClick(this)">
+      <span>${rdyEsc(g.label)}</span>
+      <span class="zchip-n">${g.n.toLocaleString('en-US')}</span>
     </button>`).join('');
-  rdyUpdateZoneChipStates();
+  rdyUpdateCourierChipStates();
 }
 
-// ⚠️ القيمة بتتقرا من `dataset` مش من نص متسرّب جوّه `onclick` — اسم
-//    منطقة برّه القايمة بيتعرض زي ما هو، وأي علامة تنصيص فيه كانت
-//    هتكسر النداء.
-function rdyZoneChipClick(el) {
-  rdyMsToggleItem('zone', el.dataset.zone || '');
+function rdyCourierChipClick(el) {
+  const group = el.dataset.courierGroup;
+  const values = rdyCourierGroupValues(group);
+  if (!values.length) return;
+  const sel = rdyMsState.courier.selected;
+  const allSelected = values.every(v => sel.has(v));
+  values.forEach(v => allSelected ? sel.delete(v) : sel.add(v));
+  rdyMsRenderList('courier'); rdyRenderChips(); rdyApplyFilters();
 }
 
-function rdyUpdateZoneChipStates() {
-  const sel = rdyMsState.zone.selected;
-  document.querySelectorAll('#rdyZoneChips .zchip').forEach(el => {
-    el.classList.toggle('active', sel.has(el.dataset.zone || ''));
+function rdyUpdateCourierChipStates() {
+  document.querySelectorAll('#rdyCourierChips .zchip').forEach(el => {
+    const values = rdyCourierGroupValues(el.dataset.courierGroup);
+    const active = values.length > 0 && values.every(v => rdyMsState.courier.selected.has(v));
+    el.classList.toggle('active', active);
   });
 }
 
@@ -3197,15 +3173,15 @@ function rdyOrderAge(iso, now = new Date()) {
 }
 
 // ─── §READY-JS::msState — كل الفلاتر multi-select (بند ٢١) ───
-// ⚠️ ترتيب المفاتيح هنا **هو** ترتيب صفوف الشيبس، والمنطقة الأولى
-//    مقصودة — نفس ترتيب الفلاتر في الـ HTML.
+// ⚠️ ترتيب المفاتيح هنا **هو** ترتيب صفوف الشيبس، والمندوب الأول
+//    مقصود (v2.6.2) — مربعات «بوسطة/مناديب» فوق بتكتب فيه، نفس ترتيب
+//    الفلاتر في الـ HTML.
 const rdyMsState = {
-  zone:      { items: [], selected: new Set(), search: '' },
-  orderType: { items: [], selected: new Set(), search: '' },
   courier:   { items: [], selected: new Set(), search: '' },
+  orderType: { items: [], selected: new Set(), search: '' },
   attempt:   { items: [], selected: new Set(), search: '' },
 };
-const rdyFilterLabels = { zone: 'المنطقة', orderType: 'النوع', courier: 'المندوب', attempt: 'المحاولة' };
+const rdyFilterLabels = { courier: 'المندوب', orderType: 'النوع', attempt: 'المحاولة' };
 
 let rdySearchTerm = '';
 let rdyDateFrom = null, rdyDateTo = null, rdyDateFilterActive = false;
@@ -3425,7 +3401,7 @@ function rdyClearAllFilters() {
 // تأخيرًا الأول**، يعني أحدث طباعة الأول — عكس اتجاه التاريخ. والأوردر
 // اللي مالوش وقت طباعة بيروح لآخر القايمة في التصاعدي.
 const RDY_SORT_CONFIG = {
-  orderNumber:{type:'string'}, zone:{type:'string'}, orderType:{type:'string'}, courier:{type:'string'},
+  orderNumber:{type:'string'}, orderType:{type:'string'}, courier:{type:'string'},
   attempt:{type:'string'}, printDate:{type:'date'}, printTime:{type:'date'},
   sincePrint:{type:'elapsed'}, createdDate:{type:'date'},
 };
@@ -3492,7 +3468,6 @@ function rdyFilteredRows() {
   const q = rdySearchTerm.trim().toLowerCase();
   return rdyAllOrders.filter(o => {
     if (q && !o.orderNumber.toLowerCase().includes(q)) return false;
-    if (rdyMsState.zone.selected.size      && !rdyMsState.zone.selected.has(o.zone))           return false;
     if (rdyMsState.orderType.selected.size && !rdyMsState.orderType.selected.has(o.orderType)) return false;
     if (rdyMsState.courier.selected.size   && !rdyMsState.courier.selected.has(o.courier))     return false;
     if (rdyMsState.attempt.selected.size   && !rdyMsState.attempt.selected.has(o.attempt))     return false;
@@ -3504,7 +3479,7 @@ function rdyFilteredRows() {
 
 function rdyApplyFilters() {
   rdyUpdateFilterIconState();
-  rdyUpdateZoneChipStates();   // المربعات فوق والفلتر تحت **حالة واحدة**
+  rdyUpdateCourierChipStates();   // المربعات فوق والفلتر تحت **حالة واحدة**
   const filtered = rdyFilteredRows();
   rdyRenderTable(rdyApplySort(filtered));
   document.getElementById('rdyFilteredCount').textContent = filtered.length.toLocaleString('en-US');
@@ -3517,7 +3492,7 @@ function rdyApplyFilters() {
 function rdyRenderTable(rows) {
   const body = document.getElementById('rdyTblBody');
   if (!rows.length) {
-    body.innerHTML = '<tr class="empty-row"><td colspan="10">لا توجد نتائج تطابق الفلاتر</td></tr>';
+    body.innerHTML = '<tr class="empty-row"><td colspan="9">لا توجد نتائج تطابق الفلاتر</td></tr>';
     return;
   }
   const now  = new Date();
@@ -3541,7 +3516,6 @@ function rdyRenderTable(rows) {
         </div>
       </td>
       <td>${orderLink(o.orderNumber, o.orderId)}</td>
-      <td><span class="zone-badge ${o.zoneCls}">${rdyEsc(o.zone)}</span></td>
       <td><span class="courier-cell ${rdyCourierClass(o.courier)}">${rdyEsc(o.courier)}</span></td>
       <td class="col-num">${o.printingTime ? formatDate(o.printingTime) : dash}</td>
       <td class="col-num">${o.printingTime ? formatTimeOnly(o.printingTime) : dash}</td>
@@ -3758,11 +3732,6 @@ async function rdyLoadOrders({ silent = false } = {}) {
         orderId:        o.orderId || null,
         orderNumber:    o.orderNumber || '',
         orderType:      o.orderType,
-        // ⚠️ الترجمة بتحصل **مرة واحدة هنا**: `zone` هو النص المعروض
-        // (وعليه الترتيب والفلترة) و`zoneCls` لونه. الرسم مابيترجمش تاني —
-        // لو ترجم، هيترجم نص عربي مترجم أصلاً ويضيّع اللون.
-        zone:           rdyZoneInfo(o.zone).label,
-        zoneCls:        rdyZoneInfo(o.zone).cls,
         courier:        rdyFormatCourier(o.courier),
         // S2 دايمًا Fulfilled من دورة S1 الأصلية — فالتمييز مالوش معنى هناك
         attempt:        o.isRepeatAttempt === true  ? 'repeat'
@@ -3792,10 +3761,10 @@ async function rdyLoadOrders({ silent = false } = {}) {
     rdyStartTicker();
     rdyArmAutoRefresh();   // العدّاد بيبدأ من آخر تحديث ناجح
 
-    // ⚠️ المربعات لازم تتصفّر هنا كمان — طابور رجع فاضي ومربعات المناطق
+    // ⚠️ المربعات لازم تتصفّر هنا كمان — طابور رجع فاضي ومربعات المندوب
     //    لسه شايلة أعداد الجلبة اللي فاتت = رقم كذّاب على الشاشة.
     if (!rdyAllOrders.length) {
-      rdySetCounts(0, 0, 0, 0); rdyRenderZoneChips(); rdyShowState('rdyStateEmpty'); return;
+      rdySetCounts(0, 0, 0, 0); rdyRenderCourierChips(); rdyShowState('rdyStateEmpty'); return;
     }
 
     rdyRebuildFilterItems();
@@ -3835,10 +3804,6 @@ function rdyRefreshIfDirty() {
 function rdyRebuildFilterItems() {
   const uniq = arr => [...new Set(arr)];
 
-  // ⚠️ القيمة هنا هي **النص المترجم** (`o.zone`) مش قيمة الميتافيلد —
-  //    نفس اللي بيتفلتر بيه في `rdyFilteredRows` وبيتعرض في الجدول.
-  rdyMsState.zone.items = uniq(rdyAllOrders.map(o => o.zone)).sort((a, b) => a.localeCompare(b, 'ar'))
-    .map(v => ({ value: v, label: v }));
   rdyMsState.orderType.items = uniq(rdyAllOrders.map(o => o.orderType)).sort()
     .map(v => ({ value: v, label: RDY_TYPE_LABELS[v] || v }));
   rdyMsState.courier.items = uniq(rdyAllOrders.map(o => o.courier)).sort((a, b) => a.localeCompare(b, 'ar'))
@@ -3852,7 +3817,7 @@ function rdyRebuildFilterItems() {
     rdyMsRenderList(k);
   });
   rdyRenderChips();
-  rdyRenderZoneChips();
+  rdyRenderCourierChips();
 }
 
 // تصفير كامل — بيتنادى من doLogout عشان الطابور مايفضلش معروض لموظف خرج
@@ -3875,7 +3840,7 @@ function rdyResetAll() {
   rdyRenderChips();
   rdyUpdateFilterIconState();
   rdyClearPartialBanner();
-  const zc = document.getElementById('rdyZoneChips');
+  const zc = document.getElementById('rdyCourierChips');
   if (zc) zc.innerHTML = '';
   document.getElementById('rdyTblBody').innerHTML = '';
   rdyShowState('rdyStateIdle');
