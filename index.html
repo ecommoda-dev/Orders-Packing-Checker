@@ -309,7 +309,9 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
 /* ── Order Header ── */
 .order-header-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px;box-shadow:var(--shadow)}
 .order-header-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
-.order-name{font-family:var(--font-mono);font-size:20px;font-weight:700}
+.order-name{font-family:var(--font-mono);font-size:20px;font-weight:700;direction:ltr;display:inline-block;color:var(--accent);text-decoration:none}
+.order-name[href]:hover{text-decoration:underline;color:var(--accent-dark)}
+.order-name.no-link{color:var(--text-primary);cursor:default}
 .stage-badge-sm{display:inline-flex;align-items:center;padding:4px 11px;border-radius:20px;font-size:12px;font-weight:800;font-family:var(--font-body);white-space:nowrap}
 .stage-badge-sm.s1{background:var(--accent-light);color:var(--accent)}
 .stage-badge-sm.s2{background:var(--purple-light);color:var(--purple);border:1px solid var(--purple-border)}
@@ -684,9 +686,11 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
 .type-text{font-weight:800;white-space:nowrap}
 .type-text.type-s1{color:var(--accent-dark)}
 .type-text.type-s2{color:var(--purple-dark)}
-.attempt-badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700}
-.attempt-badge.attempt-repeat{background:var(--amber-light);color:var(--amber-dark);border:1px solid var(--amber-border)}
-.attempt-badge.attempt-first{background:var(--surface-2);color:var(--text-secondary);border:1px solid var(--border)}
+/* المحاولة — **نص عادي بدون بادج** (v2.6.0)، بنفس ألوان البادج القديم:
+   محاولة مكرّرة كهرماني · أول شحنة رمادي. نفس منطق نوع الأوردر بالظبط. */
+.attempt-text{font-weight:800;white-space:nowrap}
+.attempt-text.attempt-repeat{color:var(--amber-dark)}
+.attempt-text.attempt-first{color:var(--text-secondary)}
 .cell-dash{color:var(--text-muted);font-weight:700}
 
 /* ── سلّم الوقت — **كلاس واحد للعمودين** (v2.4.0) ──
@@ -758,6 +762,8 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
 .opt-btn:active{transform:translateY(1px)}
 .opt-btn.opt-broken{background:var(--red);color:var(--on-accent);border-color:var(--red)}
 .opt-btn.opt-print{background:var(--amber);color:var(--on-accent);border-color:var(--amber)}
+/* أيقونة الطابعة — SVG بيرث لون الزرار. مقاس ثابت عشان مايتمططش مع النص. */
+.opt-ico{width:14px;height:14px;flex:none;display:block}
 .col-num{font-family:var(--font-mono);white-space:nowrap}
 .empty-row td{text-align:center;padding:22px 12px;color:var(--text-muted);font-size:12.5px;font-weight:600}
 </style>
@@ -830,6 +836,17 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
           <span class="cl-ver-date">05-09-2026</span>
         </div>
         <ul class="cl-items">
+          <li class="cl-item"><span class="cl-tag fix">إصلاح</span><span><b>رقم الأوردر في شاشة التغليف بقى لينك لشوبيفاي</b> — كان نص عادي، دلوقتي بيفتح الأوردر في تاب جديدة زي رقم الأوردر في الجدول وفي تاب السجل (قاعدة #20)</span></li>
+          <li class="cl-item"><span class="cl-tag fix">إصلاح</span><span>أيقونة زرار <b>«إعادة»</b> في عمود الخيارات بقت <b>أيقونة طابعة SVG</b> — الإيموجي 🖨 كان بيطلع مربع فاضي على أجهزة كتير</span></li>
+          <li class="cl-item"><span class="cl-tag change">تغيير</span><span>عمود <b>المحاولة</b> بقى <b>نص عادي</b> من غير بادج — بنفس الألوان (محاولة مكرّرة كهرماني · أول شحنة رمادي)، زي عمود نوع الأوردر</span></li>
+        </ul>
+      </div>
+      <div class="cl-version-block">
+        <div class="cl-version-row">
+          <span class="cl-ver-badge old">v2.5.0</span>
+          <span class="cl-ver-date">05-09-2026</span>
+        </div>
+        <ul class="cl-items">
           <li class="cl-item"><span class="cl-tag new">جديد</span><span><b>ماسح باركود بوسطة</b> — مربع تالت بيقرا <b>تراكينج بوسطة</b>، بيطلّع منه رقم الأوردر على شوبيفاي ويفتح شاشة التشييك عادي. نفس مسار التغليف بالظبط ونفس حارس «اتغلّف قبل كده» — والتراكينج بيفضل معروض فوق شاشة التشييك عشان تقارنه بالملصق</span></li>
           <li class="cl-item"><span class="cl-tag new">جديد</span><span><b>التلات مداخل جنب بعض</b> بالتساوي، كل واحد بلونه: ماسح شوبيفاي <b>أزرق</b> · ماسح بوسطة <b>أحمر</b> · الإدخال اليدوي محايد</span></li>
           <li class="cl-item"><span class="cl-tag new">جديد</span><span><b>الفوكس بيرجع لآخر مربع اتشتغل منه</b> — لو آخر أوردر فتحته من ماسح بوسطة، أول ما ترجع من التغليف تلاقي السكانة جاهزة على نفس المربع</span></li>
@@ -838,7 +855,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
           <li class="cl-item"><span class="cl-tag change">تغيير</span><span>قسم الفلاتر بقى <b>مقفول افتراضيًا</b> — الجدول بقى أقرب للشاشة، والفلاتر بضغطة على العنوان</span></li>
           <li class="cl-item"><span class="cl-tag change">تغيير</span><span><b>نوع الأوردر</b> بقى نص عادي من غير بادج — بنفس الألوان (عادي أزرق · استبدال بنفسجي)</span></li>
           <li class="cl-item"><span class="cl-tag change">تغيير</span><span>المندوب الفاضي بقى <b>«غير محدد»</b> بدل «لا يوجد مندوب مسجل»</span></li>
-          <li class="cl-item"><span class="cl-tag change">تغيير</span><span>زرار <b>«طباعة»</b> في عمود الخيارات بقى <b>«إعادة 🖨»</b> — نفس الرابط، ولسه لينك خارجي بلا أي أكشن على الأوردر</span></li>
+          <li class="cl-item"><span class="cl-tag change">تغيير</span><span>زرار <b>«طباعة»</b> في عمود الخيارات بقى <b>«إعادة»</b> — نفس الرابط، ولسه لينك خارجي بلا أي أكشن على الأوردر</span></li>
           <li class="cl-item"><span class="cl-tag fix">تنبيه</span><span>ماسح بوسطة محتاج <b>مفتاح بوسطة على الـ Worker</b>. لو ظهرت رسالة عن <code>BOSTA_API_KEY</code>، ده إعداد ناقص — باقي الأداة شغّالة عادي، وافحصه من 🩺 فحص النظام</span></li>
         </ul>
       </div>
@@ -1032,7 +1049,10 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
             <li><b>v2.5.0</b> — <b>الفوكس بيرجع لآخر مربع اتشتغل منه</b> (<code>lastEntryMode</code>): موظف شغّال دفعة ملصقات بوسطة مايرجعش بإيده للمربع بعد كل أوردر. في الذاكرة بس — مش <code>localStorage</code> — فموظف جديد بيبدأ من الافتراضي.</li>
             <li><b>v2.5.0</b> — <b>مربعات المناطق</b> في نص صندوق الأعداد = فلتر بضغطة. العدد جوّه المربع من <b>الطابور كله</b> مش من المفلتر: لو اتحسب على المفلتر، أول ضغطة كانت هتصفّر باقي المربعات فمحدش يقدر يرجّع. والضغط بينادي نفس <code>rdyMsToggleItem('zone', …)</code> — <b>حالة واحدة</b> مع فلتر «المنطقة»، مش حالة موازية.</li>
             <li><b>v2.5.0</b> — قسم الفلاتر <b>مقفول افتراضيًا</b>، و«المنطقة» بقت <b>أول فلتر</b>. قيمة الفلتر هي النص المترجم المعروض في العمود، مش قيمة الميتافيلد.</li>
-            <li><b>v2.5.0</b> — نوع الأوردر بقى <b>نص عادي بنفس الألوان</b> بدل بادج، والمندوب الفاضي بقى «غير محدد»، وزرار «طباعة» بقى «إعادة 🖨» (نفس الرابط — لسه لينك خارجي بلا أكشن).</li>
+            <li><b>v2.5.0</b> — نوع الأوردر بقى <b>نص عادي بنفس الألوان</b> بدل بادج، والمندوب الفاضي بقى «غير محدد»، وزرار «طباعة» بقى «إعادة» (نفس الرابط — لسه لينك خارجي بلا أكشن).</li>
+            <li><b>v2.6.0</b> — <b>رقم الأوردر في شاشة التغليف بقى لينك لشوبيفاي</b> (قاعدة #20) — نفس <code>orderLink()</code> اللي في الجدول وتاب السجل. ولو الأوردر جه من غير <code>id</code>، بيتعرض نص عادي (<code>.no-link</code>) مش لينك مكسور.</li>
+            <li><b>v2.6.0</b> — عمود <b>المحاولة</b> بقى نص عادي بنفس الألوان بدل بادج — زي نوع الأوردر.</li>
+            <li><b>v2.6.0</b> — أيقونة زرار «إعادة» بقت <b>SVG</b> (<code>RDY_PRINT_ICON</code>) بترث لون الزرار. الإيموجي 🖨 (U+1F5A8) مش مدعوم على أجهزة كتير وكان بيطلع مربع فاضي — <b>ممنوع الرجوع لإيموجي هنا</b>.</li>
             <li><b>فخّ v2.5.0:</b> §BOSTA اتنقل حرفيًا من ريبو <code>Bosta-Orders-Shipped-Scanner</code>، فالكود ده بقى في <b>مكانين</b>. أي إصلاح على شكل رد بوسطة أو على <code>cleanOrderName</code> لازم يتعمل في الاتنين — نفس عيلة خطر <code>classifyS2Subtype</code>.</li>
             <li><b>فخّ:</b> منطق الـ multi-select والترتيب <b>متكرر</b> بين <code>§LOG-JS</code> و<code>§READY-JS</code> (الأول server-side والتاني client-side). أي تعديل على سلوك القوايم أو الترتيب لازم يتعمل في <b>الاتنين</b>.</li>
             <li><code>isPrintedNotPacked</code> بتسأل «اتطبع <b>بعد</b> آخر تغليف؟» مش «متملّي ولا فاضي» — ميتافيلدات التغليف مبتتصفّرش بين دورات الإرجاع، والمقارنة بـ <code>new Date()</code> مش نصوص (<code>printing_time</code> بتيجي بصيغتين).</li>
@@ -1505,7 +1525,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
         <div class="order-header-card">
           <div class="order-header-top">
             <div style="display:flex;align-items:center;gap:10px">
-              <span class="order-name" id="checkOrderName"></span>
+              <a class="order-name" id="checkOrderName" target="_blank" rel="noopener"></a>
               <span class="stage-badge-sm" id="checkStageBadge"></span>
             </div>
             <button class="btn-ghost btn-cancel-pack" onclick="resetToEntry()">❌ إلغاء التغليف</button>
@@ -1791,7 +1811,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
 // ══════════════════════════════════════════════════════════════
 // §CONFIG
 // ══════════════════════════════════════════════════════════════
-const TOOL_VERSION       = 'v2.5.0';   // مصدر واحد: الهيدر + الـ Changelog + شاشة الدخول
+const TOOL_VERSION       = 'v2.6.0';   // مصدر واحد: الهيدر + الـ Changelog + شاشة الدخول
 const MIN_WORKER_VERSION = '2.4.0';    // أقل نسخة Worker الواجهة دي بتشتغل معاها
                                        // اترفعت لـ 2.4.0 لأن مدخل «ماسح باركود بوسطة»
                                        // بيعتمد على `get_order?tracking=` — الباراميتر ده
@@ -2573,7 +2593,16 @@ function renderCheckScreen() {
 
   document.getElementById('stageCard').style.display = '';
 
-  document.getElementById('checkOrderName').textContent = currentOrder.name;
+  // رقم الأوردر لينك لشوبيفاي (قاعدة #20) — ولو مفيش id بيرجع نص عادي
+  const onEl = document.getElementById('checkOrderName');
+  onEl.textContent = currentOrder.name;
+  if (currentOrder.id) {
+    onEl.href = `https://admin.shopify.com/store/${SHOP_HANDLE}/orders/${currentOrder.id}`;
+    onEl.classList.remove('no-link');
+  } else {
+    onEl.removeAttribute('href');
+    onEl.classList.add('no-link');
+  }
   const sb = document.getElementById('checkStageBadge');
   sb.textContent = stage === 'S2' ? 'أوردر استبدال' : 'أوردر عادي';
   sb.className   = `stage-badge-sm ${stage.toLowerCase()}`;
@@ -3085,6 +3114,10 @@ function rdyUpdateZoneChipStates() {
 // ─── §READY-JS::optionLinks — عمود «خيارات» (بند ٧، v2.4.0) ───
 // لينكات خارجية بس — بتفتح الأداة في تاب جديدة و**خلاص**: مفيش أي أكشن
 // على الأوردر ومفيش نداء للـ Worker.
+// أيقونة الطابعة SVG — الإيموجي 🖨 (U+1F5A8) مابيترسمش على أجهزة كتير
+// وبيطلع مربع فاضي، فالأيقونة اتحوّلت لـ SVG بيرث لون الزرار (currentColor).
+const RDY_PRINT_ICON = '<svg class="opt-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v7H6z"/></svg>';
+
 const RDY_OPT_LINKS = {
   broken: 'https://ecommoda-dev.github.io/Order-Item-Remover/',
   print:  'https://ecommoda-dev.github.io/Order-Printer/',
@@ -3482,7 +3515,7 @@ function rdyRenderTable(rows) {
     const typeClass = o.orderType === 'S1' ? 'type-s1' : 'type-s2';
     const attemptCell = o.attempt === 'na'
       ? dash
-      : `<span class="attempt-badge ${o.attempt === 'repeat' ? 'attempt-repeat' : 'attempt-first'}">${rdyEsc(RDY_ATTEMPT_LABELS[o.attempt])}</span>`;
+      : `<span class="attempt-text ${o.attempt === 'repeat' ? 'attempt-repeat' : 'attempt-first'}">${rdyEsc(RDY_ATTEMPT_LABELS[o.attempt])}</span>`;
     const since = rdySincePrint(o.printingTime, now);
     const sinceCell = o.printingTime
       ? `<span class="time-badge ${since.cls}" data-rdy-since="${rdyEsc(o.printingTime)}">${rdyEsc(since.text)}</span>`
@@ -3493,7 +3526,7 @@ function rdyRenderTable(rows) {
       <td>
         <div class="opt-cell">
           <a class="opt-btn opt-broken" href="${RDY_OPT_LINKS.broken}" target="_blank" rel="noopener">عطلان</a>
-          <a class="opt-btn opt-print"  href="${RDY_OPT_LINKS.print}"  target="_blank" rel="noopener">إعادة 🖨</a>
+          <a class="opt-btn opt-print"  href="${RDY_OPT_LINKS.print}"  target="_blank" rel="noopener">إعادة ${RDY_PRINT_ICON}</a>
         </div>
       </td>
       <td>${orderLink(o.orderNumber, o.orderId)}</td>
