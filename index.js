@@ -1,9 +1,25 @@
 // ══════════════════════════════════════════════════════════════
 // §CONSTANTS
-// Pack Checker Worker — EcomModa  v2.4.0
+// Pack Checker Worker — EcomModa  v2.5.0
 // Tool: pack_checker | Endpoints: get_order, complete_pack, get_ready_orders,
 //                                 diag, get_config
 // skills: worker-builder v2.0.0 · html-builder v6.3.0 · constants v1.4.4 · order-lifecycle v1.2.0 · shopify-graphql-helper v1.0.0 · bosta-api-helper — 05-09-2026
+//
+// CHANGELOG v2.5.0:
+//   - 🔴 `appId` مقبول في `verify_employee` و`log_logout` — عشان
+//     `Warehouse-Operations-Center` (الهب) يسجّل دخوله وخروجه تحت اسمه
+//     `warehouse_ops_center` (`ecommoda-constants` §7) بدل ما يتسجّل
+//     `pack_checker` وهو مش هو. الأفعال التشغيلية (`packed`) بتفضل تحت
+//     `pack_checker` زي ما هي — ده الدخول بس.
+//     · `AUTH_APPS` **قايمة بيضاء مقفولة**: `appId` جاي من العميل وجدول
+//       `logs` مشترك بين كل الأدوات، فأي نص مقبول كان معناه صفوف يتيمة
+//       بأي قيمة `tool` (نفس اللي عمله `write_external_log` في
+//       `cod-payment-center-worker`).
+//     · قيمة مش في القايمة بترجع للاسم الافتراضي **بدون خطأ** — الواجهة
+//       القديمة مابتبعتش `appId` أصلاً، والرمي كان هيكسر الدخول عليها.
+//   - ⚠️ الرفع minor مش patch: باراميتر مقبول جديد، والهب بيعتمد عليه
+//     فعلاً (`WOC_WORKERS.pack.min = '2.5.0'`). Worker أقدم مش هيرجّع
+//     خطأ — هيسجّل تحت `pack_checker` في صمت.
 //
 // CHANGELOG v2.4.0:
 //   - 🔴 مدخل تالت: **سكانر تراكينج بوسطة**. `get_order` بقى بياخد
@@ -117,7 +133,26 @@
 // ══════════════════════════════════════════════════════════════
 
 const TOOL_NAME      = 'pack_checker';
-const WORKER_VERSION = '2.4.1';
+const WORKER_VERSION = '2.5.0';
+
+// ─── §CONSTANTS::authApps — مين مسموح له يسجّل دخوله على الـ Worker ده ───
+//
+// الـ Worker ده هو نقطة الدخول الموحّدة لمحطة المخزن: الأداة المستقلة بتسجّل
+// تحت اسمها، و`Warehouse-Operations-Center` بيسجّل تحت اسمه هو
+// (`ecommoda-constants` §7). الأفعال التشغيلية (`packed`) بتفضل تحت
+// `pack_checker` دايمًا — ده الدخول بس.
+//
+// 🔴 **قايمة بيضاء مقفولة، مش قبول لأي نص.** `appId` جاي من العميل، وجدول
+//    `logs` **مشترك بين الـ ٣٠ أداة**. من غير القايمة دي أي طلب معاه السر
+//    يقدر يكتب صفوف بأي قيمة `tool` — وده بالظبط اللي عمله `write_external_log`
+//    في `cod-payment-center-worker` (اتشال في v3.3.0 بعد ما سمح بصفوف يتيمة).
+const AUTH_APPS = new Set([TOOL_NAME, 'warehouse_ops_center']);
+
+// قيمة مش في القايمة بترجع للاسم الافتراضي **بدون خطأ** — الواجهة القديمة
+// مابتبعتش `appId` أصلاً، ورمي خطأ هنا كان هيكسر الدخول عليها.
+function resolveAuthTool(appId) {
+  return AUTH_APPS.has(appId) ? appId : TOOL_NAME;
+}
 
 // ─── §CONSTANTS::ready — ثوابت طابور «جاهز للتغليف» (مدموجة من ready_to_pack) ───
 // سقف صفحات الـ pagination على قايمة الطابور — 250 أوردر للصفحة. الوضع
@@ -1312,7 +1347,7 @@ export default {
 
       if (action === 'verify_employee') {
         if (request.method !== 'POST') return json({ error: 'POST required' }, 405, request);
-        const { username, pin } = await request.json().catch(() => ({}));
+        const { username, pin, appId } = await request.json().catch(() => ({}));
         if (!username || !pin) return json({ ok: false, error: 'username و pin مطلوبان' }, 400, request);
 
         const displayName = await verifyEmployee(env.DB, username, pin);
@@ -1322,7 +1357,7 @@ export default {
         let logged = true;
         try {
           await writeLog(env.DB, {
-            tool:     TOOL_NAME,
+            tool:     resolveAuthTool(appId),
             type:     'login',
             employee: username,
             notes:    `دخول: ${displayName}`,
@@ -1335,11 +1370,12 @@ export default {
 
       if (action === 'log_logout') {
         const username = url.searchParams.get('username');
+        const appId    = url.searchParams.get('appId');
         let logged = true;
         if (username) {
           try {
             await writeLog(env.DB, {
-              tool:     TOOL_NAME,
+              tool:     resolveAuthTool(appId),
               type:     'logout',
               employee: username,
               notes:    `خروج: ${username.replace(/_/g, ' ')}`,
