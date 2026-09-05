@@ -97,7 +97,7 @@
 // ══════════════════════════════════════════════════════════════
 
 const TOOL_NAME      = 'pack_checker';
-const WORKER_VERSION = '2.2.0';
+const WORKER_VERSION = '2.3.0';
 
 // ─── §CONSTANTS::ready — ثوابت طابور «جاهز للتغليف» (مدموجة من ready_to_pack) ───
 // سقف صفحات الـ pagination على قايمة الطابور — 250 أوردر للصفحة. الوضع
@@ -799,6 +799,7 @@ const READY_LIST_QUERY = `
           s2_packed_by:     metafield(namespace: "custom", key: "s2_packed_by")         { value }
           s2_packing_dt:    metafield(namespace: "custom", key: "s2_packing_date_time") { value }
           courier:          metafield(namespace: "custom", key: "courier")              { value }
+          zone:             metafield(namespace: "custom", key: "zone")                 { value }
         }
       }
     }
@@ -1086,6 +1087,10 @@ function shapeReadyOrder(node, orderType, subtype = null) {
     orderType:       orderType,          // 'S1' | 'S2'
     s2Subtype:       subtype,            // 'EXCHANGE' | 'RETURN_ONLY' | null (S1)
     courier:         node.courier?.value || null,
+    // custom.zone — choice list: Cairo+Giza · Other_Regions · Show_Room · BLANK.
+    // بيترجّع **زي ما هو** والواجهة هي اللي بتترجمه؛ القيمة الغايبة و'BLANK'
+    // الاتنين معناهم «مفيش منطقة مسجلة» بس الفرق بينهم بيتحدد في الواجهة.
+    zone:            node.zone?.value || null,
     printingTime:    printingTime        || null,
     isRepeatAttempt: isRepeatAttempt,    // true | false | null (S2)
   };
