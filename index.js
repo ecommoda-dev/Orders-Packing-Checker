@@ -1,8 +1,32 @@
 // ══════════════════════════════════════════════════════════════
 // §CONSTANTS
-// Pack Checker Worker — EcomModa  v2.1.0
-// Tool: pack_checker | Endpoints: get_order, complete_pack, diag, get_config
-// skills: worker-builder v2.0.0 · constants v1.4.3 · order-lifecycle v1.2.0 · shopify-graphql-helper v1.0.0 — 03-09-2026
+// Pack Checker Worker — EcomModa  v2.2.0
+// Tool: pack_checker | Endpoints: get_order, complete_pack, get_ready_orders,
+//                                 diag, get_config
+// skills: worker-builder v2.0.0 · html-builder v6.3.0 · constants v1.4.4 · order-lifecycle v1.2.0 · shopify-graphql-helper v1.0.0 — 05-09-2026
+//
+// CHANGELOG v2.2.0:
+//   - 🔴 دمج أداة «أوردرات جاهزة للتغليف» (`Ready-to-Pack`) جوّه الأداة دي.
+//     الأداتين بقوا **أداة واحدة**: الطابور بيتعرض تحت مربعات الإدخال في
+//     نفس شاشة التغليف، فالموظف بيشوف اللي قدامه وبيسكن من غير ما يفتح
+//     تبويبة تانية. الـ endpoint `get_ready_orders` اتنقل حرفيًا من
+//     `ready-to-pack-worker` v2.1.0 مع كل حراسه:
+//       · `isPrintedNotPacked` — «اتطبع **بعد** آخر تغليف؟» مش «متملّي
+//         ولا فاضي»، والمقارنة بـ `new Date()` مش نصوص (R2-أ هناك)
+//       · `classifyS2Subtype` — أحدث دورة بس + شرط الكمية الحيّة على بنود
+//         الاستبدال الرسمية (R2-ب/ج هناك)، و**بدون** `refundedIds` (R1)
+//       · `classifyS2Batch` — تزامن محدود `S2_CONCURRENCY`، والفشل
+//         بيترجع في `s2Failed` + `partial:true` مش بيتبلع
+//       · `s2Truncated` — «صنّفنا بس مش شايفين كل حاجة» ≠ `s2Failed`
+//     ⚠️ الأداتين كانوا بيقروا نفس الميتافيلدات بنفس المنطق من ملفين
+//     منفصلين. الدمج بيشيل مصدر التعتيق ده: `classifyS2Subtype` بقت
+//     **نسخة واحدة** في الملف ده (R1 اتعمل في `pack_checker` v1.5.0
+//     واتكرر في `ready_to_pack` لحد v2.1.0 — بالظبط عشان كانوا اتنين).
+//   - 🟡 `MAX_PAGES` بتاع الطابور اسمه `READY_MAX_PAGES` — الملف فيه
+//     `MAX_PAGES = 10` بتاع تصفيح أوردر التغليف الواحد، ودول رقمين
+//     بمعنيين مختلفين تمامًا (صفحات أوردر واحد مقابل صفحات قايمة).
+//   - 🟡 `?action=diag` بقى بيفحص `read_returns` كمان — الطابور بيعتمد
+//     على `returns` في تصنيف S2، وكانت الصلاحية مطلوبة أصلاً للتغليف.
 //
 // CHANGELOG v2.1.0:
 //   - 🔴 R3 — `complete_pack` بقى بيتحقق من شوبيفاي قبل أي كتابة. كان
@@ -73,7 +97,19 @@
 // ══════════════════════════════════════════════════════════════
 
 const TOOL_NAME      = 'pack_checker';
-const WORKER_VERSION = '2.1.0';
+const WORKER_VERSION = '2.2.0';
+
+// ─── §CONSTANTS::ready — ثوابت طابور «جاهز للتغليف» (مدموجة من ready_to_pack) ───
+// سقف صفحات الـ pagination على قايمة الطابور — 250 أوردر للصفحة. الوضع
+// الطبيعي صفحة واحدة؛ السقف عشان endCursor عالق مايتحوّلش للوب لحد حد CPU.
+// ⚠️ **مش** نفس `MAX_PAGES` اللي تحت في §PACK — دي صفحات **قايمة أوردرات**،
+//    وديك صفحات **بنود أوردر واحد**. الرقمين مالهمش علاقة ببعض.
+const READY_MAX_PAGES = 20;
+
+// حد التزامن عند تصنيف S2 في الطابور. التزامن المفتوح (Promise.all على
+// المصفوفة كلها) بيولّد THROTTLED من شوبيفاي، واللي بدوره كان بيتحوّل
+// لأوردرات ناقصة في القايمة.
+const S2_CONCURRENCY = 4;
 
 // ══════════════════════════════════════════════════════════════
 // §CORS
@@ -722,6 +758,340 @@ async function evaluatePackGuard(env, order, stage, items) {
 }
 
 // ══════════════════════════════════════════════════════════════
+// §READY — طابور «جاهز للتغليف»
+//
+// مدموج من `ready-to-pack-worker` v2.1.0 (05-09-2026). الأداتين كانوا
+// بيقروا **نفس** الميتافيلدات بنفس المنطق من ملفين منفصلين — وده اللي
+// خلّى إصلاح R1 (`refundedIds`) يتعمل هنا في v1.5.0 ويفضل مكسور هناك
+// لحد v2.1.0، والأداتين يقولوا حاجتين متضادتين عن نفس الأوردر.
+//
+// ⚠️ الفلترة **بتتعمل هنا مش في فلتر شوبيفاي.** فلتر شوبيفاي بيجيب
+//    `manual_status:Ready` / `status_2_r_e:Ready` بس؛ شرط «اتطبع ولسه
+//    ما اتغلّفش» بيتنفّذ في `isPrintedNotPacked` **بعد** الجلب. يعني
+//    تعديل `READY_LIST_QUERY` لوحده مش كفاية.
+// ══════════════════════════════════════════════════════════════
+
+// ─── §READY::READY_LIST_QUERY — جلب الأوردرات بالفلتر (بدون بنود) ───
+//
+// بيجيب الميتافيلدات اللازمة للفلترة + displayFulfillmentStatus.
+// البنود بتتجلب بـ READY_DETAIL_QUERY منفصل للـ S2 **بس**.
+//
+// ⚠️ displayFulfillmentStatus مش fulfillmentStatus — التانية بترجع فاضية
+//    من غير أي error.
+//
+const READY_LIST_QUERY = `
+  query GetReadyOrders($cursor: String, $queryStr: String) {
+    orders(first: 250, after: $cursor, query: $queryStr) {
+      pageInfo { hasNextPage endCursor }
+      edges {
+        node {
+          id
+          name
+          legacyResourceId
+          createdAt
+          displayFulfillmentStatus
+          manual_status:    metafield(namespace: "custom", key: "manual_status")        { value }
+          status_2_r_e:     metafield(namespace: "custom", key: "status_2_r_e")         { value }
+          printing_time_s1: metafield(namespace: "custom", key: "printing_time_s1")     { value }
+          printing_time_s2: metafield(namespace: "custom", key: "printing_time_s2")     { value }
+          s1_packed_by:     metafield(namespace: "custom", key: "s1_packed_by")         { value }
+          s1_packing_dt:    metafield(namespace: "custom", key: "s1_packing_date_time") { value }
+          s2_packed_by:     metafield(namespace: "custom", key: "s2_packed_by")         { value }
+          s2_packing_dt:    metafield(namespace: "custom", key: "s2_packing_date_time") { value }
+          courier:          metafield(namespace: "custom", key: "courier")              { value }
+        }
+      }
+    }
+  }
+`;
+
+// ─── §READY::READY_DETAIL_QUERY — بنود تصنيف S2 (EXCHANGE vs RETURN_ONLY) ───
+//
+// بيجيب:
+//   - lineItems: fulfillableQuantity — مصدر الحقيقة الوحيد للكمية النشطة
+//   - returns:   exchangeLineItems لتحديد بنود الاستبدال الرسمية،
+//                + createdAt و status لاختيار **أحدث دورة** (Rule 15 ②)
+//
+// ⚠️ `fulfillableQuantity` بيتجاب **جوّه** exchangeLineItems.lineItems كمان —
+//    مش بس في lineItems الأعلى. كده الحكم على «بند استبدال لسه حيّ»
+//    مابيعتمدش على lookup في map ممكن يفضى لو lineItems اتقصّت عند 50.
+//    (اتأكد من schema 2026-01 على أوردر حي #52402 يوم 03-09-2026)
+//
+// ⚠️ مفيش بلوك `refunds` هنا **بقرار** — راجع R1 في `classifyS2Subtype`.
+//    `fulfillableQuantity` بيعكس أي refund بالفعل، فجلب الـ refunds كان
+//    بيغذّي استبعاد يدوي = خصم مزدوج.
+//
+const READY_DETAIL_QUERY = `
+  query GetReadyOrderDetail($id: ID!) {
+    order(id: $id) {
+      id
+
+      lineItems(first: 50) {
+        pageInfo { hasNextPage }
+        nodes {
+          id
+          fulfillableQuantity
+        }
+      }
+
+      returns(first: 10) {
+        pageInfo { hasNextPage }
+        nodes {
+          id
+          status
+          createdAt
+          closedAt
+          exchangeLineItems(first: 50) {
+            pageInfo { hasNextPage }
+            nodes {
+              id
+              lineItems {
+                id
+                fulfillableQuantity
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+// ─── §READY::fetchReadyOrders — pagination على READY_LIST_QUERY ───
+async function fetchReadyOrders(env, token, queryStr, opName) {
+  let cursor  = null;
+  let hasNext = true;
+  let pages   = 0;
+  const all   = [];
+
+  while (hasNext) {
+    if (++pages > READY_MAX_PAGES) {
+      throw new Error(
+        `${opName}: تجاوز سقف الصفحات (${READY_MAX_PAGES} × 250 أوردر). ` +
+        `ده مش الوضع الطبيعي للطابور — راجع الفلتر قبل ما ترفع السقف.`
+      );
+    }
+
+    const data = await shopifyGQL(env, token, READY_LIST_QUERY, {
+      cursor:   cursor,
+      queryStr: queryStr,
+    }, opName);
+
+    // shopifyGQL بترمي على data الفاضية وعلى data.errors، فوصولنا هنا معناه
+    // إن الرد سليم فعلاً. غياب `orders` هنا = تغيير في الـ schema، مش خطأ عابر.
+    const conn = data.data.orders;
+    if (!conn) throw new Error(`${opName}: الرد وصل بدون حقل orders — الفلتر: ${queryStr}`);
+
+    for (const edge of conn.edges) all.push(edge.node);
+
+    hasNext = conn.pageInfo.hasNextPage;
+    cursor  = conn.pageInfo.endCursor;
+  }
+
+  return all;
+}
+
+// ─── §READY::classifyS2Subtype ───
+//
+// بيحدد نوع أوردر الـ S2 من بنوده الفعلية:
+//   exchangeItems = البنود اللي هتتغلّف فعلاً في S2:
+//     1. استبدال رسمي:   returns[].exchangeLineItems[].lineItems
+//     2. استبدال غير رسمي: lineItems اللي fulfillableQuantity > 0 ومش في (1)
+//
+//   فيه بند هيتبعت → 'EXCHANGE' · مفيش → 'RETURN_ONLY' (استرجاع بس)
+//
+function classifyS2Subtype(orderDetail) {
+  // ⚠️⚠️ ممنوع تُعاد إضافة `refundedIds` هنا مهما بدا منطقيًا — R1 في مراجعة
+  //      03-09-2026، والقائمة الحمراء بند ١٠. `fulfillableQuantity` من شوبيفاي
+  //      **بيعكس بالفعل** أي refund أو order edit، فأي استبعاد يدوي إضافي
+  //      بيخصم الكمية مرتين ويشيل بند لسه فيه قطعة نشطة بعد مرتجع جزئي.
+  //      الغلط ده اتعمل في `classifyOrderItems` هنا واتشال في v1.5.0،
+  //      واتكرر في `ready_to_pack` واتشال في v2.1.0. **مرتين — متعملهاش تالتة.**
+
+  // 1. أحدث دورة إرجاع/استبدال — مش تجميع على كل الدورات (Rule 15 ②)
+  //
+  //    الدورات القديمة بنودها اتسوّت خلاص. التجميع عليها كان بيخلّي دورة
+  //    استبدال مقفولة من شهر تقول إن الأوردر فيه شغل دلوقتي.
+  //
+  //    ⚠️ الترتيب بالـ `createdAt` مش بترتيب المصفوفة — شوبيفاي مش ضامنة
+  //       ترتيب `returns.nodes`، والاعتماد عليه بيدي «أحدث دورة» عشوائية.
+  const cycles = (orderDetail.returns?.nodes || [])
+    .filter(r => !['CANCELED', 'DECLINED'].includes(r.status))
+    .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+  const current = cycles[cycles.length - 1] || null;
+
+  // 2. بنود الاستبدال الرسمية للدورة الحالية بس
+  const formalExchange = [];
+  for (const ex of (current?.exchangeLineItems?.nodes || [])) {
+    for (const li of (ex.lineItems || [])) formalExchange.push(li);
+  }
+  const formalExchangeIds = new Set(formalExchange.map(li => li.id));
+
+  // 3. بند استبدال رسمي **لسه فولفيلابل** = شغل حقيقي.
+  //
+  //    ⚠️ الشرط ده هو إصلاح R2(ب) في `ready_to_pack`. الكود القديم كان
+  //    `if (formalExchangeIds.size > 0) return 'EXCHANGE'` — بيقصّر الدائرة
+  //    قبل ما يتأكد إن البنود دي لسه فيها كمية. دورة استبدال بنودها اتشحنت
+  //    خلاص (fulfillableQuantity = 0) كانت بترجّع EXCHANGE، الأوردر يظهر في
+  //    الطابور، والمغلِّف يفتحه ويلاقي «لا توجد منتجات استبدال» = **شغل وهمي**.
+  //    (اتأكد على بيانات حيّة: #30652 · #30816 · #31569 · #31739 · #31795
+  //     كلهم exchangeLineItems بكمية صفر — 03-09-2026)
+  if (formalExchange.some(li => (li.fulfillableQuantity || 0) > 0)) return 'EXCHANGE';
+
+  // 4. استبدال غير رسمي: أي بند لسه فولفيلابل ومش من بنود الدورة الرسمية
+  for (const li of (orderDetail.lineItems?.nodes || [])) {
+    if ((li.fulfillableQuantity || 0) > 0 && !formalExchangeIds.has(li.id)) {
+      return 'EXCHANGE';
+    }
+  }
+
+  // 5. مفيش أي بند هيتغلّف → استرجاع بس
+  return 'RETURN_ONLY';
+}
+
+// ─── §READY::readyDetailTruncated — القصّ في تفاصيل الأوردر ───
+//
+// التصنيف بيتحسب على القوايم اللي وصلت. لو القايمة اتقصّت، «مفيش بند
+// فولفيلابل» ممكن تكون «البند الفولفيلابل كان في الصفحة اللي ما وصلتش».
+// الفرق ده لازم يبان — نفس فلسفة `truncated` في §PACK.
+function readyDetailTruncated(orderDetail) {
+  if (orderDetail.lineItems?.pageInfo?.hasNextPage) return true;
+  if (orderDetail.returns?.pageInfo?.hasNextPage)   return true;
+  for (const ret of (orderDetail.returns?.nodes || [])) {
+    if (ret.exchangeLineItems?.pageInfo?.hasNextPage) return true;
+  }
+  return false;
+}
+
+// ─── §READY::classifyS2Batch — تصنيف بتزامن محدود ───
+//
+// N+1 بطبيعته (نداء READY_DETAIL_QUERY لكل أوردر S2 مرشّح)، بس **بتزامن
+// محدود** — Promise.all مفتوح على 30 أوردر بيولّد THROTTLED، واللي كان
+// بيتحوّل لأوردرات مختفية من غير أي رسالة.
+//
+// بيرجّع { classified, failed } — الفشل **بيترجع**، مايتبلعش. الأوردر اللي
+// فشل تصنيفه مش داخل النتيجة، والواجهة بتعرض بانر بالعدد.
+// وكل عنصر في `classified` معاه `truncated` — تصنيف اتبنى على قايمة ناقصة.
+//
+async function classifyS2Batch(env, token, candidates) {
+  const classified = [];
+  const failed     = [];
+  let   next       = 0;
+
+  async function worker() {
+    while (true) {
+      const i = next++;
+      if (i >= candidates.length) return;
+      const node = candidates[i];
+      try {
+        const result = await shopifyGQL(
+          env, token, READY_DETAIL_QUERY, { id: node.id }, `تفاصيل ${node.name}`
+        );
+        const detail = result.data.order;
+        if (!detail) {
+          failed.push({ orderName: node.name, reason: 'شوبيفاي رجّعت أوردر فاضي' });
+          continue;
+        }
+        classified.push({
+          node,
+          subtype:   classifyS2Subtype(detail),
+          truncated: readyDetailTruncated(detail),
+        });
+      } catch (e) {
+        failed.push({ orderName: node.name, reason: e.message });
+      }
+    }
+  }
+
+  await Promise.all(
+    Array.from({ length: Math.min(S2_CONCURRENCY, candidates.length) }, worker)
+  );
+
+  return { classified, failed };
+}
+
+// ─── §READY::isPrintedNotPacked — شرط «اتطبع ولسه ما اتغلّفش» ───
+//
+// السؤال الحقيقي مش «اتغلّف قبل كده؟» — هو **«اتطبع بعد آخر تغليف؟»**.
+//
+// ميتافيلدات التغليف **مبتتصفّرش بين دورات الإرجاع/الاستبدال**. أوردر خلّص
+// دورة استبدال قبل كده بيفضل `s2_packed_by` متملّي فيه للأبد، فلما دورة
+// جديدة تفتح وتتطبع كان الشرط القديم (`متملّي = اتغلّف`) بيفلتره برّه
+// الطابور **للأبد** — والقطعة الجديدة مستنية تتغلّف ومحدش شايفها.
+// طباعة أحدث من آخر تغليف = دورة جديدة اتفتحت واتطبعت وما اتغلّفتش.
+// (R2-أ في `ready_to_pack` v2.1.0 — قرار أحمد المسار ب)
+//
+// ⚠️ التغيير **إضافي بحت**: النتيجة superset من السلوك القديم — كل أوردر
+//    كان بيظهر لسه بيظهر، والزيادة هي حالة إعادة الطباعة بس. يعني مستحيل
+//    يخفي شغل؛ أسوأ حالة ضوضاء، وحارس `evaluatePackGuard` هيقول «اتغلّف
+//    قبل كده والبنود ما اتغيّرتش» لو ظهر بالغلط.
+//
+// ⚠️⚠️ المقارنة بـ `new Date()` **مش مقارنة نصوص**. `printing_time_s1/s2`
+//      بتيجي **بصيغتين مختلفتين على نفس الحقل**:
+//        · `2026-08-30T04:16:46Z`       ← من أداة الطباعة
+//        · `2026-08-23T11:37:07+00:00`  ← من Bosta Bulk
+//      (الاتنين مأكدين على أوردرات حيّة — #52641 و#51812 يوم 03-09-2026)
+//      الصيغتين **بالصدفة** بيترتّبوا صح نصيًا في أغلب الحالات، بس ده هشّ:
+//      `…T09:07:51.500Z` مقابل `…T09:07:51+00:00` بيدي ترتيب غلط، وأي
+//      إزاحة غير `+00:00` بتكسره تمامًا. و`sX_packing_date_time` دايمًا
+//      `…Z` من الأداة دي — فالمقارنة **عابرة للصيغ** بطبيعتها.
+//
+function isPrintedNotPacked(printed, packedBy, packedDt) {
+  const isPrinted = !!(printed && printed.trim() !== '');
+  if (!isPrinted) return false;
+
+  const hasPackedBy = !!(packedBy && packedBy.trim() !== '');
+  const hasPackedDt = !!(packedDt && packedDt.trim() !== '');
+
+  // ما اتغلّفش خالص → محتاج تغليف.
+  if (!hasPackedBy && !hasPackedDt) return true;
+
+  // اتغلّف — يفضل السؤال: اتطبع **بعد** آخر تغليف؟
+  const printedAt = new Date(printed);
+  const packedAt  = hasPackedDt ? new Date(packedDt) : null;
+
+  // تاريخ مش قابل للقراءة (أو تغليف بدون تاريخ — صفوف قديمة كتبت
+  // `packed_by` بس) → بنرجع للسلوك القديم: «اتغلّف» = مايظهرش.
+  // الاتجاه الآمن هنا هو **عدم** التكرار، لأن التصعيد اليدوي بالسكان موجود
+  // في نفس الشاشة، والضوضاء في الطابور بتضيّع ثقة المخزن فيه.
+  if (!packedAt || isNaN(printedAt.getTime()) || isNaN(packedAt.getTime())) return false;
+
+  return printedAt.getTime() > packedAt.getTime();
+}
+
+// ─── §READY::shapeReadyOrder ───
+//
+// ⚠️ المفتاح الرقمي اسمه `orderId` والاسم `orderNumber` — القاعدة الموحّدة
+//    في كل الستاك (worker-builder Step 5). الواجهة بتبني منهم لينك شوبيفاي.
+//
+function shapeReadyOrder(node, orderType, subtype = null) {
+  const printingTime = orderType === 'S1'
+    ? node.printing_time_s1?.value
+    : node.printing_time_s2?.value;
+
+  const orderId = node.legacyResourceId || node.id.split('/').pop();
+
+  // order-lifecycle قاعدة 5: الـ fulfillment عمره ما بيتلغي لما الأوردر يرجع
+  // لمحاولة توصيل تانية، فـ (S1 = Ready) + Fulfilled = **محاولة مكرّرة** مش
+  // شحنة جديدة. لأوردرات S2 القيمة دي دايمًا Fulfilled من دورة S1 الأصلية،
+  // فمالهاش معنى هناك وبترجع null.
+  const isRepeatAttempt = orderType === 'S1'
+    ? node.displayFulfillmentStatus === 'FULFILLED'
+    : null;
+
+  return {
+    orderId:         orderId,
+    orderNumber:     node.name,
+    createdAt:       node.createdAt,
+    orderType:       orderType,          // 'S1' | 'S2'
+    s2Subtype:       subtype,            // 'EXCHANGE' | 'RETURN_ONLY' | null (S1)
+    courier:         node.courier?.value || null,
+    printingTime:    printingTime        || null,
+    isRepeatAttempt: isRepeatAttempt,    // true | false | null (S2)
+  };
+}
+
+// ══════════════════════════════════════════════════════════════
 // §HANDLER
 // ══════════════════════════════════════════════════════════════
 
@@ -876,7 +1246,9 @@ export default {
             `query DiagScopes { currentAppInstallation { accessScopes { handle } } }`,
             {}, 'diagScopes');
           const scopes = (data?.data?.currentAppInstallation?.accessScopes || []).map(s => s.handle);
-          // الصلاحيات دي مستخرجة من التحقق الفعلي للاستعلامات على الـ schema
+          // الصلاحيات دي مستخرجة من التحقق الفعلي للاستعلامات على الـ schema.
+          // `read_returns` بيخدم §PACK و§READY الاتنين — تصنيف S2 في الطابور
+          // بيقرا `returns` زي ما التغليف بيقراها. (v2.2.0)
           const needed = ['read_orders', 'write_orders', 'read_returns', 'read_products'];
           const lack   = needed.filter(s => !scopes.includes(s));
           checks.push({
@@ -1257,6 +1629,69 @@ export default {
           items: serverItems,
           repack: !!guard.packedBy,
           stageAnalysis,
+        }, 200, request);
+      }
+
+      // ─── §READY ───────────────────────────────────────────
+
+      // ── get_ready_orders — طابور «جاهز للتغليف» ────────────
+      // قراءة بحتة: مفيش أي ميوتيشن ولا كتابة على أي أوردر ولا في D1.
+      if (action === 'get_ready_orders') {
+        assertEnv(env, 'shopify');
+        const token = await getAccessToken(env);
+
+        // S1 و S2 بالتوازي — نداءين مستقلين تمامًا
+        const [s1Raw, s2Raw] = await Promise.all([
+          fetchReadyOrders(env, token, 'metafields.custom.manual_status:Ready', 'أوردرات S1'),
+          fetchReadyOrders(env, token, 'metafields.custom.status_2_r_e:Ready',  'أوردرات S2'),
+        ]);
+
+        // ── فلترة S1 ──────────────────────────────────────────
+        const s1Filtered = s1Raw
+          .filter(node => isPrintedNotPacked(
+            node.printing_time_s1?.value,
+            node.s1_packed_by?.value,
+            node.s1_packing_dt?.value,
+          ))
+          .map(node => shapeReadyOrder(node, 'S1'));
+
+        // ── فلترة S2 (بدون subtype بعد) ───────────────────────
+        const s2Candidates = s2Raw.filter(node => isPrintedNotPacked(
+          node.printing_time_s2?.value,
+          node.s2_packed_by?.value,
+          node.s2_packing_dt?.value,
+        ));
+
+        // ── تصنيف S2: EXCHANGE vs RETURN_ONLY ─────────────────
+        // الفشل بيترجع للواجهة، مايتبلعش. أوردر فشل تصنيفه مش معناه إنه
+        // مش موجود — معناه إننا معرفناش نصنّفه، والفرق ده لازم يبان.
+        const { classified, failed } = await classifyS2Batch(env, token, s2Candidates);
+
+        const s2Filtered = classified
+          .filter(entry => entry.subtype === 'EXCHANGE')
+          .map(({ node, subtype }) => shapeReadyOrder(node, 'S2', subtype));
+
+        // أوردرات اتصنّفت على قايمة بنود/دورات مقصوصة — التصنيف **ممكن**
+        // يكون غلط في الاتجاهين، فالأسماء بترجع للواجهة كتحذير منفصل.
+        const s2Truncated = classified
+          .filter(entry => entry.truncated)
+          .map(entry => entry.node.name);
+
+        // ── دمج + ترتيب ───────────────────────────────────────
+        const orders = [...s1Filtered, ...s2Filtered].sort((a, b) =>
+          new Date(b.createdAt) - new Date(a.createdAt)
+        );
+
+        return json({
+          ok:       true,
+          total:    orders.length,
+          orders:   orders,
+          // partial = القايمة دي ناقصة أوردرات معرفناش نصنّفها. الواجهة
+          // بتعرض بانر أحمر — «تعذّر الاستعلام» مش «مش موجود».
+          partial:  failed.length > 0,
+          s2Failed: failed,
+          // «صنّفنا بس مش شايفين كل حاجة» — نبرة تانية غير s2Failed.
+          s2Truncated,
         }, 200, request);
       }
 
