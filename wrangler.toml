@@ -1,4 +1,7 @@
 # Orders Packing Checker (Pack Checker) — EcomModa
+# من v2.2.0 الأداة دي مدموجة مع «أوردرات جاهزة للتغليف» — الـ Worker بقى
+# بيخدم `get_ready_orders` كمان (قراءة بحتة، مفيش كتابة زيادة ومفيش
+# متغيّرات ولا bindings جديدة). التفاصيل في CLAUDE.md قسم «الدمج».
 # ⚠️ name لازم يطابق اسم الـ Worker في داشبورد Cloudflare حرف بحرف.
 #    لو اختلفوا، الـ build مش بيفشل — بينشر Worker جديد والأصلي بيتجمّد بصمت.
 
