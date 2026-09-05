@@ -40,6 +40,11 @@
   --orange:         #ea580c;
   --orange-light:   #fff7ed;
   --orange-border:  #fed7aa;
+  --orange-dark:    #9a3412;
+  /* سلّم التأخير في «الوقت منذ الطباعة» — أعلى درجة (٧ أيام فأكتر) */
+  --crit:           #7f1d1d;
+  --crit-light:     #fee2e2;
+  --crit-border:    #f87171;
 
   --surface-hover:      #f0f4f8;
   --neutral-dark:       #1a1d27;
@@ -547,9 +552,49 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
    اللي تحت هو **اللي الطابور بس محتاجه**.
    ══════════════════════════════════════════════════════════════ */
 .rdy-block{margin-top:12px}
-.rdy-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:0 2px 8px}
+.rdy-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 2px 10px}
+.rdy-heading-main{display:flex;flex-direction:column;gap:3px;min-width:220px}
 .rdy-heading-title{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:800;color:var(--text-mid)}
 .rdy-heading-hint{font-size:11px;color:var(--text-muted);font-weight:600}
+.rdy-heading-actions{display:flex;align-items:stretch;gap:8px;flex-wrap:wrap}
+
+/* ── لوحة «آخر تحديث» — الختم + العدّاد النسبي جنب بعض ──
+   العدّاد بيلوّن نفسه بالقِدَم: طابور عمره نص ساعة مش نفس طابور
+   اتحدّث من دقيقة، والفرق ده لازم يبان من غير ما الموظف يحسبه. */
+.rdy-fresh{display:flex;flex-direction:column;justify-content:center;gap:5px;
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);
+  box-shadow:var(--shadow);padding:7px 11px}
+.rdy-fresh-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.rdy-fresh-label{font-size:10.5px;font-weight:700;color:var(--text-muted)}
+.rdy-stamp{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.rdy-stamp-chip{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:20px;
+  background:var(--surface-2);border:1px solid var(--border);
+  font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--text-secondary);white-space:nowrap}
+.rdy-ago{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:20px;
+  font-size:11px;font-weight:800;white-space:nowrap;border:1px solid var(--border);
+  background:var(--surface-2);color:var(--text-secondary)}
+.rdy-ago.ago-fresh{background:var(--green-light);color:var(--green-dark);border-color:var(--green-border)}
+.rdy-ago.ago-ok{background:var(--accent-light);color:var(--accent-dark);border-color:var(--accent-border)}
+.rdy-ago.ago-warn{background:var(--amber-light);color:var(--amber-dark);border-color:var(--amber-border)}
+.rdy-ago.ago-stale{background:var(--red-light);color:var(--red-dark);border-color:var(--red-border)}
+
+/* ── زرار التحديث الرئيسي + بادج العدد ──
+   البادج بيقول «الطابور فيه كام» من غير ما الموظف ينزل للجدول. */
+.rdy-refresh-btn{display:inline-flex;align-items:center;gap:7px;cursor:pointer;
+  padding:9px 15px;border-radius:var(--radius-sm);border:1px solid var(--accent);
+  background:var(--accent);color:var(--on-accent);font-family:var(--font-body);
+  font-size:12.5px;font-weight:800;box-shadow:var(--shadow);transition:background .15s,transform .1s}
+.rdy-refresh-btn:hover:not(:disabled){background:var(--accent-dark)}
+.rdy-refresh-btn:active:not(:disabled){transform:translateY(1px)}
+.rdy-refresh-btn:disabled{opacity:.6;cursor:not-allowed}
+.rdy-refresh-btn.is-stale{border-color:var(--amber);background:var(--amber)}
+.rdy-refresh-btn.is-stale:hover:not(:disabled){background:var(--amber-dark)}
+.rdy-refresh-icon{font-size:15px;line-height:1;display:inline-block}
+.rdy-refresh-btn.loading .rdy-refresh-icon{animation:rdySpin .8s linear infinite}
+.rdy-refresh-badge{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:20px;
+  padding:0 6px;border-radius:20px;background:var(--on-accent);color:var(--accent-dark);
+  font-family:var(--font-mono);font-size:11.5px;font-weight:800;line-height:1}
+.rdy-refresh-btn.is-stale .rdy-refresh-badge{color:var(--amber-dark)}
 
 /* بانر «تعذّر الاستعلام» ≠ «مش موجود» */
 .partial-banner{display:none;margin:0 0 10px;padding:11px 14px;border-radius:9px;background:var(--red-light);
@@ -590,6 +635,26 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
 .attempt-badge.attempt-repeat{background:var(--amber-light);color:var(--amber-dark);border:1px solid var(--amber-border)}
 .attempt-badge.attempt-first{background:var(--surface-2);color:var(--text-secondary);border:1px solid var(--border)}
 .cell-dash{color:var(--text-muted);font-weight:700}
+
+/* ── سلّم «الوقت منذ الطباعة» ──
+   اللون بيتغيّر مع كل **يوم تقويمي** جديد، مش مع كل ساعة: طول ما
+   الطباعة في نفس اليوم اللون واحد (دقايق/ساعات)، وأول ما اليوم
+   يعدّي بيبدأ سلّم التأخير. أوردر اتطبع ١١ مساءً بيبقى «متأخر يوم»
+   الساعة ١ صباحًا — وده الصح للمخزن، مش ٢٤ ساعة بالساعة. */
+.since-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;
+  font-size:11px;font-weight:800;white-space:nowrap;border:1px solid var(--border);
+  background:var(--surface-2);color:var(--text-secondary)}
+.since-badge.since-d0{background:var(--green-light);color:var(--green-dark);border-color:var(--green-border)}
+.since-badge.since-d1{background:var(--amber-light);color:var(--amber-dark);border-color:var(--amber-border)}
+.since-badge.since-d2{background:var(--orange-light);color:var(--orange-dark);border-color:var(--orange-border)}
+.since-badge.since-d3{background:var(--red-light);color:var(--red-dark);border-color:var(--red-border)}
+.since-badge.since-d7{background:var(--crit);color:var(--on-accent);border-color:var(--crit)}
+.since-badge.since-none{background:var(--surface-2);color:var(--text-muted)}
+
+/* عدّاد عمر الأوردر — بالأيام بس (بند: جوّه نفس عمود تاريخ الأوردر) */
+.age-badge{display:inline-block;margin-inline-start:6px;padding:2px 8px;border-radius:20px;
+  background:var(--surface-2);border:1px solid var(--border);
+  font-size:10.5px;font-weight:700;color:var(--text-secondary);white-space:nowrap}
 .col-num{font-family:var(--font-mono);white-space:nowrap}
 .empty-row td{text-align:center;padding:22px 12px;color:var(--text-muted);font-size:12.5px;font-weight:600}
 </style>
@@ -659,6 +724,21 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
       <div class="cl-version-block">
         <div class="cl-version-row">
           <span class="cl-ver-badge" id="clLatestVerBadge"></span>
+          <span class="cl-ver-date">05-09-2026</span>
+        </div>
+        <ul class="cl-items">
+          <li class="cl-item"><span class="cl-tag new">جديد</span><span>عمود <b>«الوقت منذ الطباعة»</b> في الطابور — بيتحسب لوحده وبيتلوّن مع كل يوم تقويمي جديد: نفس اليوم أخضر بالدقايق والساعات، ويوم كهرماني، يومين برتقالي، ٣–٦ أيام أحمر، وسبعة فأكتر أحمر داكن</span></li>
+          <li class="cl-item"><span class="cl-tag new">جديد</span><span>عدّاد <b>عمر الأوردر بالأيام</b> جوّه عمود «تاريخ الأوردر» — «اليوم» · «من امبارح» · «من ٥ أيام»</span></li>
+          <li class="cl-item"><span class="cl-tag new">جديد</span><span>زرار <b>تحديث</b> واضح في هيدر الطابور ببادج بعدد الأوردرات — وموجود كمان في حالتَي «في انتظار التحديث» و«لا توجد أوردرات»</span></li>
+          <li class="cl-item"><span class="cl-tag new">جديد</span><span>لوحة «آخر تحديث»: التاريخ والوقت + عدّاد <b>«منذ كام»</b> بيتحدّث كل نص دقيقة وبيتلوّن بالقِدَم، والزرار بيبقى كهرماني بعد ١٥ دقيقة</span></li>
+          <li class="cl-item"><span class="cl-tag change">تغيير</span><span>ترتيب أعمدة الطابور: رقم الأوردر · المندوب · تاريخ الطباعة · وقت الطباعة · الوقت منذ الطباعة · تاريخ الأوردر · نوع الأوردر · المحاولة — والتصدير بقى بنفس الترتيب</span></li>
+          <li class="cl-item"><span class="cl-tag change">تغيير</span><span>الترتيب الافتراضي للطابور بقى <b>بتاريخ الأوردر من الأقدم للأحدث</b> — والضغطة التالتة على أي عمود بترجّع للترتيب ده</span></li>
+          <li class="cl-item"><span class="cl-tag change">تغيير</span><span>التحديث بعد التغليف بقى عند <b>الرجوع</b> لشاشة الطابور مش في لحظة الحفظ — استعلام واحد، وبيشمل الرجوع من تاب السجل</span></li>
+        </ul>
+      </div>
+      <div class="cl-version-block">
+        <div class="cl-version-row">
+          <span class="cl-ver-badge old">v2.2.0</span>
           <span class="cl-ver-date">05-09-2026</span>
         </div>
         <ul class="cl-items">
@@ -764,6 +844,8 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
             <li><code>§LOG-JS</code> (HTML) — جدول السجل · الفلاتر · الترتيب · الصفحات · تصدير XLSX</li>
             <li><code>§READY</code> (Worker) — طابور «جاهز للتغليف»: <code>get_ready_orders</code> · <code>isPrintedNotPacked</code> · <code>classifyS2Subtype</code> · <code>classifyS2Batch</code> · <code>shapeReadyOrder</code></li>
             <li><code>§TOOL::readyQueue</code> (HTML) — الطابور تحت مربعات الإدخال · <code>§READY-JS</code> — الفلاتر · الترتيب · الجدول · تصدير XLSX</li>
+            <li><code>§READY-JS::elapsed</code> (HTML) — <code>rdySincePrint</code> · <code>rdyOrderAgeText</code> · <code>rdyDayDiff</code> — الأعمدة المحسوبة بالوقت (بتوقيت القاهرة، بفرق الأيام التقويمية)</li>
+            <li><code>§READY-JS::ticker</code> + <code>::freshness</code> (HTML) — نبضة كل ٣٠ ثانية بتحدّث الأرقام النسبية <b>في مكانها</b> بدون أي نداء شبكة</li>
           </ul>
 
           <h4>KEY VARIABLES</h4>
@@ -775,6 +857,8 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
             <li><code>currentEmployee</code> — <code>{ username, displayName }</code> في الذاكرة فقط</li>
             <li><code>msState</code> — حالة فلاتر الاختيار المتعدد في <b>تاب السجل</b> (فلترة server-side)</li>
             <li><code>rdyMsState</code> · <code>rdyAllOrders</code> · <code>rdySortState</code> — حالة فلاتر وترتيب <b>الطابور</b> (فلترة client-side). منفصلة عن اللي فوقها بالكامل — الاتنين شغّالين في نفس الصفحة.</li>
+            <li><code>rdyDirty</code> — «حصل تغليف والطابور بقى قديم». التحديث بيحصل عند <b>الرجوع</b> لشاشة الطابور، والفلاج مابيتصفّرش غير بعد جلب ناجح.</li>
+            <li><code>rdyLastLoadedAt</code> — ختم آخر جلب ناجح؛ منه بيتحسب «منذ كام» ولون الزرار.</li>
             <li><code>TOOL_NAME = 'pack_checker'</code> — قيمة <code>tool</code> في جدول <code>logs</code></li>
           </ul>
 
@@ -789,7 +873,10 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
             <li><code>dateFrom</code>/<code>dateTo</code> بيتقارنوا بـ <code>timestamp</code> المخزّن (UTC) والعرض بتوقيت القاهرة (UTC+3) — فرق ٣ ساعات ممكن يحط عملية متأخرة في يوم UTC اللي بعده.</li>
             <li><code>edit_count</code> لسه في schema الـ D1 للتوافق بس — مابيتكتبش من v1.3.0+.</li>
             <li><b>v2.2.0</b> — أداة «أوردرات جاهزة للتغليف» اتدمجت هنا. الطابور بيظهر <b>تحت مربعات الإدخال في نفس تاب التغليف</b> — مش تاب منفصلة — و<b>الضغط على صف مابيفتحش شاشة التشييك</b> (قرار أحمد 05-09-2026). الدخول للتغليف من السكانر أو الإدخال اليدوي زي ما هو.</li>
-            <li><b>v2.2.0</b> — الطابور بيتحدّث لوحده في تلات لحظات: بعد الدخول · بالضغط على «↺ تحديث» · <b>بعد أي تغليف ناجح أو جزئي</b> (تحديث صامت، عشان أوردر خلص ما يفضلش معروض في الطابور).</li>
+            <li><b>v2.3.0</b> — الطابور بيتحدّث لوحده في تلات لحظات: بعد الدخول · بالضغط على «تحديث» · <b>عند الرجوع لشاشة الطابور بعد أي تغليف ناجح أو جزئي</b> (تحديث صامت). التحديث بقى عند الرجوع مش في لحظة الحفظ — استعلام واحد بدل اتنين، والقايمة بتتجاب بعد ما الكتابة على شوبيفاي خلصت. <b>مفيش polling</b>.</li>
+            <li><b>v2.3.0</b> — «الوقت منذ الطباعة» و«عمر الأوردر» بيتحسبوا بـ<b>فرق الأيام التقويمية بتوقيت القاهرة</b> مش بـ(الآن − الوقت)/٢٤ ساعة. أوردر اتطبع ١١ مساءً بيبقى «متأخر يوم» الساعة ١ صباحًا — وده الصح للمخزن. الحساب من <code>toCairo</code>، لأن <code>iso.slice(0,10)</code> كان هيقفل اليوم الساعة ٣ صباحًا بتوقيتنا.</li>
+            <li><b>v2.3.0</b> — الأرقام النسبية بتتحدّث <b>في مكانها</b> (<code>data-rdy-since</code> · <code>data-rdy-age</code>) مش بإعادة رسم الجدول — إعادة الرسم بتصفّر تمرير الجدول تحت إيد الموظف. النبضة بتقف عند الخروج (<code>rdyStopTicker</code>).</li>
+            <li><b>v2.3.0</b> — الترتيب الافتراضي للطابور بقى <b>تاريخ الأوردر تصاعديًا</b> في الواجهة (<code>rdyDefaultSort</code>). الـ Worker لسه بيرجّع الأحدث أولاً — الترتيب الافتراضي قرار واجهة عشان يتغيّر من غير deploy للـ Worker.</li>
             <li><b>v2.2.0</b> — منطق الطابور والتغليف بيقروا نفس الميتافيلدات، و<code>classifyS2Subtype</code> بقت <b>نسخة واحدة</b> في الـ Worker. قبل الدمج كانت في ملفين، وده اللي خلّى إصلاح <code>refundedIds</code> يتعمل في أداة ويفضل مكسور في التانية لشهور.</li>
             <li><b>فخّ:</b> منطق الـ multi-select والترتيب <b>متكرر</b> بين <code>§LOG-JS</code> و<code>§READY-JS</code> (الأول server-side والتاني client-side). أي تعديل على سلوك القوايم أو الترتيب لازم يتعمل في <b>الاتنين</b>.</li>
             <li><code>isPrintedNotPacked</code> بتسأل «اتطبع <b>بعد</b> آخر تغليف؟» مش «متملّي ولا فاضي» — ميتافيلدات التغليف مبتتصفّرش بين دورات الإرجاع، والمقارنة بـ <code>new Date()</code> مش نصوص (<code>printing_time</code> بتيجي بصيغتين).</li>
@@ -956,9 +1043,30 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
        وده لينك خارجي مش فتح للتشييك. ─────────────────────────────── -->
   <div class="rdy-block" id="rdyBlock">
 
+    <!-- ⚠️ زرار التحديث ولوحة «آخر تحديث» في الهيدر مش جوّه صندوق العدّ:
+         الصندوق ده بيختفي في حالات «في انتظار التحديث» و«لا توجد أوردرات»،
+         والتحديث لازم يفضل في المتناول في الحالات دي بالذات. -->
     <div class="rdy-heading">
-      <div class="rdy-heading-title">📋 أوردرات جاهزة للتغليف</div>
-      <div class="rdy-heading-hint">اللي حالته Ready واتطبع ولسه ما اتغلّفش — للعرض بس، امسح الباركود فوق عشان تغلّف</div>
+      <div class="rdy-heading-main">
+        <div class="rdy-heading-title">📋 أوردرات جاهزة للتغليف</div>
+        <div class="rdy-heading-hint">اللي حالته Ready واتطبع ولسه ما اتغلّفش — للعرض بس، امسح الباركود فوق عشان تغلّف</div>
+      </div>
+      <div class="rdy-heading-actions">
+        <div class="rdy-fresh">
+          <div class="rdy-fresh-row">
+            <span class="rdy-fresh-label">آخر تحديث</span>
+            <span class="rdy-ago" id="rdyUpdatedAgo">لسه ما اتحدّثش</span>
+          </div>
+          <div class="rdy-stamp" id="rdyUpdatedAt">
+            <span class="rdy-stamp-chip">—</span>
+          </div>
+        </div>
+        <button class="rdy-refresh-btn" id="rdyRefreshMainBtn" onclick="rdyLoadOrders()">
+          <span class="rdy-refresh-icon">↺</span>
+          <span>تحديث</span>
+          <span class="rdy-refresh-badge" id="rdyRefreshBadge">0</span>
+        </button>
+      </div>
     </div>
 
     <div class="partial-banner" id="rdyPartialBanner"></div>
@@ -973,7 +1081,6 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
           <span class="count-badge badge-s2">استبدال: <span id="rdyCountS2">0</span></span>
           <span class="count-badge badge-repeat">محاولة مكرّرة: <span id="rdyCountRepeat">0</span></span>
         </div>
-        <div class="count-sub" id="rdyCountSub"></div>
       </div>
     </div>
 
@@ -1156,12 +1263,13 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
             <thead>
               <tr>
                 <th class="sortable-th" data-rdy-sort-key="orderNumber" onclick="rdyToggleSort('orderNumber')">رقم الأوردر<span class="sort-icon" data-rdy-sort-key="orderNumber"></span></th>
-                <th class="sortable-th" data-rdy-sort-key="orderType"   onclick="rdyToggleSort('orderType')">النوع<span class="sort-icon" data-rdy-sort-key="orderType"></span></th>
                 <th class="sortable-th" data-rdy-sort-key="courier"     onclick="rdyToggleSort('courier')">المندوب<span class="sort-icon" data-rdy-sort-key="courier"></span></th>
-                <th class="sortable-th" data-rdy-sort-key="attempt"     onclick="rdyToggleSort('attempt')">المحاولة<span class="sort-icon" data-rdy-sort-key="attempt"></span></th>
                 <th class="sortable-th" data-rdy-sort-key="printDate"   onclick="rdyToggleSort('printDate')">تاريخ الطباعة<span class="sort-icon" data-rdy-sort-key="printDate"></span></th>
                 <th class="sortable-th" data-rdy-sort-key="printTime"   onclick="rdyToggleSort('printTime')">وقت الطباعة<span class="sort-icon" data-rdy-sort-key="printTime"></span></th>
-                <th class="sortable-th" data-rdy-sort-key="createdDate" onclick="rdyToggleSort('createdDate')">تاريخ الإنشاء<span class="sort-icon" data-rdy-sort-key="createdDate"></span></th>
+                <th class="sortable-th" data-rdy-sort-key="sincePrint"  onclick="rdyToggleSort('sincePrint')">الوقت منذ الطباعة<span class="sort-icon" data-rdy-sort-key="sincePrint"></span></th>
+                <th class="sortable-th" data-rdy-sort-key="createdDate" onclick="rdyToggleSort('createdDate')">تاريخ الأوردر<span class="sort-icon" data-rdy-sort-key="createdDate"></span></th>
+                <th class="sortable-th" data-rdy-sort-key="orderType"   onclick="rdyToggleSort('orderType')">نوع الأوردر<span class="sort-icon" data-rdy-sort-key="orderType"></span></th>
+                <th class="sortable-th" data-rdy-sort-key="attempt"     onclick="rdyToggleSort('attempt')">المحاولة<span class="sort-icon" data-rdy-sort-key="attempt"></span></th>
               </tr>
             </thead>
             <tbody id="rdyTblBody"></tbody>
@@ -1469,7 +1577,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
 // ══════════════════════════════════════════════════════════════
 // §CONFIG
 // ══════════════════════════════════════════════════════════════
-const TOOL_VERSION       = 'v2.2.0';   // مصدر واحد: الهيدر + الـ Changelog + شاشة الدخول
+const TOOL_VERSION       = 'v2.3.0';   // مصدر واحد: الهيدر + الـ Changelog + شاشة الدخول
 const MIN_WORKER_VERSION = '2.2.0';    // أقل نسخة Worker الواجهة دي بتشتغل معاها
                                        // اترفعت لـ 2.2.0 لأن الطابور تحت مربعات الإدخال
                                        // بيعتمد على `get_ready_orders` — الـ endpoint ده
@@ -1694,6 +1802,7 @@ function switchMainTab(tab) {
   document.getElementById(tab === 'log' ? 'mainTabLog' : 'mainTabScan').classList.add('active');
   document.getElementById(`panel-${tab}`).classList.add('active');
   if (tab === 'log') fetchLog();
+  else rdyRefreshIfDirty();   // رجوع لشاشة الطابور بعد تغليف = تحديث تلقائي
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -2139,6 +2248,7 @@ function resetToEntry() {
   document.getElementById('packingContent').style.display = '';
   document.getElementById('scanBanner').className = 'scan-banner';
   setTimeout(() => orderInput.focus(), 100);
+  rdyRefreshIfDirty();   // رجعنا للطابور بعد تغليف — يتحدّث لوحده
 }
 
 // ── Render Check Screen ────────────────────────────────────────
@@ -2468,9 +2578,10 @@ async function completePack() {
     const status = data.status || 'success';
     const overrideNote = currentEditReason ? ' (إعادة تغليف)' : '';
     // الأوردر اتكتب عليه فعلاً في الحالتين (success و warning)، يعني
-    // المفروض يخرج من الطابور. تحديث صامت عشان القايمة تحت ما تفضلش
-    // بتعرض أوردر خلص — قايمة كاذبة أسوأ من قايمة قديمة.
-    rdyLoadOrders({ silent: true });
+    // المفروض يخرج من الطابور — قايمة كاذبة أسوأ من قايمة قديمة.
+    // بنعلّم الطابور إنه اتّسخ بس؛ الجلب بيحصل في `resetToEntry` لما
+    // الموظف يرجع لشاشة الإدخال (أو عند الرجوع لتاب «فحص أوردر»).
+    rdyDirty = true;
 
     if (status === 'warning') {
       showToast(`⚠ تغليف ${currentOrder.name} تم جزئيًا — راجع التفاصيل تحت${overrideNote}`, 'warning', 8000);
@@ -2533,6 +2644,14 @@ async function completePack() {
 
 let rdyAllOrders = [];   // الصفوف المحوّلة للعرض — الفلترة client-side عليها
 
+// `rdyDirty` = حصل تغليف والطابور المعروض بقى قديم. التحديث بيحصل لما
+// الموظف **يرجع** لشاشة الإدخال (أو لتاب «فحص أوردر») مش في لحظة التغليف
+// نفسها — عشان استعلام واحد بس بدل اتنين، وعشان القايمة اللي هيشوفها
+// تكون متجابة بعد ما الكتابة على شوبيفاي خلصت فعلاً.
+let rdyDirty   = false;
+// قفل بسيط ضد نداءين متوازيين (رجوع + تبديل تاب في نفس اللحظة)
+let rdyLoading = false;
+
 // ─── §READY-JS::labels ───
 const RDY_TYPE_LABELS    = { S1: 'عادي', S2: 'استبدال' };
 const RDY_ATTEMPT_LABELS = { repeat: 'محاولة مكرّرة', first: 'أول شحنة', na: 'غير محدد' };
@@ -2559,6 +2678,58 @@ function rdyYmd(d) {
 function rdyFormatCourier(courier) {
   if (!courier || !courier.trim()) return 'غير محدد';
   return courier.trim().toLowerCase() === 'bosta' ? 'بوسطة' : 'قاهرة';
+}
+
+// ─── §READY-JS::elapsed — الوقت المنقضي (بتوقيت القاهرة) ───
+//
+// ⚠️ الوحدة هنا **اليوم التقويمي** مش (الآن − الوقت)/٢٤ ساعة.
+//    «عدّى اليوم» في المخزن معناها التاريخ اتغيّر: أوردر اتطبع ١١ مساءً
+//    بيبقى «متأخر يوم» الساعة ١ صباحًا، مش بعد ٢٤ ساعة. الحساب بيتم على
+//    توقيت القاهرة (toCairo) لأن الـ ISO الجاي من شوبيفاي بتوقيت UTC،
+//    و`iso.slice(0,10)` كان هيقفل اليوم الساعة ٣ صباحًا بتوقيتنا.
+function rdyCairoDayIndex(dateLike) {
+  const d = toCairo(dateLike instanceof Date ? dateLike.toISOString() : dateLike);
+  return Math.floor(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()) / 86400000);
+}
+function rdyDayDiff(iso, now) {
+  return rdyCairoDayIndex(now) - rdyCairoDayIndex(iso);
+}
+
+// صيغ الجمع العربية — «٢ دقيقة» و«٣ يوم» غلط لغويًا وبتقلّل الثقة في الشاشة
+function rdyArMin(n)  { return n <= 0 ? 'أقل من دقيقة' : n === 1 ? 'دقيقة' : n === 2 ? 'دقيقتين' : n <= 10 ? `${n} دقايق`  : `${n} دقيقة`; }
+function rdyArHour(n) { return n === 1 ? 'ساعة' : n === 2 ? 'ساعتين' : n <= 10 ? `${n} ساعات` : `${n} ساعة`; }
+function rdyArDay(n)  { return n === 1 ? 'يوم'  : n === 2 ? 'يومين'  : n <= 10 ? `${n} أيام`  : `${n} يوم`;  }
+
+// «الوقت منذ الطباعة» — نص + درجة تأخير.
+// نفس اليوم = درجة واحدة (بالدقايق والساعات)، وكل يوم تقويمي جديد
+// بيرفع الدرجة ويغيّر الرسالة.
+function rdySincePrint(iso, now = new Date()) {
+  if (!iso) return { cls: 'since-none', text: '— لا يوجد وقت طباعة' };
+  const t = new Date(iso).getTime();
+  if (isNaN(t)) return { cls: 'since-none', text: '— وقت غير مقروء' };
+
+  const days = rdyDayDiff(iso, now);
+
+  if (days <= 0) {
+    const mins = Math.max(0, Math.floor((now.getTime() - t) / 60000));
+    const text = mins < 60
+      ? `🟢 منذ ${rdyArMin(mins)}`
+      : `🟢 منذ ${rdyArHour(Math.floor(mins / 60))}${mins % 60 ? ` و${rdyArMin(mins % 60)}` : ''}`;
+    return { cls: 'since-d0', text };
+  }
+  if (days === 1) return { cls: 'since-d1', text: '🟡 متأخر يوم — من امبارح' };
+  if (days === 2) return { cls: 'since-d2', text: '🟠 متأخر يومين' };
+  if (days <  7)  return { cls: 'since-d3', text: `🔴 متأخر ${rdyArDay(days)}` };
+  return { cls: 'since-d7', text: `⛔ متأخر ${rdyArDay(days)}` };
+}
+
+// عمر الأوردر — بالأيام **بس** (جوّه عمود تاريخ الأوردر، بدون ساعات)
+function rdyOrderAgeText(iso, now = new Date()) {
+  if (!iso) return '—';
+  const days = rdyDayDiff(iso, now);
+  if (days <= 0) return 'اليوم';
+  if (days === 1) return 'من امبارح';
+  return `من ${rdyArDay(days)}`;
 }
 
 // ─── §READY-JS::msState — كل الفلاتر multi-select (بند ٢١) ───
@@ -2781,9 +2952,13 @@ function rdyClearAllFilters() {
 }
 
 // ─── §READY-JS::sort — مستقل تمامًا عن الفلاتر (بند ٢٥) ───
+// `elapsed` = ترتيب بالوقت المنقضي مش بالتاريخ: تصاعدي معناه **الأقل
+// تأخيرًا الأول**، يعني أحدث طباعة الأول — عكس اتجاه التاريخ. والأوردر
+// اللي مالوش وقت طباعة بيروح لآخر القايمة في التصاعدي.
 const RDY_SORT_CONFIG = {
   orderNumber:{type:'string'}, orderType:{type:'string'}, courier:{type:'string'},
-  attempt:{type:'string'}, printDate:{type:'date'}, printTime:{type:'date'}, createdDate:{type:'date'},
+  attempt:{type:'string'}, printDate:{type:'date'}, printTime:{type:'date'},
+  sincePrint:{type:'elapsed'}, createdDate:{type:'date'},
 };
 let rdySortState = { key: null, dir: null };
 
@@ -2806,8 +2981,21 @@ function rdyUpdateSortHeaderUI() {
   });
 }
 
+// الترتيب الافتراضي: **تاريخ الأوردر من الأقدم للأحدث** (قرار أحمد
+// 05-09-2026) — أقدم أوردر فوق يعني الطابور بيتقرا من فوق لتحت زي
+// ما بيتشتغل. الـ Worker بيرجّع الأحدث أولاً؛ الترتيب ده بيتطبّق هنا
+// عشان الترتيب الافتراضي يبقى قرار واجهة يتغيّر من غير deploy للـ Worker.
+// الضغطة التالتة على أي عمود بترجّع للترتيب ده، مش لترتيب الـ Worker.
+function rdyDefaultSort(rows) {
+  return [...rows].sort((a, b) => {
+    const at = a.createdDate ? a.createdDate.getTime() : Infinity;
+    const bt = b.createdDate ? b.createdDate.getTime() : Infinity;
+    return at - bt;
+  });
+}
+
 function rdyApplySort(rows) {
-  if (!rdySortState.key) return rows;   // بلا ترتيب = ترتيب الـ Worker الأصلي (الأحدث أولاً)
+  if (!rdySortState.key) return rdyDefaultSort(rows);
   const cfg = RDY_SORT_CONFIG[rdySortState.key];
   const dir = rdySortState.dir === 'asc' ? 1 : -1;
   return [...rows].sort((a, b) => {     // نسخة جديدة — ممنوع تعديل المصفوفة الأصلية
@@ -2815,6 +3003,11 @@ function rdyApplySort(rows) {
     if (cfg.type === 'date') {
       const at = av ? av.getTime() : -Infinity;
       const bt = bv ? bv.getTime() : -Infinity;
+      return (at - bt) * dir;
+    }
+    if (cfg.type === 'elapsed') {
+      const at = av ? -av.getTime() : Infinity;
+      const bt = bv ? -bv.getTime() : Infinity;
       return (at - bt) * dir;
     }
     if (cfg.type === 'string') return String(av ?? '').localeCompare(String(bv ?? ''), 'ar') * dir;
@@ -2847,29 +3040,105 @@ function rdyApplyFilters() {
 }
 
 // ─── §READY-JS::renderTable ───
+// ⚠️ العمودان المحسوبان (`data-rdy-since` و`data-rdy-age`) بيحملوا الـ ISO
+//    جوّه الخلية عشان `rdyTick` تحدّثهم **في مكانهم** كل نص دقيقة من غير
+//    ما ترسم الجدول تاني — إعادة الرسم بتصفّر تمرير الجدول تحت إيد الموظف.
 function rdyRenderTable(rows) {
   const body = document.getElementById('rdyTblBody');
   if (!rows.length) {
-    body.innerHTML = '<tr class="empty-row"><td colspan="7">لا توجد نتائج تطابق الفلاتر</td></tr>';
+    body.innerHTML = '<tr class="empty-row"><td colspan="8">لا توجد نتائج تطابق الفلاتر</td></tr>';
     return;
   }
+  const now  = new Date();
   const dash = '<span class="cell-dash">—</span>';
   body.innerHTML = rows.map(o => {
     const typeClass = o.orderType === 'S1' ? 'type-s1' : 'type-s2';
     const attemptCell = o.attempt === 'na'
       ? dash
       : `<span class="attempt-badge ${o.attempt === 'repeat' ? 'attempt-repeat' : 'attempt-first'}">${rdyEsc(RDY_ATTEMPT_LABELS[o.attempt])}</span>`;
+    const since = rdySincePrint(o.printingTime, now);
+    const sinceCell = o.printingTime
+      ? `<span class="since-badge ${since.cls}" data-rdy-since="${rdyEsc(o.printingTime)}">${rdyEsc(since.text)}</span>`
+      : `<span class="since-badge since-none">${rdyEsc(since.text)}</span>`;
     return `
     <tr>
       <td>${orderLink(o.orderNumber, o.orderId)}</td>
-      <td><span class="type-badge ${typeClass}">${rdyEsc(RDY_TYPE_LABELS[o.orderType] || o.orderType)}</span></td>
       <td>${rdyEsc(o.courier)}</td>
-      <td>${attemptCell}</td>
       <td class="col-num">${o.printingTime ? formatDate(o.printingTime) : dash}</td>
       <td class="col-num">${o.printingTime ? formatTimeOnly(o.printingTime) : dash}</td>
-      <td class="col-num">${formatDate(o.createdAt)}</td>
+      <td>${sinceCell}</td>
+      <td class="col-num">${formatDate(o.createdAt)}<span class="age-badge" data-rdy-age="${rdyEsc(o.createdAt)}">${rdyEsc(rdyOrderAgeText(o.createdAt, now))}</span></td>
+      <td><span class="type-badge ${typeClass}">${rdyEsc(RDY_TYPE_LABELS[o.orderType] || o.orderType)}</span></td>
+      <td>${attemptCell}</td>
     </tr>`;
   }).join('');
+}
+
+// ─── §READY-JS::ticker — تحديث الأرقام النسبية في مكانها ───
+// نبضة واحدة كل ٣٠ ثانية بتحدّث: عدّاد «آخر تحديث» + كل خلايا «الوقت
+// منذ الطباعة» + عدّادات عمر الأوردر. **مفيش أي نداء شبكة هنا** — دي
+// أرقام محسوبة محليًا، والتحديث الفعلي بيفضل يدوي أو بعد تغليف.
+let rdyTickTimer = null;
+
+function rdyStartTicker() {
+  if (rdyTickTimer) return;
+  rdyTickTimer = setInterval(rdyTick, 30000);
+}
+function rdyStopTicker() {
+  if (rdyTickTimer) { clearInterval(rdyTickTimer); rdyTickTimer = null; }
+}
+
+function rdyTick() {
+  const now = new Date();
+  rdyRenderFreshness(now);
+  document.querySelectorAll('#rdyTblBody [data-rdy-since]').forEach(el => {
+    const info = rdySincePrint(el.dataset.rdySince, now);
+    el.className   = `since-badge ${info.cls}`;
+    el.textContent = info.text;
+  });
+  document.querySelectorAll('#rdyTblBody [data-rdy-age]').forEach(el => {
+    el.textContent = rdyOrderAgeText(el.dataset.rdyAge, now);
+  });
+}
+
+// ─── §READY-JS::freshness — «آخر تحديث» + «منذ كام» ───
+// ⚠️ ثقة الموظف في الطابور بتتبني على السطر ده. طابور اتحدّث من ٤٠ دقيقة
+//    شكله بالظبط زي واحد اتحدّث من دقيقة لو مافيش عدّاد — فالعدّاد بيلوّن
+//    نفسه، والزرار نفسه بيتحوّل لتحذير كهرماني بعد ١٥ دقيقة.
+let rdyLastLoadedAt = null;
+
+function rdyRenderFreshness(now = new Date()) {
+  const atEl  = document.getElementById('rdyUpdatedAt');
+  const agoEl = document.getElementById('rdyUpdatedAgo');
+  const btn   = document.getElementById('rdyRefreshMainBtn');
+  if (!atEl || !agoEl) return;
+
+  if (!rdyLastLoadedAt) {
+    atEl.innerHTML   = '<span class="rdy-stamp-chip">—</span>';
+    agoEl.textContent = 'لسه ما اتحدّثش';
+    agoEl.className   = 'rdy-ago';
+    if (btn) btn.classList.remove('is-stale');
+    return;
+  }
+
+  const iso = rdyLastLoadedAt.toISOString();
+  atEl.innerHTML =
+    `<span class="rdy-stamp-chip">${rdyEsc(formatDate(iso))}</span>` +
+    `<span class="rdy-stamp-chip">${rdyEsc(formatTimeOnly(iso))}</span>`;
+
+  const mins = Math.max(0, Math.floor((now.getTime() - rdyLastLoadedAt.getTime()) / 60000));
+  let cls, text;
+  if      (mins < 1)  { cls = 'ago-fresh'; text = '⏱ منذ لحظات'; }
+  else if (mins < 5)  { cls = 'ago-fresh'; text = `⏱ منذ ${rdyArMin(mins)}`; }
+  else if (mins < 15) { cls = 'ago-ok';    text = `⏱ منذ ${rdyArMin(mins)}`; }
+  else if (mins < 60) { cls = 'ago-warn';  text = `⏱ منذ ${rdyArMin(mins)} — يفضّل تحدّث`; }
+  else {
+    const hrs = Math.floor(mins / 60);
+    cls = 'ago-stale'; text = `⏱ منذ ${rdyArHour(hrs)} — الطابور قديم، حدّث`;
+  }
+  agoEl.className   = `rdy-ago ${cls}`;
+  agoEl.textContent = text;
+  if (btn) btn.classList.toggle('is-stale', mins >= 15);
 }
 
 // ─── §READY-JS::states ───
@@ -2930,6 +3199,15 @@ function rdyRenderPartialBanner(failed, truncated) {
 function rdySetRefreshing(active) {
   const btn = document.getElementById('rdyRefreshBtn');
   if (btn) btn.disabled = active;
+  // زرار الهيدر الرئيسي — نفس القفل، وأيقونته بتلف أثناء الجلب
+  const main = document.getElementById('rdyRefreshMainBtn');
+  if (main) { main.disabled = active; main.classList.toggle('loading', active); }
+}
+
+// بادج الزرار — عدد الأوردرات المحمّلة في الطابور
+function rdySetRefreshBadge(n) {
+  const b = document.getElementById('rdyRefreshBadge');
+  if (b) b.textContent = Number(n || 0).toLocaleString('en-US');
 }
 
 // `silent` = تحديث خلفي بعد تغليف ناجح — مايوريش حالة «جاري الجلب»
@@ -2937,6 +3215,8 @@ function rdySetRefreshing(active) {
 // نفسه نجح وبيتعرض في نتيجته. التحديث اليدوي (`↺ تحديث`) مش صامت.
 async function rdyLoadOrders({ silent = false } = {}) {
   if (!currentEmployee) return;
+  if (rdyLoading) return;            // نداء شغّال بالفعل — مفيش استعلام مكرّر
+  rdyLoading = true;
   rdySetRefreshing(true);
   if (!silent) { rdyClearPartialBanner(); rdyShowState('rdyStateLoading'); }
 
@@ -2962,10 +3242,22 @@ async function rdyLoadOrders({ silent = false } = {}) {
         // عمودا «التاريخ» و«الوقت» عرض بس — نفس الـ timestamp (بند ٨)
         printDate:      printObj,
         printTime:      printObj,
+        // «الوقت منذ الطباعة» بيترتّب بنفس الـ timestamp بس باتجاه معكوس
+        // (type: 'elapsed') — القيمة المعروضة بتتحسب وقت الرسم مش هنا،
+        // لأنها بتتغيّر مع الوقت والصف مايتعادش بناؤه.
+        sincePrint:     printObj,
       };
     });
 
     rdyRenderPartialBanner(data.s2Failed, data.s2Truncated);
+
+    // ⚠️ ختم «آخر تحديث» بيتسجّل حتى لو الطابور رجع فاضي — «اتحدّث ورجع
+    //    صفر» معلومة، و«ما اتحدّثش» معلومة تانية خالص.
+    rdyLastLoadedAt = new Date();
+    rdyDirty = false;                // ⚠️ بيتصفّر بعد **نجاح** الجلب بس
+    rdySetRefreshBadge(rdyAllOrders.length);
+    rdyRenderFreshness();
+    rdyStartTicker();
 
     if (!rdyAllOrders.length) { rdyShowState('rdyStateEmpty'); return; }
 
@@ -2978,7 +3270,6 @@ async function rdyLoadOrders({ silent = false } = {}) {
     document.getElementById('rdyCountS1').textContent     = s1.toLocaleString('en-US');
     document.getElementById('rdyCountS2').textContent     = s2.toLocaleString('en-US');
     document.getElementById('rdyCountRepeat').textContent = repeat.toLocaleString('en-US');
-    document.getElementById('rdyCountSub').textContent    = `آخر تحديث: ${formatDateTime(new Date().toISOString())}`;
 
     rdyShowState(null);
     rdyApplyFilters();
@@ -2990,8 +3281,17 @@ async function rdyLoadOrders({ silent = false } = {}) {
       rdyShowState('rdyStateIdle');
     }
   } finally {
+    rdyLoading = false;
     rdySetRefreshing(false);
   }
+}
+
+// بيتنادى من `resetToEntry` و`switchMainTab('scan')` — التحديث التلقائي
+// بعد أي تغليف. صامت لأن نتيجة التغليف نفسها معروضة فوقه، وتحذير عن
+// الطابور جنبها هيلخبط الموظف.
+function rdyRefreshIfDirty() {
+  if (!rdyDirty || !currentEmployee) return;
+  rdyLoadOrders({ silent: true });
 }
 
 // قوايم الفلاتر بتتبني من البيانات الفعلية — والاختيارات اللي مابقتش
@@ -3017,6 +3317,11 @@ function rdyRebuildFilterItems() {
 // تصفير كامل — بيتنادى من doLogout عشان الطابور مايفضلش معروض لموظف خرج
 function rdyResetAll() {
   rdyAllOrders = [];
+  rdyStopTicker();
+  rdyLastLoadedAt = null;
+  rdyDirty = false;
+  rdySetRefreshBadge(0);
+  rdyRenderFreshness();
   Object.keys(rdyMsState).forEach(k => { rdyMsState[k].selected.clear(); rdyMsState[k].items = []; });
   const si = document.getElementById('rdySearchInput');
   if (si) { si.value = ''; si.classList.remove('has-value'); }
@@ -3042,25 +3347,33 @@ async function rdyExportXLSX() {
     const wb = new ExcelJS.Workbook();
     const ws = wb.addWorksheet('جاهز للتغليف');
     ws.views = [{ rightToLeft: true }];
+    // ⚠️ ترتيب الأعمدة هنا **مطابق للجدول** — ملف تصدير بترتيب تاني
+    //    بيخلّي اللي بيراجعه يقارن عمود بعمود غلط.
     ws.columns = [
-      { header: 'رقم الأوردر',   key: 'orderNumber', width: 14 },
-      { header: 'النوع',         key: 'type',        width: 12 },
-      { header: 'المندوب',       key: 'courier',     width: 14 },
-      { header: 'المحاولة',      key: 'attempt',     width: 16 },
-      { header: 'تاريخ الطباعة', key: 'printDate',   width: 14 },
-      { header: 'وقت الطباعة',   key: 'printTime',   width: 14 },
-      { header: 'تاريخ الإنشاء', key: 'createdDate', width: 14 },
+      { header: 'رقم الأوردر',        key: 'orderNumber', width: 14 },
+      { header: 'المندوب',            key: 'courier',     width: 14 },
+      { header: 'تاريخ الطباعة',      key: 'printDate',   width: 14 },
+      { header: 'وقت الطباعة',        key: 'printTime',   width: 14 },
+      { header: 'الوقت منذ الطباعة',  key: 'sincePrint',  width: 24 },
+      { header: 'تاريخ الأوردر',      key: 'createdDate', width: 14 },
+      { header: 'عمر الأوردر',        key: 'orderAge',    width: 14 },
+      { header: 'نوع الأوردر',        key: 'type',        width: 12 },
+      { header: 'المحاولة',           key: 'attempt',     width: 16 },
     ];
     ws.getRow(1).font = { bold: true };
+    // لقطة وقت واحدة لكل الصفوف — عشان الملف يبقى متسق مع نفسه
+    const now = new Date();
     rows.forEach(o => ws.addRow({
       orderNumber: o.orderNumber,
-      type:        RDY_TYPE_LABELS[o.orderType] || o.orderType,
       courier:     o.courier,
-      attempt:     o.attempt === 'na' ? '—' : RDY_ATTEMPT_LABELS[o.attempt],
       // عمود التاريخ في XLSX بدون إيموجي (بند ٢٣ — الاستثناء الوحيد)
       printDate:   o.printingTime ? formatDateForExport(o.printingTime) : '—',
       printTime:   o.printingTime ? formatTimeForExport(o.printingTime) : '—',
+      sincePrint:  o.printingTime ? rdySincePrint(o.printingTime, now).text.replace(/^\S+\s/, '') : '—',
       createdDate: formatDateForExport(o.createdAt),
+      orderAge:    rdyOrderAgeText(o.createdAt, now),
+      type:        RDY_TYPE_LABELS[o.orderType] || o.orderType,
+      attempt:     o.attempt === 'na' ? '—' : RDY_ATTEMPT_LABELS[o.attempt],
     }));
 
     const buf  = await wb.xlsx.writeBuffer();
