@@ -117,7 +117,7 @@
 // ══════════════════════════════════════════════════════════════
 
 const TOOL_NAME      = 'pack_checker';
-const WORKER_VERSION = '2.4.0';
+const WORKER_VERSION = '2.4.1';
 
 // ─── §CONSTANTS::ready — ثوابت طابور «جاهز للتغليف» (مدموجة من ready_to_pack) ───
 // سقف صفحات الـ pagination على قايمة الطابور — 250 أوردر للصفحة. الوضع
@@ -197,6 +197,20 @@ function assertEnv(env, ...groups) {
       `Dashboard → Settings → Variables ثم Promote النسخة. (شغّل ?action=diag)`
     );
   }
+}
+
+// ─── §HELPERS::secretFingerprint — بصمة قصيرة للسر ───
+// الغرض: التأكد إن كل أعضاء مجموعة `warehouse_ops` شايلين **نفس** القيمة
+// (order-printer-worker · orders-packing-checker-worker · order-item-remover-worker).
+// الطول لوحده مش كافي — سرّين مختلفين بنفس الطول شكلهم واحد في diag.
+// ⚠️ ٨ خانات hex من SHA-256 لسر عشوائي ٣٢ بايت مش قابلة لاسترجاع القيمة.
+//    وبتكشف بالظبط الحالتين اللي بتوقّعوا الناس:
+//    ① عضو لسه على السر القديم   ② السر اتغيّر والـ Promote ما اتعملش
+async function secretFingerprint(secret) {
+  if (!secret) return null;
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(secret));
+  return [...new Uint8Array(buf)].slice(0, 4)
+    .map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1370,6 +1384,17 @@ export default {
           detail: missing.length
             ? `ناقص: ${missing.join('، ')} — ضِفها من Settings → Variables ثم Promote`
             : envKeys.map(k => `${k.name} (${k.length})`).join(' · '),
+        });
+
+        // ①ب بصمة الـ WORKER_SECRET — الطول لوحده مابيثبتش إن الأدوات على نفس
+        // القيمة. البصمة بتكشف عضو لسه على السر القديم أو Promote ما اتعملش.
+        checks.push({
+          key:    'secretFp',
+          ok:     !!env.WORKER_SECRET,
+          label:  'بصمة WORKER_SECRET (مجموعة warehouse_ops)',
+          detail: env.WORKER_SECRET
+            ? `${await secretFingerprint(env.WORKER_SECRET)} — لازم تطابق باقي أعضاء المجموعة`
+            : 'غايب',
         });
 
         // ② الـ Origin
