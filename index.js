@@ -1,9 +1,53 @@
 // ══════════════════════════════════════════════════════════════
 // §CONSTANTS
-// Pack Checker Worker — EcomModa  v2.5.0
+// Pack Checker Worker — EcomModa  v2.6.0
 // Tool: pack_checker | Endpoints: get_order, complete_pack, get_ready_orders,
 //                                 diag, get_config
-// skills: worker-builder v2.0.0 · html-builder v6.3.0 · constants v1.4.4 · order-lifecycle v1.2.0 · shopify-graphql-helper v1.0.0 · bosta-api-helper — 05-09-2026
+// skills: worker-builder v2.0.0 · html-builder v6.3.0 · constants v1.4.4 · order-lifecycle v1.2.0 · shopify-graphql-helper v1.0.0 · bosta-api-helper — 09-09-2026
+//
+// CHANGELOG v2.6.0:
+//   - 🔴 §ELIGIBILITY — حارس «الأوردر ده مؤهل للتغليف؟» على مسار السكان.
+//     `analyzeStage` كانت بتجاوب على «S1 ولا S2؟» **بس**، وقاعدة الأهلية
+//     (`isPrintedNotPacked` + الحالة + S2=EXCHANGE) كانت عايشة في
+//     `get_ready_orders` لوحده. يعني مسار السكان مالوش أي حارس أهلية،
+//     والنتيجة **حفرة بوشّين**:
+//       ① أوردر مالوش بنود → «لا توجد منتجات نشطة» بلا أي سبب: الموظف
+//          مش عارف هو اتشحن ولا اتلغى ولا اترجّع، والأداة **شايفة** الفرق
+//          ومابتقولوش.
+//       ② أوردر **عنده بنود** بس مش مؤهل (`New Order` · `Pending Edit` ·
+//          `Cancelled` في الميتافيلد · `Confirmed` بس ما اتطبعش) → الشاشة
+//          بتفتح والموظف بيغلّف. **صامت تمامًا** — ودي الأخطر.
+//     `buildEligibility` بترجّع تلات مستويات — والفرق بينهم مين بياخد
+//     القرار مش شدة اللون: `blocked` (مفيش شغل ممكن أصلاً) · `warn` (فيه
+//     شغل بس محتاج مراجعة — بيكمّل بإقرار) · `ok`.
+//   - 🔴 والحارس **سيرفر-سايد كمان** في `complete_pack` — نفس دالة
+//     `get_order` بالحرف. حارس في الواجهة بس مش حارس (order-lifecycle
+//     §1.5)، وده نفس الدرس اللي أنتج R3: تاب مفتوح من ساعة والأوردر اتلغى
+//     في الوقت ده كان هيعدّي، لأن الواجهة حكمت على لقطة قديمة.
+//   - 🔴 §PROFILE — «ملف الأوردر» بيترجّع في **كل** ردود `get_order` (نجاح
+//     وفشل): الحالتان · وقت الطباعة · وقت التغليف · حالة الشحن والمالية ·
+//     الإلغاء وسببه · المندوب والزون · و**كل** البنود بالكميات التلاتة
+//     (`quantity` · `currentQuantity` · `fulfillableQuantity`).
+//     التلاتة كانوا في `LI_FIELDS` **من قبل النسخة دي** — بيتحسبوا
+//     ومابيتعرضوش، وهما اللي بيجاوبوا «ليه مفيش شغل هنا؟» بصريًا:
+//     `2 → 2 → 0` اتشحنت · `2 → 0 → 0` اترجّعت أو اتلغت · `2 → 2 → 2` لسه للشحن.
+//   - 🟡 حقول الاستعلام الجديدة كلها **scalar على نفس الـ order node** —
+//     صفر connections، فالتكلفة على حدود شوبيفاي شبه صفر.
+//     ⛔ و`customer` **مستبعَد عن قصد**: بيتطلّب `read_customers` وهي مش في
+//     صلاحيات الأداة، وطلب حقل بره الصلاحيات بيرمي ACCESS_DENIED على
+//     **الاستعلام كله** — يعني `get_order` كان هيقع بالكامل عشان خانة اسم.
+//   - 🟡 `extra.eligibility` بيتكتب على **كل** صف `packed` (مش صفوف
+//     التحذير بس — من غير خط أساس مفيش مقارنة)، و`extra.eligibilityAck`
+//     بيتكتب **بس** لما الواجهة تبعته فعلاً: إقرار ما اتسألش عنه ومكتوب
+//     في D1 = كذب في السجل.
+//   - ⚠️ **التوافق مع الأداة المستقلة** (`Orders-Packing-Checker/index.html`):
+//     الحقول **إضافة بس** — `ok`/`error`/`alreadyPacked` بالحرف. المستوى
+//     `warn` بيرجّع `ok: true` فالأداة القديمة بتفتح الشاشة زي النهاردة،
+//     و`blocked` بيرجّع `ok: false` فبتعرض توست بالسبب — **تشديد مقصود**،
+//     لأن ده بالظبط الفشل ② فوق.
+//   - ⚠️ الرفع minor: حقول جديدة في الرد + حجب حالات كانت بتعدّي. الهب
+//     **معتمد عليها فعلاً** (نافذة التشخيص وبوابة الإقرار)، فـ `pack.min`
+//     في `shared/shell.js` اترفع لـ `2.6.0` (Standards #29).
 //
 // CHANGELOG v2.5.0:
 //   - 🔴 `appId` مقبول في `verify_employee` و`log_logout` — عشان
@@ -133,7 +177,7 @@
 // ══════════════════════════════════════════════════════════════
 
 const TOOL_NAME      = 'pack_checker';
-const WORKER_VERSION = '2.5.0';
+const WORKER_VERSION = '2.6.0';
 
 // ─── §CONSTANTS::authApps — مين مسموح له يسجّل دخوله على الـ Worker ده ───
 //
@@ -647,7 +691,11 @@ query GetOrderForPack($id: ID!) {
     legacyResourceId
     name
     note
+    createdAt
     displayFulfillmentStatus
+    displayFinancialStatus
+    cancelledAt
+    cancelReason
     edited
 
     # Stage detection metafields
@@ -657,6 +705,25 @@ query GetOrderForPack($id: ID!) {
     # Already-packed guards
     s1_packed_by: metafield(namespace: "custom", key: "s1_packed_by") { value }
     s2_packed_by: metafield(namespace: "custom", key: "s2_packed_by") { value }
+
+    # §PROFILE (v2.6.0) — بيانات «ملف الأوردر» في نافذة التشخيص.
+    # كلها حقول scalar على نفس الـ node — صفر connections جديدة، فالتكلفة
+    # على حدود شوبيفاي شبه صفر (نفس منطق «عدد القطع» في أداة الطباعة).
+    #
+    # ⛔ حقل customer **مستبعَد عن قصد**: بيتطلّب صلاحية read_customers، وهي
+    #    **مش** في صلاحيات الأداة (read_orders · write_orders · read_returns ·
+    #    read_products). طلب حقل بره الصلاحيات بيرمي ACCESS_DENIED على
+    #    **الاستعلام كله** — يعني get_order كان هيقع بالكامل عشان خانة اسم
+    #    عميل مش لازمة أصلاً للسؤال اللي النافذة بتجاوب عليه.
+    #
+    # ⚠️ وممنوع أي علامة backtick في التعليق ده — الكتلة دي جوّه template
+    #    literal، والعلامة بتقفله في نصّه. حصل فعلاً وقت كتابة النسخة دي.
+    printing_time_s1: metafield(namespace: "custom", key: "printing_time_s1")     { value }
+    printing_time_s2: metafield(namespace: "custom", key: "printing_time_s2")     { value }
+    s1_packing_dt:    metafield(namespace: "custom", key: "s1_packing_date_time") { value }
+    s2_packing_dt:    metafield(namespace: "custom", key: "s2_packing_date_time") { value }
+    courier:          metafield(namespace: "custom", key: "courier")              { value }
+    zone:             metafield(namespace: "custom", key: "zone")                 { value }
 
     lineItems(first: 100) {
       pageInfo { hasNextPage endCursor }
@@ -953,6 +1020,188 @@ async function evaluatePackGuard(env, order, stage, items) {
     fingerprintSource,
     currentFingerprint,
   };
+}
+
+// ══════════════════════════════════════════════════════════════
+// §PROFILE + §ELIGIBILITY — «الأوردر ده مؤهل للتغليف؟» (v2.6.0)
+//
+// 🔴 **المشكلة اللي القسم ده اتكتب عشانها.** `analyzeStage` بتجاوب على سؤال
+//    واحد بس: «S1 ولا S2؟» — **مش** «الأوردر ده مؤهل للتغليف؟». وقاعدة
+//    الأهلية (`isPrintedNotPacked` + الحالة + S2=EXCHANGE) كانت عايشة في
+//    `get_ready_orders` **لوحده**، يعني مسار السكان مالوش أي حارس أهلية.
+//    النتيجة كانت **حفرة بوشّين**:
+//      ① أوردر مالوش بنود → رسالة «لا توجد منتجات نشطة» **بلا أي سبب**،
+//         والموظف مش عارف هو اتشحن ولا اتلغى ولا اترجّع.
+//      ② أوردر **عنده بنود** بس مش مؤهل (`New Order` · `Pending Edit` ·
+//         `Cancelled` في الميتافيلد · `Confirmed` بس ما اتطبعش) → **الشاشة
+//         بتفتح عادي والموظف بيغلّف**. ودي كانت صامتة تمامًا.
+//
+// 🔴 **الحكم هنا في الـ Worker — مش في الواجهة.** قاعدة الطابور عايشة هنا
+//    أصلاً، ونسخة تانية في `pack.html` = **درس R1 بالحرف** (نفس اللي حصل مع
+//    بوابة بوسطة في هب v1.11.0: الرئيسية بتقول ٦٦ والصفحة بتفتح على ٦).
+//    ⛔ ممنوع أي واجهة تحسب الأهلية عندها.
+//
+// 🔴 **والحكم على بيانات الأوردر الحيّة — مش على وجوده في جدول الطابور.**
+//    الجدول **لقطة** عمرها لحد ١٥ دقيقة: أوردر اتضاف للطابور من دقيقتين كان
+//    هيترفض رفض كاذب، وأوردر اتغلّف من جهاز تاني لسه في اللقطة.
+//
+// ⚠️ **التوافق مع الأداة المستقلة** (`Orders-Packing-Checker/index.html`):
+//    الحقول **إضافة بس** — `ok` و`error` و`alreadyPacked` كلهم بيفضلوا
+//    بالحرف. المستوى `warn` بيرجّع `ok: true` فالأداة القديمة بتفتح الشاشة
+//    زي النهاردة بالظبط؛ والمستوى `blocked` بيرجّع `ok: false` فبتعرض توست
+//    بالسبب — **تشديد مقصود**، لأن ده بالظبط الفشل ② فوق.
+// ══════════════════════════════════════════════════════════════
+
+// ─── §PROFILE::buildOrderProfile ───
+// «ملف الأوردر» — كل اللي بيجاوب على «الأوردر ده حكايته إيه؟» في مكان واحد.
+// بيترجّع في **كل** ردود `get_order` (نجاح وفشل)، لأن السؤال بيتسأل في
+// الحالتين: نافذة التشخيص بتقراه، وزرار «📋 تفاصيل الأوردر» في شاشة
+// التشييك بيقراه كمان.
+//
+// 🔴 **البنود بترجع بالكميات التلاتة كلها** — وده هو اللي بيجاوب «ليه مفيش
+//    شغل هنا؟» بصريًا بدل ما نخمّن بجملة:
+//      `2 → 2 → 0` = اتشحنت · `2 → 0 → 0` = اترجّعت أو اتلغت · `2 → 2 → 2` = لسه للشحن
+//    التلاتة موجودة في `LI_FIELDS` **من قبل النسخة دي** — كانوا بيتحسبوا
+//    ومابيتعرضوش.
+// ⚠️ وبترجع **كل** البنود مش النشطة بس — `classifyOrderItems` بتفلتر على
+//    `fulfillableQuantity > 0`، والبند المستبعَد هو بالظبط اللي بيفسّر الغياب.
+function buildOrderProfile(order, stage, guard) {
+  return {
+    name:              order.name,
+    orderId:           order.legacyResourceId || String(order.id).split('/').pop(),
+    gid:               order.id,
+    createdAt:         order.createdAt         || null,
+    note:              order.note              || '',
+    edited:            order.edited === true,
+    stage,
+    fulfillmentStatus: order.displayFulfillmentStatus || null,
+    financialStatus:   order.displayFinancialStatus   || null,
+    cancelledAt:       order.cancelledAt        || null,
+    cancelReason:      order.cancelReason       || null,
+    s1Status:          order.manual_status?.value     || null,
+    s2Status:          order.status_2_r_e?.value      || null,
+    printingTimeS1:    order.printing_time_s1?.value  || null,
+    printingTimeS2:    order.printing_time_s2?.value  || null,
+    packedByS1:        order.s1_packed_by?.value      || null,
+    packedByS2:        order.s2_packed_by?.value      || null,
+    packingDateS1:     order.s1_packing_dt?.value     || null,
+    packingDateS2:     order.s2_packing_dt?.value     || null,
+    // ⚠️ ده تاريخ **صف D1** مش الميتافيلد — الاتنين بيرجعوا عشان الاختلاف
+    //    بينهم معلومة: ميتافيلد متملّي وصف D1 ناقص = الكتابة نجحت والتسجيل فشل.
+    packingDateLog:    guard?.packingDateTime        || null,
+    courier:           order.courier?.value          || null,
+    zone:              order.zone?.value             || null,
+    lineItems: (order.lineItems?.nodes || []).map(i => ({
+      title:               i.title || '',
+      sku:                 i.sku   || '',
+      quantity:            typeof i.quantity            === 'number' ? i.quantity            : null,
+      currentQuantity:     typeof i.currentQuantity     === 'number' ? i.currentQuantity     : null,
+      fulfillableQuantity: typeof i.fulfillableQuantity === 'number' ? i.fulfillableQuantity : null,
+    })),
+  };
+}
+
+// ─── §ELIGIBILITY::itemHints ───
+// أسطر «ليه مفيش شغل هنا؟» — مبنية من البنود نفسها، مش من تخمين.
+function itemHints(profile) {
+  const hints = [];
+  let shipped = 0, gone = 0, live = 0;
+  for (const i of profile.lineItems) {
+    const cur = i.currentQuantity, ful = i.fulfillableQuantity;
+    if (ful > 0)                   live++;
+    else if (cur === 0)            gone++;
+    else if (cur > 0 && ful === 0) shipped++;
+  }
+  if (shipped) hints.push(`${shipped} بند الكمية المتبقية فيه صفر والكمية الحالية أكبر من صفر — يعني اتشحن بالفعل.`);
+  if (gone)    hints.push(`${gone} بند الكمية الحالية فيه صفر — يعني اترجّع أو اتلغى من الأوردر.`);
+  if (live)    hints.push(`${live} بند لسه فيه كمية للشحن — بس مش داخل في المرحلة دي.`);
+  if (!profile.lineItems.length) hints.push('الأوردر مفيهوش أي بند أصلاً على شوبيفاي.');
+  return hints;
+}
+
+// ─── §ELIGIBILITY::buildEligibility ───
+//
+// تلات مستويات — والفرق بينهم مش شدة اللون، هو مين بياخد القرار:
+//   `blocked` → مفيش شغل ممكن يتعمل أصلاً · الشاشة مابتفتحش
+//   `warn`    → فيه شغل بس فيه سبب يخلّي الموظف يراجع · بيكمّل بإقرار
+//   `ok`      → عادي
+//
+// ⚠️ الترتيب مقصود: الحقيقة الأهم بتغلب. أوردر ملغي واتغلّف قبل كده
+//    بيقول «ملغي» — لأن ده اللي بيغيّر تصرّف الموظف، مش «اتغلّف».
+// ⚠️ و`already_packed` هنا وصف مش بوابة — نافذتَي «اتغلّف قبل كده»
+//    الموجودتين من قبل النسخة دي هما اللي بيتعاملوا معاه، والواجهة بتديهم
+//    الأسبقية. البند موجود هنا عشان الحكم يبقى مكتمل، مش عشان يتصرّف.
+function buildEligibility(order, stage, stageAnalysis, items, guard, profile) {
+  const s1  = order.manual_status?.value || null;
+  const s2  = order.status_2_r_e?.value  || null;
+  const own = stage === 'S2' ? s2 : s1;
+  const printed = stage === 'S2'
+    ? (order.printing_time_s2?.value || null)
+    : (order.printing_time_s1?.value || null);
+
+  const E = (level, code, title, reason, hints = []) =>
+    ({ level, code, title, reason, hints });
+
+  // ① تعارض في الميتافيلدين — لوحة التعارض الحمرا بتتعامل معاه في الواجهة
+  if (stageAnalysis.conflict) {
+    return E('blocked', 'conflict', 'تعارض في بيانات الأوردر',
+      stageAnalysis.conflictType || 'الميتافيلدان محددان مع بعض — صحّح البيانات على شوبيفاي الأول.');
+  }
+
+  // ② ملغي على شوبيفاي — الدليل القاطع، مش تخمين من الكميات
+  if (order.cancelledAt) {
+    return E('blocked', 'cancelled_on_shopify', 'الأوردر ده ملغي على شوبيفاي',
+      `الأوردر اتلغى على شوبيفاي${order.cancelReason ? ` (السبب المسجّل: ${order.cancelReason})` : ''} — مفيش أي حاجة تتغلّف فيه.`);
+  }
+
+  // ③ ملغي في ماكينة الحالات. ⚠️ `manual_status = Cancelled` بيقفل الأوردر
+  //    كله — حتى لو المرحلة المحسوبة S2، لأن دورة الاستبدال بتاعة أوردر
+  //    ملغي مالهاش معنى تشغيلي.
+  if (s1 === 'Cancelled' || own === 'Cancelled') {
+    return E('blocked', 'status_cancelled', 'حالة الأوردر «ملغي»',
+      `حالة الأوردر ${s1 === 'Cancelled' ? 'الأساسي (S1)' : `(${stage})`} مسجّلة Cancelled — الأوردر ده مش المفروض يتغلّف. لو ده غلط، صحّح الحالة على شوبيفاي الأول.`);
+  }
+
+  // ④ اتغلّف قبل كده — وصف بس (شوف الملاحظة فوق)
+  if (guard?.packedBy) {
+    return E('blocked', 'already_packed', 'الأوردر اتغلّف قبل كده',
+      `اتغلّف في المرحلة ${stage} بواسطة ${guard.packedBy}.`);
+  }
+
+  // ⑤ مفيش أي قطعة تتغلّف — ودي الحالة اللي كانت بتطلّع رسالة بلا سبب
+  if (!items.length) {
+    return E('blocked', 'no_items',
+      stage === 'S2' ? 'مفيش أي قطعة استبدال تتغلّف' : 'مفيش أي قطعة تتغلّف في الأوردر ده',
+      stage === 'S2'
+        ? 'دورة الإرجاع/الاستبدال الحالية مفيهاش أي قطعة بديلة هتتشحن — يعني دي دورة استرجاع بس.'
+        : 'كل بنود الأوردر كميتها المتبقية للشحن صفر.',
+      itemHints(profile));
+  }
+
+  // ⑥ ما اتطبعش — نفس أول شرط في `isPrintedNotPacked` بتاع الطابور
+  if (!printed || !String(printed).trim()) {
+    return E('warn', 'not_printed', 'الأوردر ده ما اتطبعش',
+      `مفيش وقت طباعة مسجّل على المرحلة ${stage} — يعني الأوردر ده مش في طابور التغليف، والطرد هيتقفل من غير الفاتورة جوّاه.`);
+  }
+
+  // ⑦ الحالة مش من حالات التغليف. ⚠️ `unclear` مش معناها «الحالة فاضية» —
+  //    معناها «مش من القايمة»، وأوردر `Shipped` أو `New Order` حالته محددة
+  //    تمامًا. الفرق ده هو اللي بانر الواجهة القديم كان بيقوله غلط.
+  if (stageAnalysis.unclear) {
+    return E('warn', 'status_not_packable', 'حالة الأوردر مش من حالات التغليف',
+      own
+        ? `حالة الأوردر دلوقتي ${own} — ودي مش من الحالات اللي بيتغلّف فيها (${(stage === 'S2' ? S2_VALUES : S1_VALUES).join(' · ')}).`
+        : 'مفيش أي حالة مسجّلة على الأوردر (لا S1 ولا S2) — الأداة بتعامله كـ S1 افتراضيًا.');
+  }
+
+  // ⑧ دورة استرجاع فيها بنود — بتتغلّف فعلاً، بس الموظف لازم يعرف إنها
+  //    مش دورة استبدال عادية
+  if (stage === 'S2' && s2 === 'Confirmed + RETURN') {
+    return E('warn', 'return_only', 'ده أوردر استرجاع',
+      'حالة S2 مسجّلة «Confirmed + RETURN» — راجع البنود اللي تحت قبل ما تغلّف.');
+  }
+
+  return E('ok', 'ok', '', '');
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1584,6 +1833,12 @@ export default {
         const guard = await evaluatePackGuard(env, order, stage, items);
         const relevantPackedBy = guard.packedBy;
 
+        // §PROFILE + §ELIGIBILITY (v2.6.0) — بيترجّعوا في **كل** رد، نجاح
+        // وفشل. «الأوردر ده حكايته إيه؟» سؤال بيتسأل في الحالتين: نافذة
+        // التشخيص بتقراهم، وزرار «📋 تفاصيل الأوردر» في شاشة التشييك كمان.
+        const profile     = buildOrderProfile(order, stage, guard);
+        const eligibility = buildEligibility(order, stage, stageAnalysis, items, guard, profile);
+
         if (relevantPackedBy) {
           const { changeDetected, storedItems, packingDateTime, fingerprintSource } = guard;
 
@@ -1599,6 +1854,8 @@ export default {
               packingDateTime,
               fingerprintSource,
               order: orderPayload,
+              profile,
+              eligibility,
               error: `هذا الأوردر تم تغليفه مسبقاً (${stage}) بواسطة ${relevantPackedBy}`,
             }, 200, request);
           }
@@ -1615,15 +1872,32 @@ export default {
             fingerprintSource,
             stageAnalysis,
             order: orderPayload,
+            profile,
+            eligibility,
             items: items.length > 0 ? items : activeItems,
           }, 200, request);
         }
 
-        if (items.length === 0) {
+        // §ELIGIBILITY — الحجب. بيغطّي فرع «مفيش بنود» القديم **وبيزوّد عليه**
+        // الحالات اللي كانت بتعدّي في صمت (ملغي على شوبيفاي · حالة Cancelled).
+        //
+        // ⚠️ `conflict` مستثنى عن قصد: بيعدّي `ok: true` عشان **لوحة التعارض
+        //    الحمرا** في الواجهة — سلوك قايم من قبل النسخة دي، والحجب هنا كان
+        //    هيستبدل لوحة كاملة بنافذة أقل تفصيلاً.
+        //
+        // ⚠️ والرسالة نص عادي بلا أي markdown — الأداة المستقلة
+        //    (`Orders-Packing-Checker/index.html`) بتعرضها في **توست خام**،
+        //    فأي `**` كانت هتبان للموظف زي ما هي.
+        if (eligibility.level === 'blocked' && eligibility.code !== 'conflict') {
           return json({
             ok:    false,
             truncated,
-            error: `لا توجد منتجات ${stage === 'S1' ? 'نشطة' : 'استبدال'} في هذا الأوردر`,
+            stage,
+            stageAnalysis,
+            order: orderPayload,
+            profile,
+            eligibility,
+            error: `${eligibility.title} — ${eligibility.reason}`,
           }, 200, request);
         }
 
@@ -1633,6 +1907,8 @@ export default {
           stageAnalysis,
           stage,
           order:     orderPayload,
+          profile,
+          eligibility,
           items,
         }, 200, request);
       }
@@ -1646,6 +1922,10 @@ export default {
         // ⚠️ `stage` **مابيتقراش من العميل** — بيتحسب سيرفر-سايد تحت (R3).
         //    أي `stage` جاي في الـ body بيتجاهل تمامًا.
         const { orderId, employee, packedBy, items: clientItems, editReason } = body;
+        // §ELIGIBILITY::ack (v2.6.0) — إقرار الموظف إنه شاف تحذير الأهلية
+        // وكمّل بإرادته. ⚠️ **مش إلزامي**: الأداة المستقلة مابتبعتوش أصلاً،
+        // ورفض الطلب من غيره كان هيكسرها. الرفض للمستوى `blocked` بس.
+        const eligibilityAck = body?.eligibilityAck === true;
 
         if (!orderId || !employee || !packedBy) {
           return json({ ok: false, error: 'بيانات ناقصة: orderId · employee · packedBy مطلوبة' }, 400, request);
@@ -1698,6 +1978,30 @@ export default {
 
         // ④ حارس «اتغلّف قبل كده» — نفس دالة `get_order` بالظبط
         const guard = await evaluatePackGuard(env, freshOrder, stage, serverItems);
+
+        // ④-ب §ELIGIBILITY سيرفر-سايد (v2.6.0) — **نفس** دالة `get_order`.
+        //
+        // 🔴 حارس في الواجهة بس **مش حارس** (order-lifecycle §1.5) — ده نفس
+        //    الدرس اللي أنتج R3 بالحرف. تاب مفتوح من ساعة والأوردر اتلغى في
+        //    الوقت ده كان هيعدّي، لأن الواجهة حكمت على لقطة قديمة.
+        //
+        // ⚠️ `already_packed` مستثنى — فرعه الخاص تحت (409 + `conflict`)
+        //    بيرجّع بيانات التغليف السابق اللي الواجهة بتبني بيها نافذتها،
+        //    والحجب العام هنا كان هيدهسه برسالة أفقر.
+        // ⚠️ و`conflict` مستثنى برضه — لوحة التعارض في الواجهة بتتعامل معاه،
+        //    والسلوك ده قايم من قبل النسخة دي.
+        const cpProfile     = buildOrderProfile(freshOrder, stage, guard);
+        const cpEligibility = buildEligibility(freshOrder, stage, stageAnalysis, serverItems, guard, cpProfile);
+        if (cpEligibility.level === 'blocked'
+            && cpEligibility.code !== 'already_packed'
+            && cpEligibility.code !== 'conflict') {
+          return json({
+            ok: false, status: 'error', blocked: true, stage, orderName,
+            profile:     cpProfile,
+            eligibility: cpEligibility,
+            error: `${cpEligibility.title} — ${cpEligibility.reason}`,
+          }, 409, request);
+        }
 
         if (guard.packedBy) {
           if (!guard.changeDetected) {
@@ -1849,6 +2153,15 @@ export default {
                          // السيرفر-سايد سمح بيها لأن `editReason` موجود.
                          repack:      !!guard.packedBy,
                          previousPackedBy: guard.packedBy || null,
+                         // §ELIGIBILITY (v2.6.0) — الحكم وقت الكتابة، على
+                         // **كل** صف مش صفوف التحذير بس. «غلّفت أوردر ما
+                         // اتطبعش» معلومة تشغيلية تستاهل تتسجّل (نفس مبدأ
+                         // `extra.guard` في أداة الطباعة)، و«الصف ده كان
+                         // عادي» معلومة كمان — من غيرها مفيش خط أساس تقارن
+                         // بيه. والإقرار بيتكتب **بس لما يوصل فعلاً**:
+                         // إقرار ما اتسألش عنه ومكتوب في D1 = كذب في السجل.
+                         eligibility: { level: cpEligibility.level, code: cpEligibility.code },
+                         ...(eligibilityAck ? { eligibilityAck: true } : {}),
                          result, actions, warnings },
             timestamp: nowISO,
           });
