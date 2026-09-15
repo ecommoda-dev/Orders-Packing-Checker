@@ -1,9 +1,25 @@
 // ══════════════════════════════════════════════════════════════
 // §CONSTANTS
-// Pack Checker Worker — EcomModa  v2.6.0
+// Pack Checker Worker — EcomModa  v2.7.0
 // Tool: pack_checker | Endpoints: get_order, complete_pack, get_ready_orders,
 //                                 diag, get_config
-// skills: worker-builder v2.0.0 · html-builder v6.3.0 · constants v1.4.4 · order-lifecycle v1.2.0 · shopify-graphql-helper v1.0.0 · bosta-api-helper — 09-09-2026
+// skills: worker-builder v2.0.0 · html-builder v6.3.0 · constants v1.4.4 · order-lifecycle v1.8.0 · shopify-graphql-helper v1.0.0 · bosta-api-helper — 15-09-2026
+//
+// CHANGELOG v2.7.0:
+//   - 🔴 §WHEREABOUTS — `complete_pack` بقى بيكتب `custom.package_whereabouts_s1`
+//     أو `_s2` (حسب `stage`) بقيمة `Warehouse` — عهدة الطرد الفعلية وقت
+//     التغليف (`ecommoda-order-lifecycle` §17 · Rule 17). قرار أحمد
+//     15-09-2026: التغليف = «الطرد لسه في المخزن»، بغض النظر عن القناة اللي
+//     هتشحن بيها بعدين (بوسطة أو مندوب) — يعني الحقل بيتكتب على **كل** أوردر
+//     يتغلّف هنا، مش محصور في مناديب/شو روم بس زي ما كان موصوف في المهارة
+//     وقت كتابتها (§2 من `package-whereabouts.md`). راجع `bosta-orders-shipped-scanner`
+//     و`bosta-orders-returned-scanner` — الكتابة دي بقت طرف تلاتة من نفس القرار.
+//   - 🟡 نداء `metafieldsSet` **منفصل** عن كتابة `packedBy`/`packingDate` —
+//     فشل عهدة الطرد بيتحوّل لتحذير (`warnings[]`) مش حجب: الحقل ده تتبّع
+//     عهدة إضافي، مش جزء من حارس التكرار الأساسي. `packageWhereabouts` بيترجع
+//     في رد `complete_pack` وبيتسجّل جوّه `extra.packageWhereabouts` في D1.
+//   - ✅ صفر تعديل على حارس الأهلية أو حارس «اتغلّف قبل كده» — الكتابة دي
+//     إضافة بحتة بعد نجاح المسارين، وصفر أثر على قرارهم.
 //
 // CHANGELOG v2.6.0:
 //   - 🔴 §ELIGIBILITY — حارس «الأوردر ده مؤهل للتغليف؟» على مسار السكان.
@@ -177,7 +193,7 @@
 // ══════════════════════════════════════════════════════════════
 
 const TOOL_NAME      = 'pack_checker';
-const WORKER_VERSION = '2.6.0';
+const WORKER_VERSION = '2.7.0';
 
 // ─── §CONSTANTS::authApps — مين مسموح له يسجّل دخوله على الـ Worker ده ───
 //
@@ -2122,6 +2138,48 @@ export default {
           actions.push(`إضافة tag ${tag}`);
         }
 
+        // ── 2b. Write package whereabouts metafield — best-effort ──
+        // عهدة الطرد (order-lifecycle §17): التغليف = الطرد لسه في المخزن،
+        // فـ `Warehouse` بتتكتب هنا بغض النظر عن القناة اللي هتشحن بيها
+        // بعدين (بوسطة أو مندوب) — قرار أحمد 15-09-2026 وسّع نطاق الحقل ده
+        // ليشمل قناة بوسطة كمان، بعد ما كان محصور في مناديب/شو روم بس.
+        // ⚠️ فشلها بيتحوّل لتحذير مش حجب — دي مصدر تتبّع عهدة مش جزء من
+        // حارس التكرار، ونداء منفصل عن metafieldsSet فوق عشان فشلها
+        // مايوقّفش كتابة packedBy/packingDate الجوهريين.
+        const whereaboutsKey   = stage === 'S1' ? 'package_whereabouts_s1' : 'package_whereabouts_s2';
+        const whereabouts       = { key: whereaboutsKey, value: 'Warehouse', written: false, error: null };
+        try {
+          const waData = await shopifyGQL(env, token,
+            `mutation SetPackWhereabouts($metafields: [MetafieldsSetInput!]!) {
+               metafieldsSet(metafields: $metafields) {
+                 metafields { key value }
+                 userErrors  { field message }
+               }
+             }`,
+            { metafields: [{
+                ownerId: gid, namespace: 'custom', key: whereaboutsKey,
+                value: whereabouts.value, type: 'single_line_text_field',
+              }] },
+            'metafieldsSet'
+          );
+          const waErrors = waData?.data?.metafieldsSet?.userErrors || [];
+          if (waErrors.length) {
+            whereabouts.error = waErrors.map(e => e.message).join(' | ');
+            warnings.push(`عهدة الطرد (${whereaboutsKey}) ما اتكتبتش: ${whereabouts.error}`);
+          } else {
+            whereabouts.written = (waData?.data?.metafieldsSet?.metafields || [])
+              .some(m => m.key === whereaboutsKey);
+            if (whereabouts.written) {
+              actions.push(`عهدة الطرد: ${whereaboutsKey} = ${whereabouts.value}`);
+            } else {
+              warnings.push(`عهدة الطرد (${whereaboutsKey}) ما اتأكدتش كتابتها`);
+            }
+          }
+        } catch (e) {
+          whereabouts.error = e.message;
+          warnings.push(`عهدة الطرد (${whereaboutsKey}) فشلت: ${e.message}`);
+        }
+
         // ── 3. Build items summary + fingerprint ──
         // ⚠️ itemSummary مرتبط بـ parseSavedItemsString في get_order.
         // الـ fingerprint اتخزّن مستقل في extra عشان الكشف ما يبقاش
@@ -2162,6 +2220,7 @@ export default {
                          // إقرار ما اتسألش عنه ومكتوب في D1 = كذب في السجل.
                          eligibility: { level: cpEligibility.level, code: cpEligibility.code },
                          ...(eligibilityAck ? { eligibilityAck: true } : {}),
+                         packageWhereabouts: whereabouts,
                          result, actions, warnings },
             timestamp: nowISO,
           });
@@ -2206,6 +2265,7 @@ export default {
           items: serverItems,
           repack: !!guard.packedBy,
           stageAnalysis,
+          packageWhereabouts: whereabouts,
         }, 200, request);
       }
 
