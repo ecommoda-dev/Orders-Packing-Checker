@@ -193,7 +193,7 @@
 // ══════════════════════════════════════════════════════════════
 
 const TOOL_NAME      = 'pack_checker';
-const WORKER_VERSION = '2.7.0';
+const WORKER_VERSION = '2.7.1';
 
 // ─── §CONSTANTS::authApps — مين مسموح له يسجّل دخوله على الـ Worker ده ───
 //
@@ -577,23 +577,54 @@ async function resolveTrackingToOrderName(env, tracking) {
 // §SHOPIFY
 // ══════════════════════════════════════════════════════════════
 
+// 🔴 **retry/backoff — نفس انضباط `shopifyGQL` بالحرف (قرار أحمد 19-09-2026 ·
+//    §٨② في `docs/query-cost-experiment.md` بريبو الهب `Warehouse-Operations-
+//    Center`).** كانت محاولة واحدة بس، بينما `shopifyGQL` عندها ٣ محاولات
+//    وbackoff. السبب: الخمس Workers (الطابعة · التغليف · تسليمات بوسطة ·
+//    تسليمات المكتب · استلام المرتجعات) بتشارك **نفس الـ Custom App** —
+//    قرار ثابت. لما الشاشة الرئيسية بتحمّل الخمس طوابير بالتوازي، الخمسة
+//    بيطلبوا توكن OAuth **متزامن**، وفشل ٤٢٩ لحظي عابر كان بيتحوّل فورًا
+//    لفشل كامل بدل ما يتعافى.
 async function getAccessToken(env) {
-  const resp = await fetch(
-    `https://${env.SHOP_DOMAIN}/admin/oauth/access_token`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        client_id:     env.CLIENT_ID,
-        client_secret: env.CLIENT_SECRET,
-        grant_type:    'client_credentials',
-      }),
+  const MAX_ATTEMPTS = 3;
+  let lastErr = null;
+
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    let resp, text;
+    try {
+      resp = await fetch(
+        `https://${env.SHOP_DOMAIN}/admin/oauth/access_token`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            client_id:     env.CLIENT_ID,
+            client_secret: env.CLIENT_SECRET,
+            grant_type:    'client_credentials',
+          }),
+        }
+      );
+      text = await resp.text();
+    } catch (e) {
+      lastErr = new Error(`OAuth: فشل الاتصال بشوبيفاي — ${e.message}`);
+      if (attempt < MAX_ATTEMPTS) { await new Promise(r => setTimeout(r, 400 * attempt)); continue; }
+      throw lastErr;
     }
-  );
-  if (!resp.ok) throw new Error(`OAuth failed: ${resp.status}`);
-  const data = await resp.json();
-  if (!data.access_token) throw new Error('No access_token in response');
-  return data.access_token;
+
+    if (!resp.ok) {
+      const retriable = resp.status === 429 || resp.status >= 500;
+      lastErr = new Error(`OAuth failed: ${resp.status} — ${text.slice(0, 180)}`);
+      if (retriable && attempt < MAX_ATTEMPTS) { await new Promise(r => setTimeout(r, 700 * attempt)); continue; }
+      throw lastErr;
+    }
+
+    let data;
+    try { data = JSON.parse(text); }
+    catch { throw new Error(`OAuth: رد شوبيفاي مش JSON صالح — ${text.slice(0, 180)}`); }
+    if (!data.access_token) throw new Error('No access_token in response');
+    return data.access_token;
+  }
+  throw lastErr || new Error('OAuth: فشل غير معروف');
 }
 
 // ─── §SHOPIFY::shopifyGQL — العقد الإلزامي، منسوخة كما هي ───
