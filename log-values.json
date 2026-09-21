@@ -1,0 +1,21 @@
+{
+  "tool": "pack_checker",
+  "since": null,
+  "types": {
+    "login": {
+      "result": null,
+      "stage": null,
+      "desc": "دخول موظف"
+    },
+    "logout": {
+      "result": null,
+      "stage": null,
+      "desc": "خروج موظف"
+    },
+    "packed": {
+      "result": null,
+      "stage": null,
+      "desc": "الأوردر اتفحص واتأكد تغليفه"
+    }
+  }
+}
