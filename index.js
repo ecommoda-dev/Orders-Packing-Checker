@@ -1,9 +1,17 @@
 // ══════════════════════════════════════════════════════════════
 // §CONSTANTS
-// Pack Checker Worker — EcomModa  v2.7.2
+// Pack Checker Worker — EcomModa  v2.7.3
 // Tool: pack_checker | Endpoints: get_order, complete_pack, get_ready_orders,
 //                                 diag, get_config
 // skills: worker-builder v3.7.1 · html-builder v6.3.0 · constants v3.1.0 · order-lifecycle v1.8.0 · shopify-graphql-helper v1.0.0 · bosta-api-helper — 24-09-2026
+//
+// CHANGELOG v2.7.3:
+//   - 🔴 `AUTH_APPS` رجعت لاسم واحد (`TOOL_NAME`) — `'warehouse_ops_center'`
+//     اتشالت. `Warehouse-Operations-Center` بقى ليه Worker دخول مستقل بتاعه
+//     (نفس شكل `Delivery-COD-Operations-Center`) وما بيبعتش `appId` أصلاً
+//     من دلوقتي. `LOG_REGISTRY` رجعت لصف واحد (`pack_checker`) لنفس السبب.
+//   - ✅ صفر أثر على الأفعال التشغيلية (`packed`) ولا على دخول الأداة
+//     المستقلة — التغيير في نطاق appId/الدخول العابر للأدوات بس.
 //
 // CHANGELOG v2.7.2:
 //   - 🟡 §LOG-REG — الحارس الديناميكي لقيم اللوج (الطبقة ٥، worker-builder
@@ -206,20 +214,22 @@
 // ══════════════════════════════════════════════════════════════
 
 const TOOL_NAME      = 'pack_checker';
-const WORKER_VERSION = '2.7.2';
+const WORKER_VERSION = '2.7.3';
 
 // ─── §CONSTANTS::authApps — مين مسموح له يسجّل دخوله على الـ Worker ده ───
 //
-// الـ Worker ده هو نقطة الدخول الموحّدة لمحطة المخزن: الأداة المستقلة بتسجّل
-// تحت اسمها، و`Warehouse-Operations-Center` بيسجّل تحت اسمه هو
-// (`ecommoda-constants` §7). الأفعال التشغيلية (`packed`) بتفضل تحت
-// `pack_checker` دايمًا — ده الدخول بس.
+// 🔴 **الـ Worker ده بقى يخدم واجهة واحدة بس من v2.7.3 — الأداة المستقلة.**
+//    `Warehouse-Operations-Center` (الهب) كان بيسجّل دخوله وخروجه هنا تحت
+//    `appId: 'warehouse_ops_center'`، وده اتشال: الهب بقى ليه Worker دخول
+//    مستقل بتاعه (`warehouse-operations-center-worker`) — نفس شكل
+//    `Delivery-COD-Operations-Center`. السبب: أكبر Worker شغل في المخزن
+//    مايبقاش هو نقطة الفشل الوحيدة لدخول الهب كله.
 //
 // 🔴 **قايمة بيضاء مقفولة، مش قبول لأي نص.** `appId` جاي من العميل، وجدول
 //    `logs` **مشترك بين الـ ٣٠ أداة**. من غير القايمة دي أي طلب معاه السر
 //    يقدر يكتب صفوف بأي قيمة `tool` — وده بالظبط اللي عمله `write_external_log`
 //    في `cod-payment-center-worker` (اتشال في v3.3.0 بعد ما سمح بصفوف يتيمة).
-const AUTH_APPS = new Set([TOOL_NAME, 'warehouse_ops_center']);
+const AUTH_APPS = new Set([TOOL_NAME]);
 
 // قيمة مش في القايمة بترجع للاسم الافتراضي **بدون خطأ** — الواجهة القديمة
 // مابتبعتش `appId` أصلاً، ورمي خطأ هنا كان هيكسر الدخول عليها.
@@ -378,13 +388,11 @@ async function registerPin(db, username, pin) {
 // §LOG-REG — الحارس الديناميكي لقيم اللوج (الطبقة ٥)
 // ════════════════════════════════════════════════════════════
 // قطعة الأداة دي بس من log-values.json اللي جنبها — بتتحدّث معاه في نفس
-// الـ commit. login/logout بيتكتبوا تحت اسمين (pack_checker من الأداة
-// المستقلة، warehouse_ops_center من الهب عبر resolveAuthTool) — المفتاح
-// هنا الزوج (tool, type) مش type لوحده، وإلا قيمة صح تحت tool مختلف
-// هتولّد تنبيه كاذب.
+// الـ commit. `resolveAuthTool()` هنا دايمًا بترجع TOOL_NAME من v2.7.3
+// (AUTH_APPS فيها اسم واحد بس بعد ما appId بتاع الهب اتشال)، فمفيش قيمة
+// tool تانية ممكن تتكتب من الكود ده فعليًا.
 const LOG_REGISTRY = {
-  pack_checker:          new Set(['login', 'logout', 'packed']),
-  warehouse_ops_center:  new Set(['login', 'logout']),
+  pack_checker: new Set(['login', 'logout', 'packed']),
 };
 
 const isRegisteredLogValue = (tool, type) => !!LOG_REGISTRY[tool]?.has(type);
