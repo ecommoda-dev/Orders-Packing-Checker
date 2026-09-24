@@ -3,16 +3,14 @@
   "since": null,
   "types": {
     "login": {
-      "tool": ["pack_checker", "warehouse_ops_center"],
       "result": null,
       "stage": null,
-      "desc": "دخول موظف — بيتكتب تحت pack_checker من الأداة المستقلة، وتحت warehouse_ops_center من الهب عبر appId (resolveAuthTool)"
+      "desc": "دخول موظف — تحت pack_checker بس من v2.7.3. الهب (warehouse_ops_center) بقى ليه Worker دخول مستقل، وما بيبعتش appId هنا خالص"
     },
     "logout": {
-      "tool": ["pack_checker", "warehouse_ops_center"],
       "result": null,
       "stage": null,
-      "desc": "خروج موظف — نفس تفريع login عبر appId"
+      "desc": "خروج موظف — نفس ملاحظة login"
     },
     "packed": {
       "result": ["success", "warning"],
