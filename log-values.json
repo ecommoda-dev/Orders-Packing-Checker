@@ -3,19 +3,21 @@
   "since": null,
   "types": {
     "login": {
+      "tool": ["pack_checker", "warehouse_ops_center"],
       "result": null,
       "stage": null,
-      "desc": "دخول موظف"
+      "desc": "دخول موظف — بيتكتب تحت pack_checker من الأداة المستقلة، وتحت warehouse_ops_center من الهب عبر appId (resolveAuthTool)"
     },
     "logout": {
+      "tool": ["pack_checker", "warehouse_ops_center"],
       "result": null,
       "stage": null,
-      "desc": "خروج موظف"
+      "desc": "خروج موظف — نفس تفريع login عبر appId"
     },
     "packed": {
-      "result": null,
+      "result": ["success", "warning"],
       "stage": null,
-      "desc": "الأوردر اتفحص واتأكد تغليفه"
+      "desc": "الأوردر اتفحص واتأكد تغليفه — extra.result بيتحسب من warnings.length (success لو فاضية، warning غير كده)"
     }
   }
 }
