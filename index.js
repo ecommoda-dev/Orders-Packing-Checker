@@ -1,9 +1,26 @@
 // ══════════════════════════════════════════════════════════════
 // §CONSTANTS
-// Pack Checker Worker — EcomModa  v2.7.3
+// Pack Checker Worker — EcomModa  v2.8.0
 // Tool: pack_checker | Endpoints: get_order, complete_pack, get_ready_orders,
 //                                 diag, get_config
 // skills: worker-builder v3.7.1 · html-builder v6.3.0 · constants v3.1.0 · order-lifecycle v1.8.0 · shopify-graphql-helper v1.0.0 · bosta-api-helper — 24-09-2026
+//
+// CHANGELOG v2.8.0:
+//   - 🔴 §S2-CYCLE — حارس «اتغلّف قبل كده» بقى بيعرف دورات الاستبدال.
+//     `s2_packed_by` على مستوى الأوردر ومابيتفضّاش مع دورة جديدة، والبصمة
+//     `SKU:الكمية` بس — فدورة استبدال تانية بنفس الصنف كانت **بتتحجب**
+//     («لم يتم اكتشاف أي تعديل») في `get_order` و`complete_pack`، والطابور
+//     بيعرضها «جاهز للتغليف» في نفس الوقت (`#55426` · 28-09-2026).
+//     الحكم بقى: `extra.returnId` المسجّل ≠ أحدث دورة، أو (للصفوف القديمة)
+//     أحدث دورة اتعملت **بعد** آخر تغليف S2 → دورة جديدة = مش متغلّفة.
+//   - 🟡 صف `packed` بتاع S2 بقى بيسجّل `extra.returnId` و`extra.newCycle`
+//     (+ `previousCyclePackedBy` لو دورة جديدة). صفر قيمة `type` جديدة.
+//   - 🟡 `get_order` بيرجّع `newS2Cycle` (بيانات التغليف السابق) — الواجهة
+//     بتقول «دورة استبدال جديدة». حقل إضافة بس.
+//   - 🟡 آخر صف `packed` في الحارس بقى **لنفس المرحلة** — تغليف S1 مابقاش
+//     بيتقارن بتغليف S2.
+//   - ⚪ `createdAt` اتضاف لـ`RETURN_FIELDS` (نفس تعريف الدورة في
+//     `classifyS2Subtype`).
 //
 // CHANGELOG v2.7.3:
 //   - 🔴 `AUTH_APPS` رجعت لاسم واحد (`TOOL_NAME`) — `'warehouse_ops_center'`
@@ -214,7 +231,7 @@
 // ══════════════════════════════════════════════════════════════
 
 const TOOL_NAME      = 'pack_checker';
-const WORKER_VERSION = '2.7.3';
+const WORKER_VERSION = '2.8.0';
 
 // ─── §CONSTANTS::authApps — مين مسموح له يسجّل دخوله على الـ Worker ده ───
 //
@@ -794,6 +811,7 @@ const LI_FIELDS = `
 const RETURN_FIELDS = `
   id
   status
+  createdAt
   exchangeLineItems(first: 50) {
     pageInfo { hasNextPage }
     nodes {
@@ -1119,23 +1137,58 @@ function readStoredFingerprint(lastLog) {
 //    (مراجعة 03-09-2026 · R3 · order-lifecycle §1.5)
 //
 // بترجّع: { packedBy, changeDetected, storedItems, packingDateTime,
-//           fingerprintSource, currentFingerprint }
-// و`packedBy = null` معناها الأوردر ما اتغلّفش في المرحلة دي أصلاً.
+//           fingerprintSource, currentFingerprint, s2Cycle, newCycle,
+//           previousCycle }
+// و`packedBy = null` معناها الأوردر ما اتغلّفش في المرحلة دي أصلاً —
+// **أو** (من v2.8.0) إن التغليف المسجّل بتاع **دورة S2 قديمة** (`newCycle`).
+//
+// 🔴 §S2-CYCLE (v2.8.0) — الحارس بقى بيعرف دورات الاستبدال.
+//    `s2_packed_by` ميتافيلد على مستوى **الأوردر** مش الدورة، ومحدش بيفضّيه
+//    لما دورة استبدال جديدة تتفتح. والبصمة `SKU:الكمية` بس — فدورة تانية
+//    بنفس الصنف كانت بتطلع **نفس البصمة بالحرف** والحارس بيقول «اتغلّف
+//    والبنود ما اتغيّرتش» ويحجب الطرد الجديد في `get_order` و`complete_pack`
+//    مع بعض (`#55426` · 28-09-2026) — بينما الطابور بيعرضه «جاهز للتغليف».
+//    الحكم دلوقتي بخطوتين، وأي واحدة فيهم كفاية تقول «دورة جديدة»:
+//      ① `returnId` المسجّل في `extra` بتاع آخر صف S2 ≠ أحدث دورة حالية.
+//      ② (للصفوف اللي قبل v2.8.0 — مفيهاش `returnId`) أحدث دورة **اتعملت
+//         بعد** آخر تغليف S2. ده نفس منطق الطابور (`isPrintedNotPacked`:
+//         «بعد آخر تغليف؟») — فالطابور والسكان بقوا متفقين.
+//    ⚠️ لو الدورة أو التاريخ مش معروفين → السلوك القديم بالحرف (الاتجاه
+//       الآمن هو الحجب، والتصعيد اليدوي موجود).
 async function evaluatePackGuard(env, order, stage, items) {
   const packedByKey = stage === 'S1' ? 's1_packed_by' : 's2_packed_by';
   const packedBy    = order[packedByKey]?.value || null;
+  const s2Cycle     = stage === 'S2' ? currentS2Cycle(order) : null;
 
   const currentFingerprint = buildFingerprint(items);
   if (!packedBy) {
     return { packedBy: null, changeDetected: false, storedItems: null,
-             packingDateTime: null, fingerprintSource: 'none', currentFingerprint };
+             packingDateTime: null, fingerprintSource: 'none', currentFingerprint,
+             s2Cycle, newCycle: false, previousCycle: null };
   }
 
+  // ⚠️ آخر صف **لنفس المرحلة** — تغليف S1 مايتقارنش أبدًا بتغليف S2.
+  //    الصف اللي مالوش `extra.stage` (أقدم من v2.0.0) بيفضل مقبول عشان
+  //    السلوك القديم مايتكسرش على الأوردرات القديمة.
   const lastLog = await env.DB.prepare(
     `SELECT items, extra, timestamp FROM logs
      WHERE tool = ? AND type = 'packed' AND order_name = ?
+       AND (json_extract(extra, '$.stage') = ? OR json_extract(extra, '$.stage') IS NULL)
      ORDER BY timestamp DESC LIMIT 1`
-  ).bind(TOOL_NAME, order.name).first();
+  ).bind(TOOL_NAME, order.name, stage).first();
+
+  if (stage === 'S2' && isNewS2Cycle(order, s2Cycle, lastLog)) {
+    return {
+      packedBy: null, changeDetected: false, storedItems: null,
+      packingDateTime: null, fingerprintSource: 'none', currentFingerprint,
+      s2Cycle, newCycle: true,
+      previousCycle: {
+        packedBy,
+        packingDateTime: order.s2_packing_dt?.value || lastLog?.timestamp || null,
+        storedItems:     lastLog?.items || null,
+      },
+    };
+  }
 
   const { fingerprint: storedFingerprint, source: fingerprintSource } = readStoredFingerprint(lastLog);
 
@@ -1151,7 +1204,40 @@ async function evaluatePackGuard(env, order, stage, items) {
     packingDateTime: lastLog?.timestamp || null,
     fingerprintSource,
     currentFingerprint,
+    s2Cycle, newCycle: false, previousCycle: null,
   };
+}
+
+// ─── §S2-CYCLE::currentS2Cycle ───
+// أحدث دورة إرجاع/استبدال — **نفس تعريف `classifyS2Subtype` بالحرف**
+// (مش CANCELED/DECLINED · الأحدث بالـ `createdAt` مش بترتيب المصفوفة).
+// تعريفين مختلفين للدورة = الطابور والسكان يفترقوا تاني (درس R1).
+function currentS2Cycle(order) {
+  const cycles = (order.returns?.nodes || [])
+    .filter(r => !['CANCELED', 'DECLINED'].includes(r.status))
+    .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+  const cur = cycles[cycles.length - 1];
+  return cur ? { returnId: cur.id, createdAt: cur.createdAt || null } : null;
+}
+
+// ─── §S2-CYCLE::isNewS2Cycle ───
+function isNewS2Cycle(order, cycle, lastLog) {
+  if (!cycle?.returnId) return false;
+
+  // ① البصمة المسجّلة للدورة (v2.8.0+) — الأدق، ومالهاش علاقة بالساعات
+  let storedReturnId = null;
+  if (lastLog?.extra) {
+    try { storedReturnId = JSON.parse(lastLog.extra)?.returnId || null; } catch { /* نكمّل */ }
+  }
+  if (storedReturnId) return storedReturnId !== cycle.returnId;
+
+  // ② الصفوف القديمة: الدورة اتعملت بعد آخر تغليف S2؟
+  //    ⚠️ لحظة زمنية مش نص — الميتافيلدات مكتوبة بـ `Z` و`+00:00`.
+  const packedRaw = order.s2_packing_dt?.value || lastLog?.timestamp || null;
+  const packedAt  = packedRaw ? Date.parse(packedRaw) : NaN;
+  const createdAt = cycle.createdAt ? Date.parse(cycle.createdAt) : NaN;
+  if (isNaN(packedAt) || isNaN(createdAt)) return false;
+  return createdAt > packedAt;
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1964,6 +2050,9 @@ export default {
 
         const guard = await evaluatePackGuard(env, order, stage, items);
         const relevantPackedBy = guard.packedBy;
+        // §S2-CYCLE — الواجهة بتقول «دورة استبدال جديدة» بدل ما تسكت، عشان
+        // الموظف اللي فاكر إنه غلّف الأوردر ده يعرف ليه الشاشة فتحت.
+        const newS2Cycle = guard.newCycle ? guard.previousCycle : null;
 
         // §PROFILE + §ELIGIBILITY (v2.6.0) — بيترجّعوا في **كل** رد، نجاح
         // وفشل. «الأوردر ده حكايته إيه؟» سؤال بيتسأل في الحالتين: نافذة
@@ -2042,6 +2131,7 @@ export default {
           profile,
           eligibility,
           items,
+          newS2Cycle,
         }, 200, request);
       }
 
@@ -2327,6 +2417,15 @@ export default {
                          // السيرفر-سايد سمح بيها لأن `editReason` موجود.
                          repack:      !!guard.packedBy,
                          previousPackedBy: guard.packedBy || null,
+                         // §S2-CYCLE (v2.8.0) — الدورة اللي الطرد ده بتاعها.
+                         // `evaluatePackGuard` بيقارن بيها المرة الجاية، فدورة
+                         // تانية بنفس الصنف ماتتحجبش. `newCycle` = فيه تغليف
+                         // S2 سابق بس بتاع دورة قديمة.
+                         ...(stage === 'S2' ? {
+                           returnId:  guard.s2Cycle?.returnId || null,
+                           newCycle:  !!guard.newCycle,
+                           ...(guard.newCycle ? { previousCyclePackedBy: guard.previousCycle?.packedBy || null } : {}),
+                         } : {}),
                          // §ELIGIBILITY (v2.6.0) — الحكم وقت الكتابة، على
                          // **كل** صف مش صفوف التحذير بس. «غلّفت أوردر ما
                          // اتطبعش» معلومة تشغيلية تستاهل تتسجّل (نفس مبدأ
