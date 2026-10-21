@@ -231,7 +231,7 @@
 // ══════════════════════════════════════════════════════════════
 
 const TOOL_NAME      = 'pack_checker';
-const WORKER_VERSION = '2.8.0';
+const WORKER_VERSION = '2.9.0';
 
 // ─── §CONSTANTS::authApps — مين مسموح له يسجّل دخوله على الـ Worker ده ───
 //
@@ -1765,6 +1765,41 @@ function shapeReadyOrder(node, orderType, subtype = null) {
 // §HANDLER
 // ══════════════════════════════════════════════════════════════
 
+
+// ══════════════════════════════════════════════════════════════
+// §DONE-COUNTS — «اللي خلص النهارده / أمس» جاهز من الـ Worker (v2.9.0)
+// ══════════════════════════════════════════════════════════════
+// الهب (الشاشة الرئيسية · §HOME-DONE) كان بيعدّ ده في المتصفح بتصفيح get_logs.
+// هنا العدّ في SQL واحد: أوردرات **مميزة** لكل يوم قاهرة.
+// ⚠️ يوم القاهرة = UTC+3 ثابتة (نفس toCairo في shell.js) — date(timestamp,'+3 hours').
+//    ممنوع substr(timestamp,1,10) هنا: ده يوم UTC وبيفقد ٩م–١٢ص من يوم القاهرة.
+// ⚠️ التمييز **جوّه اليوم الواحد**: نفس الأوردر أمس واليوم بيتعدّ في اليومين.
+// ⚠️ read-only — صفر كتابة في D1.
+function cairoDays() {
+  const today = new Date(Date.now() + 3 * 3600 * 1000).toISOString().slice(0, 10);
+  const y = new Date(Date.parse(`${today}T00:00:00Z`) - 24 * 3600 * 1000).toISOString().slice(0, 10);
+  return { today, yesterday: y };
+}
+
+async function getDoneCounts(db) {
+  const { today, yesterday } = cairoDays();
+  // حد أدنى خشن على timestamp عشان الفهرس يشتغل (يوم زيادة أمان)، والفلتر الدقيق بـ date().
+  const coarse = new Date(Date.parse(`${yesterday}T00:00:00Z`) - 24 * 3600 * 1000).toISOString();
+  const rows = await db.prepare(
+    `SELECT date(timestamp, '+3 hours') AS day,
+            COUNT(DISTINCT REPLACE(TRIM(order_name), '#', '')) AS n
+       FROM logs
+      WHERE tool = ? AND type = 'packed'
+        AND order_name IS NOT NULL AND TRIM(order_name) <> ''
+        AND timestamp >= ?
+        AND date(timestamp, '+3 hours') >= ?
+      GROUP BY day`
+  ).bind(TOOL_NAME, coarse, yesterday).all();
+  const out = { [today]: 0, [yesterday]: 0 };
+  for (const r of rows.results || []) if (r.day in out) out[r.day] = r.n;
+  return { today, yesterday, counts: { today: out[today], yesterday: out[yesterday] } };
+}
+
 export default {
   async fetch(request, env) {
 
@@ -2545,6 +2580,12 @@ export default {
           // «صنّفنا بس مش شايفين كل حاجة» — نبرة تانية غير s2Failed.
           s2Truncated,
         }, 200, request);
+      }
+
+      // ─── §DONE-COUNTS ─────────────────────────────────────────
+      if (action === 'get_done_counts') {
+        const r = await getDoneCounts(env.DB);
+        return json({ ok: true, version: WORKER_VERSION, ...r }, 200, request);
       }
 
       // ─── §LOG-ENDPOINTS ───────────────────────────────────
