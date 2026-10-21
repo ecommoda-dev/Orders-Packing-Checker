@@ -2,7 +2,7 @@
 
 # أداة تشييك تغليف الأوردرات — Pack Checker (`Orders-Packing-Checker`)
 
-![version](https://img.shields.io/badge/version-v2.8.0-blue)
+![version](https://img.shields.io/badge/version-v2.9.0-blue)
 
 **بتعمل إيه:** بتعرض للموظف **طابور الأوردرات الجاهزة للتغليف** تحت مربعات
 الإدخال، وبيسكن باركود الأوردر (أو **تراكينج بوسطة**، أو بيدخّل الرقم بإيده)،
@@ -33,6 +33,7 @@
 | `get_config` | `WORKER_VERSION` — الواجهة بتقارنه بـ `MIN_WORKER_VERSION` |
 | `check_employee` · `register_pin` · `verify_employee` · `log_logout` · `get_employees` | البلوك المشترك للدخول — للأداة المستقلة بس. **v2.5.0 كانت بتقبل `appId`** اختياري عشان الهب يسجّل دخوله هنا؛ **اتشال في v2.7.3** — الهب بقى ليه Worker دخول مستقل بتاعه، فالـ Worker ده رجع يخدم واجهة واحدة (§«appId في الدخول والخروج» تحت) |
 | `get_logs` · `get_logs_count` · `get_logs_export` | سجل العمليات — فلترة server-side بقوايم + `dateFrom`/`dateTo` |
+| `GET ?action=get_done_counts` | **(v2.9.0)** «اللي خلص النهارده / أمس» جاهز: أوردرات **مميزة** لكل يوم قاهرة (UTC+3) في SQL واحد — `{ today, yesterday, counts:{today,yesterday} }`. التعريف: `type = packed`. قراءة بحتة، والهب (§HOME-DONE) بيقراه ولو مش موجود بيرجع لتصفيح `get_logs` |
 
 ## D1
 
