@@ -5,6 +5,10 @@
 //                                 diag, get_config
 // skills: worker-builder v3.7.1 · html-builder v6.3.0 · constants v3.1.0 · order-lifecycle v1.8.0 · shopify-graphql-helper v1.0.0 · bosta-api-helper — 24-09-2026
 //
+// CHANGELOG v2.10.0:
+//   - `profile.whereaboutsS1/S2` — قراءة `custom.package_whereabouts_s1/_s2`
+//     (إضافة بحتة، صفر كتابة) عشان نافذة «اتغلّف قبل كده» تعرض مكان الطرد.
+//
 // CHANGELOG v2.8.0:
 //   - 🔴 §S2-CYCLE — حارس «اتغلّف قبل كده» بقى بيعرف دورات الاستبدال.
 //     `s2_packed_by` على مستوى الأوردر ومابيتفضّاش مع دورة جديدة، والبصمة
@@ -231,7 +235,7 @@
 // ══════════════════════════════════════════════════════════════
 
 const TOOL_NAME      = 'pack_checker';
-const WORKER_VERSION = '2.9.1';
+const WORKER_VERSION = '2.10.0';
 
 // ─── §CONSTANTS::authApps — مين مسموح له يسجّل دخوله على الـ Worker ده ───
 //
@@ -875,6 +879,9 @@ query GetOrderForPack($id: ID!) {
     courier:          metafield(namespace: "custom", key: "courier")              { value }
     zone:             metafield(namespace: "custom", key: "zone")                 { value }
 
+    wh_s1:            metafield(namespace: "custom", key: "package_whereabouts_s1") { value }
+    wh_s2:            metafield(namespace: "custom", key: "package_whereabouts_s2") { value }
+
     lineItems(first: 100) {
       pageInfo { hasNextPage endCursor }
       nodes { ${LI_FIELDS} }
@@ -1309,6 +1316,9 @@ function buildOrderProfile(order, stage, guard) {
     packingDateLog:    guard?.packingDateTime        || null,
     courier:           order.courier?.value          || null,
     zone:              order.zone?.value             || null,
+    // v2.10.0 — عهدة الطرد الحالية (نافذة «اتغلّف قبل كده» بتعرضها). قراءة بحتة.
+    whereaboutsS1:     order.wh_s1?.value            || null,
+    whereaboutsS2:     order.wh_s2?.value            || null,
     lineItems: (order.lineItems?.nodes || []).map(i => ({
       title:               i.title || '',
       sku:                 i.sku   || '',
