@@ -2,8 +2,22 @@
 // §CONSTANTS
 // Pack Checker Worker — EcomModa  v2.8.0
 // Tool: pack_checker | Endpoints: get_order, complete_pack, get_ready_orders,
-//                                 diag, get_config
+//                                 get_pick_manifest, diag, get_config
 // skills: worker-builder v3.7.1 · html-builder v6.3.0 · constants v3.1.0 · order-lifecycle v1.8.0 · shopify-graphql-helper v1.0.0 · bosta-api-helper — 24-09-2026
+//
+// CHANGELOG v2.11.0:
+//   - 🆕 `POST ?action=get_pick_manifest` — بنود مجموعة أوردرات من الطابور
+//     (لمانفست التجهيز اللي الموظف بيطبعها ويلمّ بيها القطع من الرفوف مرة
+//     واحدة). قراءة بحتة: صفر ميوتيشن وصفر كتابة D1 وصفر `type` جديد.
+//     · الجسم `{ orders: [{ id, type: 'S1'|'S2' }] }` — حد أقصى
+//       `PICK_MAX_ORDERS` (40) للنداء؛ الواجهة بتقسّم على دفعات.
+//     · البنود من `classifyOrderItems` بالحرف (S1 ← activeItems · S2 ←
+//       exchangeItems) — نفس اللي شاشة التغليف هتطلبه (درس R1).
+//     · قراءة **حيّة** بتعيد فحص كل أوردر (`isPrintedNotPacked` + الإلغاء +
+//       الحالة) — جدول الطابور لقطة عمرها لحد ١٠ دقايق. اللي مبقاش جاهز
+//       بيرجع في `skipped` بسببه، واللي فشل جلبه في `failed`، واللي بنوده
+//       مقصوصة في `truncated`. الفشل بيترجع مايتبلعش.
+//     · التجميع بالـ SKU في الواجهة مش هنا (الدفعات بتتدمج).
 //
 // CHANGELOG v2.10.0:
 //   - `profile.whereaboutsS1/S2` — قراءة `custom.package_whereabouts_s1/_s2`
@@ -235,7 +249,7 @@
 // ══════════════════════════════════════════════════════════════
 
 const TOOL_NAME      = 'pack_checker';
-const WORKER_VERSION = '2.10.0';
+const WORKER_VERSION = '2.11.0';
 
 // ─── §CONSTANTS::authApps — مين مسموح له يسجّل دخوله على الـ Worker ده ───
 //
@@ -269,6 +283,13 @@ const READY_MAX_PAGES = 20;
 // المصفوفة كلها) بيولّد THROTTLED من شوبيفاي، واللي بدوره كان بيتحوّل
 // لأوردرات ناقصة في القايمة.
 const S2_CONCURRENCY = 4;
+
+// ─── §CONSTANTS::pick — مانفست التجهيز (v2.11.0) ───
+// حد الأوردرات في النداء الواحد، وتزامن الجلب. الاستعلام هنا أتقل من
+// READY_DETAIL_QUERY (فيه SKU والباركود والخيارات) فالتزامن أقل من
+// S2_CONCURRENCY عن قصد — THROTTLED بيتحوّل لأوردرات ناقصة في المانفست.
+const PICK_MAX_ORDERS  = 40;
+const PICK_CONCURRENCY = 3;
 
 // ─── §CONSTANTS::bosta — مدخل ثالث: سكانر تراكينج بوسطة (v2.4.0) ───
 // الأداة **مش** بتكتب أي حاجة على بوسطة — النداء الوحيد قراءة بحتة
@@ -1771,6 +1792,178 @@ function shapeReadyOrder(node, orderType, subtype = null) {
   };
 }
 
+
+// ══════════════════════════════════════════════════════════════
+// §PICK — مانفست التجهيز (v2.11.0)
+//
+// الموظف بيفلتر طابور «جاهز للتغليف» وبيطبع ورقة واحدة فيها كل القطع
+// المطلوبة لكل الأوردرات الظاهرة مجمّعة بالـ SKU، يروح المخزن يجيبها مرة
+// واحدة وينقلها لطاولة التجهيز، وبعدين يغلّف بالطريقة المعتادة.
+//
+// 🔴 قراءة بحتة — مفيش أي ميوتيشن ولا كتابة في D1.
+// 🔴 البنود من `classifyOrderItems` **نفسها** اللي `get_order`/`complete_pack`
+//    بيستخدموها: S1 ← activeItems · S2 ← exchangeItems. مانفست بتقول حاجة
+//    وشاشة التغليف بتطلب حاجة تانية = أسوأ من مفيش مانفست (درس R1).
+// 🔴 الحكم على بيانات الأوردر **الحيّة** مش على لقطة الطابور (§ELIGIBILITY).
+// ⚠️ مفيش backtick في تعليقات الاستعلام — الكتلة جوّه template literal.
+// ══════════════════════════════════════════════════════════════
+
+// بنفس حقول LI_FIELDS بس من غير الصور — المانفست مابتعرضش صور، وكل حقل
+// في الـ 100 بند بيزوّد التكلفة المطلوبة على حد شوبيفاي.
+const PICK_LI_FIELDS = `
+  id
+  title
+  sku
+  quantity
+  currentQuantity
+  fulfillableQuantity
+  variant { id barcode selectedOptions { name value } }
+`;
+
+const PICK_RETURN_FIELDS = `
+  id
+  status
+  createdAt
+  exchangeLineItems(first: 50) {
+    pageInfo { hasNextPage }
+    nodes {
+      id
+      quantity
+      lineItems {
+        id
+        title
+        sku
+        quantity
+        variant { id barcode selectedOptions { name value } }
+      }
+    }
+  }
+`;
+
+// returns بتتجاب للـ S2 بس (@include) — الـ S1 مالوش دورات استبدال تتغلّف.
+const PICK_ORDER_QUERY = `
+query PickOrder($id: ID!, $withReturns: Boolean!) {
+  order(id: $id) {
+    id
+    legacyResourceId
+    name
+    displayFulfillmentStatus
+    cancelledAt
+    manual_status:    metafield(namespace: "custom", key: "manual_status")        { value }
+    status_2_r_e:     metafield(namespace: "custom", key: "status_2_r_e")         { value }
+    printing_time_s1: metafield(namespace: "custom", key: "printing_time_s1")     { value }
+    printing_time_s2: metafield(namespace: "custom", key: "printing_time_s2")     { value }
+    s1_packed_by:     metafield(namespace: "custom", key: "s1_packed_by")         { value }
+    s1_packing_dt:    metafield(namespace: "custom", key: "s1_packing_date_time") { value }
+    s2_packed_by:     metafield(namespace: "custom", key: "s2_packed_by")         { value }
+    s2_packing_dt:    metafield(namespace: "custom", key: "s2_packing_date_time") { value }
+    lineItems(first: 50) {
+      pageInfo { hasNextPage endCursor }
+      nodes { ${PICK_LI_FIELDS} }
+    }
+    returns(first: 10) @include(if: $withReturns) {
+      pageInfo { hasNextPage }
+      nodes { ${PICK_RETURN_FIELDS} }
+    }
+  }
+}
+`;
+
+// بيرجّع واحد من: { skipped } · { failed } · { order }
+async function fetchPickOrder(env, token, ref) {
+  const label = `#${ref.id}`;
+  let data;
+  try {
+    const res = await shopifyGQL(env, token, PICK_ORDER_QUERY,
+      { id: `gid://shopify/Order/${ref.id}`, withReturns: ref.type === 'S2' }, `مانفست ${label}`);
+    data = res.data.order;
+  } catch (e) {
+    return { failed: { orderId: ref.id, orderType: ref.type, reason: e.message } };
+  }
+  if (!data) return { failed: { orderId: ref.id, orderType: ref.type, reason: 'شوبيفاي مالقتش الأوردر' } };
+
+  const orderNumber = data.name;
+  const base = { orderId: ref.id, orderNumber, orderType: ref.type };
+
+  // ── الحكم الحيّ — نفس شروط الطابور (get_ready_orders) ──────────
+  const stageStatus = ref.type === 'S1' ? data.manual_status?.value : data.status_2_r_e?.value;
+  const printed  = ref.type === 'S1' ? data.printing_time_s1?.value : data.printing_time_s2?.value;
+  const packedBy = ref.type === 'S1' ? data.s1_packed_by?.value     : data.s2_packed_by?.value;
+  const packedDt = ref.type === 'S1' ? data.s1_packing_dt?.value    : data.s2_packing_dt?.value;
+
+  if (data.cancelledAt)
+    return { skipped: { ...base, code: 'cancelled', reason: 'الأوردر اتلغى على شوبيفاي' } };
+  if (stageStatus !== 'Ready')
+    return { skipped: { ...base, code: 'status_changed',
+      reason: `الحالة بقت ${stageStatus || 'فاضية'} — مبقاش جاهز للتغليف` } };
+  if (!printed || !String(printed).trim())
+    return { skipped: { ...base, code: 'not_printed', reason: 'لسه ما اتطبعش' } };
+  if (!isPrintedNotPacked(printed, packedBy, packedDt))
+    return { skipped: { ...base, code: 'already_packed', reason: 'اتغلّف خلاص' } };
+
+  // ── بقية صفحات البنود (نادر — أكتر من ٥٠ بند) ────────────────────
+  let truncated = false;
+  let liPage = data.lineItems?.pageInfo;
+  let pages = 0;
+  while (liPage?.hasNextPage && pages < MAX_PAGES) {
+    try {
+      const next = await shopifyGQL(env, token, LINE_ITEMS_PAGE_QUERY,
+        { id: `gid://shopify/Order/${ref.id}`, after: liPage.endCursor }, `مانفست بنود ${label}`);
+      const conn = next?.data?.order?.lineItems;
+      if (!conn) break;
+      data.lineItems.nodes.push(...(conn.nodes || []));
+      liPage = conn.pageInfo;
+    } catch (e) {
+      return { failed: { ...base, reason: e.message } };
+    }
+    pages++;
+  }
+  if (liPage?.hasNextPage) truncated = true;
+  if (data.returns?.pageInfo?.hasNextPage) truncated = true;
+  for (const ret of (data.returns?.nodes || [])) {
+    if (ret.exchangeLineItems?.pageInfo?.hasNextPage) truncated = true;
+  }
+
+  const { activeItems, exchangeItems } = classifyOrderItems(data);
+  const items = (ref.type === 'S1' ? activeItems : exchangeItems).map(i => ({
+    sku:      i.sku || '',
+    barcode:  i.barcode || '',
+    title:    i.title || '',
+    options:  i.options || [],
+    quantity: i.quantity,
+  }));
+
+  if (!items.length)
+    return { skipped: { ...base, code: 'no_items', reason: 'مفيش بنود نشطة تتغلّف' } };
+
+  return { order: {
+    ...base,
+    isRepeatAttempt: ref.type === 'S1' ? data.displayFulfillmentStatus === 'FULFILLED' : null,
+    truncated,
+    items,
+  } };
+}
+
+async function pickManifestBatch(env, token, refs) {
+  const orders = [], skipped = [], failed = [];
+  let next = 0;
+  async function worker() {
+    while (true) {
+      const i = next++;
+      if (i >= refs.length) return;
+      const r = await fetchPickOrder(env, token, refs[i]);
+      if (r.order)   orders.push(r.order);
+      if (r.skipped) skipped.push(r.skipped);
+      if (r.failed)  failed.push(r.failed);
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(PICK_CONCURRENCY, refs.length) }, worker));
+  // ترتيب ثابت (الأوردرات بترجع بترتيب انتهاء الجلب مش ترتيب الطلب)
+  const byNum = (a, b) => String(a.orderNumber || a.orderId).localeCompare(String(b.orderNumber || b.orderId), 'en', { numeric: true });
+  orders.sort(byNum); skipped.sort(byNum);
+  return { orders, skipped, failed };
+}
+
 // ══════════════════════════════════════════════════════════════
 // §HANDLER
 // ══════════════════════════════════════════════════════════════
@@ -2605,6 +2798,34 @@ export default {
           s2Failed: failed,
           // «صنّفنا بس مش شايفين كل حاجة» — نبرة تانية غير s2Failed.
           s2Truncated,
+        }, 200, request);
+      }
+
+      // ── get_pick_manifest — بنود مجموعة أوردرات لمانفست التجهيز ──────
+      // قراءة بحتة (POST بس عشان القايمة طويلة على URL). §PICK فوق.
+      if (action === 'get_pick_manifest') {
+        if (request.method !== 'POST') return json({ error: 'POST required' }, 405, request);
+        assertEnv(env, 'shopify');
+        const body = await request.json().catch(() => ({}));
+        const seen = new Set();
+        const refs = [];
+        for (const o of (Array.isArray(body.orders) ? body.orders : [])) {
+          const id   = String(o?.id ?? '').replace(/\D/g, '');
+          const type = o?.type === 'S2' ? 'S2' : (o?.type === 'S1' ? 'S1' : null);
+          if (!id || !type) return json({ ok: false, error: 'كل عنصر في orders لازم يبقى { id رقمي, type: S1 أو S2 }' }, 400, request);
+          const k = `${id}:${type}`;
+          if (!seen.has(k)) { seen.add(k); refs.push({ id, type }); }
+        }
+        if (!refs.length) return json({ ok: false, error: 'orders فاضية' }, 400, request);
+        if (refs.length > PICK_MAX_ORDERS)
+          return json({ ok: false, error: `الحد الأقصى ${PICK_MAX_ORDERS} أوردر في النداء الواحد — قسّم على دفعات` }, 400, request);
+
+        const token = await getAccessToken(env);
+        const { orders, skipped, failed } = await pickManifestBatch(env, token, refs);
+        return json({
+          ok: true, requested: refs.length,
+          orders, skipped, failed,
+          truncated: orders.filter(o => o.truncated).map(o => o.orderNumber),
         }, 200, request);
       }
 
