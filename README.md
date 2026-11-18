@@ -2,6 +2,8 @@
 
 # Orders Packing Checker — EcomModa
 
+> 🗑️ **18-11-2026 — الواجهة المستقلة اتحذفت** (قرار أحمد). الريبو ده بقى **Worker فقط**، والواجهة الوحيدة هي `Orders-Packing-Checker.html` في `Warehouse-Operations-Center`. رابط GitHub Pages القديم بيدّي `404` **بلا إعادة توجيه** بقرار. أي إشارة تحت لـ«الواجهة المستقلة» أو `index.html` بتوصف الوضع قبل الحذف (تاريخية).
+
 ![version](https://img.shields.io/badge/version-v2.6.0-blue)
 
 أداة تشييك تغليف الأوردرات: الشاشة بتعرض **طابور الأوردرات الجاهزة للتغليف**
@@ -16,7 +18,6 @@
 
 | | |
 |---|---|
-| الواجهة | https://ecommoda-dev.github.io/Orders-Packing-Checker/ |
 | الـ Worker | `orders-packing-checker-worker` |
 | النسخ | Worker `v2.4.0` · الواجهة `v2.6.0` |
 
@@ -50,7 +51,7 @@
 |---|---|
 | `index.js` | كود الـ Cloudflare Worker |
 | `wrangler.toml` | اسم الـ Worker + الـ bindings + الـ vars |
-| `index.html` | واجهة الأداة (GitHub Pages) |
+| ~~`index.html`~~ | اتشالت — 18-11-2026، الواجهة في الهب (`Orders-Packing-Checker.html`) |
 | `CLAUDE.md` | قواعد الأداة وفخاخها وبصمة المهارات |
 
 ## النشر
